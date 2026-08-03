@@ -128,32 +128,31 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
 
 7. Пиши на русском языке. Дай развёрнутый прогноз (3-4 абзаца).
    Не используй markdown."""
-   def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str:
+
+
+def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str:
     """
     Строит промпт из словаря (для случаев, когда PromptContext сериализован).
     """
-    # Создаём упрощённый объект с нужными атрибутами
     class SimpleObj:
-def __init__(self, d):
+        def __init__(self, d):
             self.__dict__.update(d)
-    
+
     mt_dict = prompt_context_dict.get("main_theme", {})
     main_theme = SimpleObj(mt_dict) if mt_dict else None
-    
+
     key_factors = prompt_context_dict.get("key_factors", [])
     strengths = prompt_context_dict.get("strengths", [])
     challenges = prompt_context_dict.get("challenges", [])
-    
-    # Противоречия
+
     contradictions = []
     for c in prompt_context_dict.get("contradictions", []):
         contradictions.append(SimpleObj(c))
-    
+
     dominant_elements = prompt_context_dict.get("dominant_elements", [])
     dominant_modes = prompt_context_dict.get("dominant_modes", [])
     dominant_houses = prompt_context_dict.get("dominant_houses", [])
-    
-    # Строим текст вручную (без класса PromptContext)
+
     return build_prompt_text(
         main_theme=main_theme,
         key_factors=key_factors,
@@ -180,7 +179,7 @@ def build_prompt_text(
 ) -> str:
     """Строит текст промпта из сырых данных."""
     mt = main_theme
-    
+
     main_theme_text = ""
     if mt:
         main_theme_text = (
@@ -190,7 +189,7 @@ def build_prompt_text(
             f"- Знак: {getattr(mt, 'sign', mt.get('sign', '?'))}\n"
             f"- Диспозитор: {getattr(mt, 'dispositor', mt.get('dispositor', '?'))}\n"
         )
-    
+
     key_factors_text = ""
     if key_factors:
         key_factors_text = "Ключевые факторы (по важности):\n"
@@ -200,7 +199,7 @@ def build_prompt_text(
             reasons = f.get('importance_reasons', []) if isinstance(f, dict) else getattr(f, 'importance_reasons', [])
             reasons_str = ', '.join(reasons) if reasons else ''
             key_factors_text += f"{i}. {obj} (важность: {importance}) — {reasons_str}\n"
-    
+
     strengths_text = ""
     if strengths:
         strengths_text = "Сильные стороны карты:\n"
@@ -209,7 +208,7 @@ def build_prompt_text(
             reasons = s.get('confidence_reasons', []) if isinstance(s, dict) else getattr(s, 'confidence_reasons', [])
             reasons_str = ', '.join(reasons) if reasons else ''
             strengths_text += f"- {obj}: {reasons_str}\n"
-    
+
     challenges_text = ""
     if challenges:
         challenges_text = "Слабые места:\n"
@@ -218,7 +217,7 @@ def build_prompt_text(
             reasons = c.get('confidence_reasons', []) if isinstance(c, dict) else getattr(c, 'confidence_reasons', [])
             reasons_str = ', '.join(reasons) if reasons else ''
             challenges_text += f"- {obj}: {reasons_str}\n"
-    
+
     contradictions_text = ""
     if contradictions:
         contradictions_text = "Противоречия:\n"
@@ -226,7 +225,7 @@ def build_prompt_text(
             p1 = c.get('planet1', '?') if isinstance(c, dict) else getattr(c, 'planet1', '?')
             p2 = c.get('planet2', '?') if isinstance(c, dict) else getattr(c, 'planet2', '?')
             contradictions_text += f"- Оппозиция {p1} — {p2}\n"
-    
+
     dominants_text = ""
     if dominant_elements or dominant_modes or dominant_houses:
         dominants_text = "Доминанты карты:\n"
@@ -236,9 +235,9 @@ def build_prompt_text(
             dominants_text += f"- Кресты: {', '.join(dominant_modes)}\n"
         if dominant_houses:
             dominants_text += f"- Дома: {', '.join(str(h) for h in dominant_houses)}\n"
-    
+
     chart_name = "Лунар" if chart_type == "lunar" else "Натальная карта"
-    
+
     return f"""Ты — астролог классической школы. Интерпретируй {chart_name}.
 
 {main_theme_text}
