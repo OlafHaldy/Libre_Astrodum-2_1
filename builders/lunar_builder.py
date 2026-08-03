@@ -9,7 +9,7 @@ builders/lunar_builder.py
 
 Автор: Olaf Haldi
 Архитектура: Liber Astrodum 2.0
-Версия: 2.1
+Версия: 2.2
 """
 
 from datetime import datetime, timezone
@@ -27,9 +27,18 @@ SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
          'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
 
 PLANET_IDS = {
-    'Sun': swe.SUN, 'Moon': swe.MOON, 'Mercury': swe.MERCURY,
-    'Venus': swe.VENUS, 'Mars': swe.MARS, 'Jupiter': swe.JUPITER,
-    'Saturn': swe.SATURN
+    'Sun': swe.SUN,
+    'Moon': swe.MOON,
+    'Mercury': swe.MERCURY,
+    'Venus': swe.VENUS,
+    'Mars': swe.MARS,
+    'Jupiter': swe.JUPITER,
+    'Saturn': swe.SATURN,
+    'Uranus': swe.URANUS,
+    'Neptune': swe.NEPTUNE,
+    'Pluto': swe.PLUTO,
+    'True Node': swe.MEAN_NODE,
+    'Chiron': swe.CHIRON,
 }
 
 
@@ -57,15 +66,16 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon):
     for name, pid in PLANET_IDS.items():
         data, _ = swe.calc_ut(jd_start, pid)
         lon = data[0]
+        speed = data[3]
         sign_num = int(lon // 30)
         degree = round(lon % 30, 2)
         positions[name] = {
             "sign": SIGNS[sign_num],
             "degree": degree,
             "longitude": lon,
-            "speed": 0,
+            "speed": speed,
             "house": None,
-            "retrograde": False,
+            "retrograde": speed < 0,
         }
 
     # 4. Дома
@@ -150,7 +160,7 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon):
         essential_dignities=essential_dignities,
         dispositor_graph=dispositor_graph,
         metadata=ChartMetadata(
-            engine_version="2.1",
+            engine_version="2.2",
             created_at=datetime.now(timezone.utc).isoformat(),
         ),
     )

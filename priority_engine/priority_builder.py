@@ -70,6 +70,13 @@ SUCCEDENT_HOUSES = {2, 5, 8, 11}
 CADENT_HOUSES = {3, 6, 9, 12}
 
 # ==========================================================
+# ИМПОРТЫ
+# ==========================================================
+
+from core.rulerships import SIGN_RULER
+from priority_engine.priority_collection import PriorityCollection
+
+# ==========================================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ==========================================================
 
@@ -106,23 +113,12 @@ def _find_dispositor(facts, planet_name):
     """
     Находит диспозитора планеты.
     Диспозитор = управитель знака, в котором стоит планета.
+    Использует единый источник истины: core.rulerships.SIGN_RULER
     """
     for f in facts:
         if f['type'] == 'planet_sign' and f['object'] == planet_name:
             sign = f['data'].get('sign', '')
-            # Ищем управителя этого знака
-            for rf in facts:
-                if rf['type'] == 'house_ruler':
-                    ruler_sign = rf['data'].get('sign', '')
-                    if ruler_sign == sign:
-                        # Нашли дом, где на куспиде этот знак.
-                        # Управитель этого дома = управитель знака.
-                        return rf['object']
-            # Fallback: используем dignities
-            from dignities import DOMICILE
-            for planet, signs in DOMICILE.items():
-                if sign in signs:
-                    return planet
+            return SIGN_RULER.get(sign, '')
     return ''
 
 
@@ -166,20 +162,21 @@ def _has_aspect_to(planet_name, target_planet, facts):
 
 def build_priorities(facts, chart_type='lunar'):
     """
-    Принимает список фактов (list[dict]) и возвращает новый список
-    с добавленными полями priority, weight и reason.
+    Принимает список фактов (list[dict]) или FactCollection и возвращает
+    PriorityCollection с добавленными полями importance, confidence,
+    importance_reasons, confidence_reasons.
 
     Parameters
     ----------
-    facts : list[dict]
+    facts : list[dict] | FactCollection
         Список фактов из Fact Engine.
     chart_type : str
         Тип карты: 'natal', 'lunar', 'solar', 'transit', 'synastry'.
 
     Returns
     -------
-    list[dict]
-        Факты с полями priority, weight, reason.
+    PriorityCollection
+        Факты с полями importance, confidence, importance_reasons, confidence_reasons.
     """
     # Преобразуем в list, если пришёл FactCollection
     if hasattr(facts, 'all'):
@@ -280,20 +277,24 @@ def build_priorities(facts, chart_type='lunar'):
         # --------------------------------------------------
         total_weight = weight + bonus
 
-        # Нормализуем priority в диапазон 0-100
+        # Нормализуем confidence в диапазон 0-100
         # Максимально возможный вес ~ 100
-        priority = min(100, max(0, total_weight))
+        confidence = min(100, max(0, total_weight))
+
+        # importance = raw weight (для суммирования в dominants)
+        importance = total_weight
 
         result.append({
             **fact,
-            'priority': priority,
-            'weight': total_weight,
-            'reason': '; '.join(reason_parts) if reason_parts else 'Базовый приоритет',
+            'importance': importance,
+            'confidence': confidence,
+            'importance_reasons': reason_parts if reason_parts else ['Базовый приоритет'],
+            'confidence_reasons': [],
         })
 
     # ------------------------------------------------------
-    # СОРТИРОВКА ПО УБЫВАНИЮ ПРИОРИТЕТА
+    # СОРТИРОВКА ПО УБЫВАНИЮ IMPORTANCE
     # ------------------------------------------------------
-    result.sort(key=lambda f: f['priority'], reverse=True)
+    result.sort(key=lambda f: f['importance'], reverse=True)
 
-    return result
+    return PriorityCollection(result)
