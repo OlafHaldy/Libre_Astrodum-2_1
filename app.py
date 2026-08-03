@@ -4,12 +4,12 @@ from fastapi.staticfiles import StaticFiles
 import os
 import logging
 from dotenv import load_dotenv
-
-
-logger.info(f"Swiss Ephemeris path: {EPHE_PATH}")
+import swisseph as swe
 
 load_dotenv()
-import swisseph as swe
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EPHE_PATH = os.path.join(BASE_DIR, "ephe")
