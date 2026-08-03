@@ -5,7 +5,18 @@ import os
 import logging
 from dotenv import load_dotenv
 
+
+logger.info(f"Swiss Ephemeris path: {EPHE_PATH}")
+
 load_dotenv()
+import swisseph as swe
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+EPHE_PATH = os.path.join(BASE_DIR, "ephe")
+
+swe.set_ephe_path(EPHE_PATH)
+
+logger.info(f"Swiss Ephemeris path: {EPHE_PATH}")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
