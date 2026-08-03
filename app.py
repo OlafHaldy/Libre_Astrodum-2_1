@@ -55,4 +55,5 @@ def lunar_v1(
         "date": chart.datetime,
         "interpretation": interpretation,
         "analysis": result["analysis"],
-    }
+    } 
+    
