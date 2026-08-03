@@ -25,7 +25,6 @@ from fact_engine.fact_builder import build_facts
 from priority_engine.priority_builder import build_priorities
 from core.dominants import build_dominant_report
 from core.reasoning import build_reasoning_report
-from core.prompt_context import build_prompt_context
 
 
 class AnalysisContext:
@@ -78,11 +77,15 @@ def run_pipeline(chart: Chart) -> AnalysisContext:
         dominants=dominants,
         reasoning=reasoning,
     )
+
+
 def run_full_pipeline(chart: Chart) -> dict:
     """
     Полный цикл: Chart → AnalysisContext → PromptContext.
     Возвращает всё, что нужно для Prompt Builder.
     """
+    from core.prompt_context import build_prompt_context
+
     analysis = run_pipeline(chart)
     prompt_ctx = build_prompt_context(analysis)
     return {
