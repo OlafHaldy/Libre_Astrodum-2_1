@@ -166,12 +166,23 @@ def build_prompt_text(
 
     main_theme_text = ""
     if mt:
+        if isinstance(mt, dict):
+            planet = mt.get("planet", "?")
+            house = mt.get("house", "?")
+            sign = mt.get("sign", "?")
+            dispositor = mt.get("dispositor", "?")
+        else:
+            planet = getattr(mt, "planet", "?")
+            house = getattr(mt, "house", "?")
+            sign = getattr(mt, "sign", "?")
+            dispositor = getattr(mt, "dispositor", "?")
+
         main_theme_text = (
             f"Главная тема карты:\n"
-            f"- Планета: {getattr(mt, 'planet', mt.get('planet', '?'))}\n"
-            f"- Дом: {getattr(mt, 'house', mt.get('house', '?'))}\n"
-            f"- Знак: {getattr(mt, 'sign', mt.get('sign', '?'))}\n"
-            f"- Диспозитор: {getattr(mt, 'dispositor', mt.get('dispositor', '?'))}\n"
+            f"- Планета: {planet}\n"
+            f"- Дом: {house}\n"
+            f"- Знак: {sign}\n"
+            f"- Диспозитор: {dispositor}\n"
         )
 
     key_factors_text = ""
