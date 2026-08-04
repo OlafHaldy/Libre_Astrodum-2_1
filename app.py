@@ -15,6 +15,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EPHE_PATH = os.path.join(BASE_DIR, "ephe")
 
 swe.set_ephe_path(EPHE_PATH)
+logger.info(f"Swiss path = {EPHE_PATH}")
+logger.info(f"Exists = {os.path.exists(EPHE_PATH)}")
+logger.info(f"Contains seas_18 = {os.path.exists(os.path.join(EPHE_PATH, 'seas_18.se1'))}")
 
 logger.info(f"Swiss Ephemeris path: {EPHE_PATH}")
 
