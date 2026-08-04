@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 
 import os
 import logging
+import requests
 from dotenv import load_dotenv
 
 # ==========================
@@ -39,6 +40,33 @@ logger.info(f"Swiss version = {swe.version}")
 # ==========================
 app = FastAPI(title="Liber Astrodum 2.1")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+def geocode_city(city: str):
+    """
+    Получить координаты города через OpenStreetMap Nominatim.
+    """
+    url = "https://nominatim.openstreetmap.org/search"
+
+    headers = {
+        "User-Agent": "LiberAstrodum/2.1 (olafhaldy.pages.dev)"
+    }
+
+    params = {
+        "q": city,
+        "format": "json",
+        "limit": 1
+    }
+
+    r = requests.get(url, params=params, headers=headers, timeout=15)
+
+    if r.status_code != 200:
+        raise Exception("Ошибка обращения к Nominatim")
+
+    data = r.json()
+
+    if not data:
+        raise Exception(f"Город '{city}' не найден")
+
+    return float(data[0]["lat"]), float(data[0]["lon"])
 
 # ================== HTML-СТРАНИЦА ==================
 
@@ -431,10 +459,48 @@ HTML_PAGE = r"""
                 <div class="card" id="lunarCard">
                     <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☽ Лунар — Прогноз на месяц</h3>
                     <div class="row">
-                        <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
-                        <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
-                        <div><label>День</label><input type="number" id="natalDay" value="14"></div>
-                    </div>
+    <div>
+        <label>Год рождения</label>
+        <input
+            type="number"
+            id="natalYear"
+            value="1991">
+    </div>
+
+    <div>
+        <label>Месяц</label>
+        <input
+            type="number"
+            id="natalMonth"
+            value="2">
+    </div>
+
+    <div>
+        <label>День</label>
+        <input
+            type="number"
+            id="natalDay"
+            value="14">
+    </div>
+</div>
+
+<div class="row">
+    <div>
+        <label>Час рождения</label>
+        <input
+            type="number"
+            id="natalHour"
+            value="6">
+    </div>
+
+    <div>
+        <label>Минуты</label>
+        <input
+            type="number"
+            id="natalMinute"
+            value="55">
+    </div>
+</div>
                     <div style="display: flex; gap: 10px;">
                         <div style="flex: 1;">
                             <label>Год прогноза</label>
@@ -445,16 +511,28 @@ HTML_PAGE = r"""
                             <input type="number" id="lunarMonth" value="8" min="1" max="12">
                         </div>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <div style="flex: 1;">
-                            <label>Широта</label>
-                            <input type="number" id="lat" value="50.45" step="any">
-                        </div>
-                        <div style="flex: 1;">
-                            <label>Долгота</label>
-                            <input type="number" id="lon" value="30.52" step="any">
-                        </div>
-                    </div>
+                    <div>
+    <label>Город рождения</label>
+    <input type="text"
+           id="birthCity"
+           value="Киев"
+           placeholder="Например: Киев, Львов, Одесса, Berlin...">
+
+    <div id="citySuggestions"
+         style="display:none;
+                position:relative;
+                background:#1b1b1b;
+                border:1px solid #555;
+                border-radius:10px;
+                margin-top:4px;
+                max-height:220px;
+                overflow-y:auto;">
+    </div>
+
+    <div class="hint">
+        Координаты будут определены автоматически.
+    </div>
+</div>
                     <button onclick="askLunar()" style="margin-top: 15px;">Построить Лунар</button>
                     <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
                 </div>
@@ -463,32 +541,58 @@ HTML_PAGE = r"""
     </div>
 
     <script>
-        async function askLunar() {
-            const natalYear = document.getElementById('natalYear').value;
-            const natalMonth = document.getElementById('natalMonth').value;
-            const natalDay = document.getElementById('natalDay').value;
-            const year = document.getElementById('lunarYear').value;
-            const month = document.getElementById('lunarMonth').value || 1;
-            const lat = document.getElementById('lat').value || 50.45;
-            const lon = document.getElementById('lon').value || 30.52;
+async function askLunar() {
+    const natalYear = document.getElementById('natalYear').value;
+    const natalMonth = document.getElementById('natalMonth').value;
+    const natalDay = document.getElementById('natalDay').value;
+    const natalHour = document.getElementById('natalHour').value;
+    const natalMinute = document.getElementById('natalMinute').value;
 
-            const resultBlock = document.getElementById('lunarResult');
-            resultBlock.style.display = 'block';
-            resultBlock.innerHTML = '<div class="loading">Звёзды советуют...</div>';
+    const year = document.getElementById('lunarYear').value;
+    const month = document.getElementById('lunarMonth').value || 1;
 
-            const params = new URLSearchParams({ year, month, natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay, lat, lon });
-            try {
-                const response = await fetch('/api/v1/lunar?' + params.toString());
-                const data = await response.json();
-                if (data.interpretation) {
-                    resultBlock.innerHTML = `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
-                } else {
-                    resultBlock.innerHTML = '<div class="details">Интерпретация временно недоступна.</div>';
-                }
-            } catch (e) {
-                resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
-            }
+    const city = document.getElementById('city').value;
+
+    const resultBlock = document.getElementById('lunarResult');
+    resultBlock.style.display = 'block';
+    resultBlock.innerHTML = '<div class="loading">Звёзды советуют...</div>';
+
+    try {
+
+        const params = new URLSearchParams({
+            year,
+            month,
+
+            natal_year: natalYear,
+            natal_month: natalMonth,
+            natal_day: natalDay,
+            natal_hour: natalHour,
+            natal_minute: natalMinute,
+
+            city
+        });
+
+        const response = await fetch('/api/v1/lunar?' + params.toString());
+
+        const data = await response.json();
+
+        if (data.interpretation) {
+            resultBlock.innerHTML =
+                `<div class="details">${data.interpretation.replace(/\n/g,'<br>')}</div>`;
+        } else if (data.error) {
+            resultBlock.innerHTML =
+                `<div class="verdict">${data.error}</div>`;
+        } else {
+            resultBlock.innerHTML =
+                '<div class="details">Интерпретация временно недоступна.</div>';
         }
+
+    } catch (e) {
+        console.error(e);
+        resultBlock.innerHTML =
+            '<div class="verdict">Ошибка соединения со звёздами</div>';
+    }
+}
     </script>
 </body>
 </html>
@@ -507,23 +611,39 @@ def lunar_v1(
     natal_year: int = Query(...),
     natal_month: int = Query(...),
     natal_day: int = Query(...),
-    lat: float = Query(50.45),
-    lon: float = Query(30.52),
+    natal_hour: int = Query(12),
+    natal_minute: int = Query(0),
+    city: str = Query(...),
 ):
     """Лунар через полный конвейер Liber Astrodum 2.0."""
+
     from builders.lunar_builder import build_lunar_chart
     from core.pipeline import run_full_pipeline
     from core.prompt_builder import build_prompt_from_dict
     from ai import generate
     import swisseph as swe
 
+    lat, lon = geocode_city(city)
+
     # Натальная Луна
-    jd_natal = swe.julday(natal_year, natal_month, natal_day, 12)
+    jd_natal = swe.julday(
+        natal_year,
+        natal_month,
+        natal_day,
+        natal_hour + natal_minute / 60.0,
+    )
+
     moon_data, _ = swe.calc_ut(jd_natal, swe.MOON)
     natal_moon_longitude = moon_data[0]
 
-    # Лунар
-    chart = build_lunar_chart(natal_moon_longitude, year, month, lat, lon)
+    chart = build_lunar_chart(
+        natal_moon_longitude,
+        year,
+        month,
+        lat,
+        lon,
+    )
+
     result = run_full_pipeline(chart)
     prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
 
