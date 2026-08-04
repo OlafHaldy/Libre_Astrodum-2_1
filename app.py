@@ -15,17 +15,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EPHE_PATH = os.path.join(BASE_DIR, "ephe")
 
 swe.set_ephe_path(EPHE_PATH)
+
 logger.info(f"Swiss path = {EPHE_PATH}")
 logger.info(f"Exists = {os.path.exists(EPHE_PATH)}")
 logger.info(f"Contains seas_18 = {os.path.exists(os.path.join(EPHE_PATH, 'seas_18.se1'))}")
-
-logger.info(f"Swiss Ephemeris path: {EPHE_PATH}")
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger.info(f"Swiss version = {swe.version}")
 
 app = FastAPI(title="Liber Astrodum 2.1")
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ================== HTML-СТРАНИЦА ==================
 
