@@ -14,6 +14,12 @@ builders/lunar_builder.py
 
 from datetime import datetime, timezone
 import swisseph as swe
+import os
+
+EPHE_PATH = os.path.join(os.path.dirname(__file__), "..", "ephe")
+EPHE_PATH = os.path.abspath(EPHE_PATH)
+
+swe.set_ephe_path(EPHE_PATH)
 
 from core.chart import Chart
 from core.location import Location
