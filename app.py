@@ -1,27 +1,44 @@
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
 import os
 import logging
 from dotenv import load_dotenv
-import swisseph as swe
 
+# ==========================
+# Загружаем переменные окружения
+# ==========================
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+# ==========================
+# Путь к эфемеридам ДОЛЖЕН быть задан
+# ДО импорта swisseph
+# ==========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EPHE_PATH = os.path.join(BASE_DIR, "ephe")
 
-swe.set_ephe_path(EPHE_PATH)
+os.environ["SE_EPHE_PATH"] = EPHE_PATH
+
+# Только теперь импортируем Swiss Ephemeris
+import swisseph as swe
+
+# ==========================
+# Логирование
+# ==========================
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 logger.info(f"Swiss path = {EPHE_PATH}")
 logger.info(f"Exists = {os.path.exists(EPHE_PATH)}")
 logger.info(f"Contains seas_18 = {os.path.exists(os.path.join(EPHE_PATH, 'seas_18.se1'))}")
 logger.info(f"Swiss version = {swe.version}")
 
+# ==========================
+# FastAPI
+# ==========================
 app = FastAPI(title="Liber Astrodum 2.1")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ================== HTML-СТРАНИЦА ==================
 
