@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 
 import os
 import logging
-import requests
 from dotenv import load_dotenv
 
 # ==========================
@@ -40,33 +39,7 @@ logger.info(f"Swiss version = {swe.version}")
 # ==========================
 app = FastAPI(title="Liber Astrodum 2.1")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-def geocode_city(city: str):
-    """
-    Получить координаты города через OpenStreetMap Nominatim.
-    """
-    url = "https://nominatim.openstreetmap.org/search"
 
-    headers = {
-        "User-Agent": "LiberAstrodum/2.1 (olafhaldy.pages.dev)"
-    }
-
-    params = {
-        "q": city,
-        "format": "json",
-        "limit": 1
-    }
-
-    r = requests.get(url, params=params, headers=headers, timeout=15)
-
-    if r.status_code != 200:
-        raise Exception("Ошибка обращения к Nominatim")
-
-    data = r.json()
-
-    if not data:
-        raise Exception(f"Город '{city}' не найден")
-
-    return float(data[0]["lat"]), float(data[0]["lon"])
 
 # ================== HTML-СТРАНИЦА ==================
 
@@ -200,78 +173,6 @@ HTML_PAGE = r"""
             max-width: 700px;
             margin: 0 auto;
         }
-        .side-menu {
-            position: fixed;
-            left: 20px;
-            top: 250px;
-            width: 180px;
-            padding: 12px;
-            gap: 4px;
-            z-index: 100;
-            flex-shrink: unset;
-            background-image: url('/static/shelf_bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: rgba(30, 20, 10, 0.7);
-            background-blend-mode: overlay;
-            backdrop-filter: blur(10px);
-            border: 1px solid #5a5a5a;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            display: flex;
-            flex-direction: column;
-            max-height: calc(100vh - 280px);
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #b8860b #2c2c2c;
-        }
-        .menu-title {
-            color: #d4af37;
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .menu-hint {
-            color: #888;
-            font-family: 'Caveat', cursive;
-            font-size: 0.9em;
-            text-align: center;
-            margin-top: 15px;
-            font-style: italic;
-        }
-        .side-menu .mode-btn {
-            background: none;
-            border: none;
-            color: #aaa;
-            padding: 6px 8px;
-            font-size: 15px;
-            cursor: pointer;
-            font-family: 'Cormorant Infant', serif;
-            text-align: left;
-            transition: all 0.3s;
-            width: 100%;
-            outline: none;
-            box-shadow: none;
-            backdrop-filter: none;
-        }
-        .side-menu .mode-btn:hover {
-            color: #d4af37;
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
-        }
-        .side-menu .mode-btn.active {
-            color: #ffd700;
-            text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-        }
-        .lang-btn {
-            width: 120px;
-            height: 44px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
         .card {
             background-image: url('/static/card_bg.jpg');
             background-size: cover;
@@ -342,30 +243,6 @@ HTML_PAGE = r"""
         }
         button:active { transform: translateY(0); }
 
-        #overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(9, 10, 15, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-        }
-        #overlay .sign-emoji { font-size: 100px; animation: float 2s ease-in-out infinite; }
-        #overlay .sign-name {
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 2em;
-            color: #d4af37;
-            margin-top: 15px;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
         #result { margin-top: 25px; display: none; position: relative; max-width: 700px; margin-left: auto; margin-right: auto; }
         .section {
             background: rgba(28, 28, 28, 0.8);
@@ -391,46 +268,15 @@ HTML_PAGE = r"""
             text-shadow: 0 1px 2px rgba(0,0,0,0.7);
         }
         .loading { text-align: center; color: #d4af37; margin-top: 25px; font-style: italic; }
-        #suggestions div:hover { background: #3a3a3a; }
-        .hint { font-size: 0.85em; color: #888; margin-top: 4px; }
 
         /* Мобильная версия */
         @media (max-width: 800px) {
             .layout { flex-direction: column; }
-            .side-menu {
-                position: static;
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 8px;
-                padding: 15px;
-                justify-content: center;
-                border-radius: 14px;
-                background-image: none;
-                background-color: rgba(44, 44, 44, 0.85);
-            }
-            .side-menu .mode-btn {
-                background: none;
-                border: none;
-                color: #aaa;
-                padding: 6px 8px;
-                font-size: 15px;
-                cursor: pointer;
-                font-family: 'Cormorant Infant', serif;
-                text-align: left;
-                transition: all 0.3s;
-                width: 100%;
-                outline: none;
-                box-shadow: none;
-                backdrop-filter: none;
-            }
             .app-title h1 { font-size: 2em; padding: 0 50px; }
             .poem { font-size: 1em; }
             .card { padding: 20px; border-radius: 14px; }
             button { font-size: 16px; padding: 12px 20px; }
             input, textarea, select { font-size: 16px; }
-            .braziers-container { display: none; }
-            #celestial-widget { display: none !important; }
         }
     </style>
 </head>
@@ -448,59 +294,20 @@ HTML_PAGE = r"""
             · Едва уловимый шепот звезд ·
         </div>
 
-        <div class="lang-switch">
-            <button class="lang-btn active" onclick="switchLang('ru')">Услышать</button>
-            <button class="lang-btn" onclick="switchLang('uk')">Почути</button>
-        </div>
-
         <div class="layout">
             <div class="main-content">
                 <!-- Панель Лунара -->
                 <div class="card" id="lunarCard">
                     <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☽ Лунар — Прогноз на месяц</h3>
                     <div class="row">
-    <div>
-        <label>Год рождения</label>
-        <input
-            type="number"
-            id="natalYear"
-            value="1991">
-    </div>
-
-    <div>
-        <label>Месяц</label>
-        <input
-            type="number"
-            id="natalMonth"
-            value="2">
-    </div>
-
-    <div>
-        <label>День</label>
-        <input
-            type="number"
-            id="natalDay"
-            value="14">
-    </div>
-</div>
-
-<div class="row">
-    <div>
-        <label>Час рождения</label>
-        <input
-            type="number"
-            id="natalHour"
-            value="6">
-    </div>
-
-    <div>
-        <label>Минуты</label>
-        <input
-            type="number"
-            id="natalMinute"
-            value="55">
-    </div>
-</div>
+                        <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
+                        <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
+                        <div><label>День</label><input type="number" id="natalDay" value="14"></div>
+                    </div>
+                    <div class="row">
+                        <div><label>Час рождения</label><input type="number" id="natalHour" value="6"></div>
+                        <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
+                    </div>
                     <div style="display: flex; gap: 10px;">
                         <div style="flex: 1;">
                             <label>Год прогноза</label>
@@ -511,28 +318,16 @@ HTML_PAGE = r"""
                             <input type="number" id="lunarMonth" value="8" min="1" max="12">
                         </div>
                     </div>
-                    <div>
-    <label>Город рождения</label>
-    <input type="text"
-           id="birthCity"
-           value="Киев"
-           placeholder="Например: Киев, Львов, Одесса, Berlin...">
-
-    <div id="citySuggestions"
-         style="display:none;
-                position:relative;
-                background:#1b1b1b;
-                border:1px solid #555;
-                border-radius:10px;
-                margin-top:4px;
-                max-height:220px;
-                overflow-y:auto;">
-    </div>
-
-    <div class="hint">
-        Координаты будут определены автоматически.
-    </div>
-</div>
+                    <div class="row">
+                        <div>
+                            <label>Широта</label>
+                            <input type="number" id="lat" value="50.45" step="any">
+                        </div>
+                        <div>
+                            <label>Долгота</label>
+                            <input type="number" id="lon" value="30.52" step="any">
+                        </div>
+                    </div>
                     <button onclick="askLunar()" style="margin-top: 15px;">Построить Лунар</button>
                     <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
                 </div>
@@ -541,58 +336,47 @@ HTML_PAGE = r"""
     </div>
 
     <script>
-async function askLunar() {
-    const natalYear = document.getElementById('natalYear').value;
-    const natalMonth = document.getElementById('natalMonth').value;
-    const natalDay = document.getElementById('natalDay').value;
-    const natalHour = document.getElementById('natalHour').value;
-    const natalMinute = document.getElementById('natalMinute').value;
+        async function askLunar() {
+            const natalYear = document.getElementById('natalYear').value;
+            const natalMonth = document.getElementById('natalMonth').value;
+            const natalDay = document.getElementById('natalDay').value;
+            const natalHour = document.getElementById('natalHour').value || 12;
+            const natalMinute = document.getElementById('natalMinute').value || 0;
 
-    const year = document.getElementById('lunarYear').value;
-    const month = document.getElementById('lunarMonth').value || 1;
+            const year = document.getElementById('lunarYear').value;
+            const month = document.getElementById('lunarMonth').value || 1;
 
-    const city = document.getElementById('city').value;
+            const lat = document.getElementById('lat').value || 50.45;
+            const lon = document.getElementById('lon').value || 30.52;
 
-    const resultBlock = document.getElementById('lunarResult');
-    resultBlock.style.display = 'block';
-    resultBlock.innerHTML = '<div class="loading">Звёзды советуют...</div>';
+            const resultBlock = document.getElementById('lunarResult');
+            resultBlock.style.display = 'block';
+            resultBlock.innerHTML = '<div class="loading">Звёзды советуют...</div>';
 
-    try {
+            const params = new URLSearchParams({
+                year,
+                month,
+                natal_year: natalYear,
+                natal_month: natalMonth,
+                natal_day: natalDay,
+                natal_hour: natalHour,
+                natal_minute: natalMinute,
+                lat,
+                lon
+            });
 
-        const params = new URLSearchParams({
-            year,
-            month,
-
-            natal_year: natalYear,
-            natal_month: natalMonth,
-            natal_day: natalDay,
-            natal_hour: natalHour,
-            natal_minute: natalMinute,
-
-            city
-        });
-
-        const response = await fetch('/api/v1/lunar?' + params.toString());
-
-        const data = await response.json();
-
-        if (data.interpretation) {
-            resultBlock.innerHTML =
-                `<div class="details">${data.interpretation.replace(/\n/g,'<br>')}</div>`;
-        } else if (data.error) {
-            resultBlock.innerHTML =
-                `<div class="verdict">${data.error}</div>`;
-        } else {
-            resultBlock.innerHTML =
-                '<div class="details">Интерпретация временно недоступна.</div>';
+            try {
+                const response = await fetch('/api/v1/lunar?' + params.toString());
+                const data = await response.json();
+                if (data.interpretation) {
+                    resultBlock.innerHTML = `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
+                } else {
+                    resultBlock.innerHTML = '<div class="details">Интерпретация временно недоступна.</div>';
+                }
+            } catch (e) {
+                resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
+            }
         }
-
-    } catch (e) {
-        console.error(e);
-        resultBlock.innerHTML =
-            '<div class="verdict">Ошибка соединения со звёздами</div>';
-    }
-}
     </script>
 </body>
 </html>
@@ -613,17 +397,15 @@ def lunar_v1(
     natal_day: int = Query(...),
     natal_hour: int = Query(12),
     natal_minute: int = Query(0),
-    city: str = Query(...),
+    lat: float = Query(50.45),
+    lon: float = Query(30.52),
 ):
     """Лунар через полный конвейер Liber Astrodum 2.0."""
-
     from builders.lunar_builder import build_lunar_chart
     from core.pipeline import run_full_pipeline
     from core.prompt_builder import build_prompt_from_dict
     from ai import generate
     import swisseph as swe
-
-    lat, lon = geocode_city(city)
 
     # Натальная Луна
     jd_natal = swe.julday(
@@ -632,10 +414,10 @@ def lunar_v1(
         natal_day,
         natal_hour + natal_minute / 60.0,
     )
-
     moon_data, _ = swe.calc_ut(jd_natal, swe.MOON)
     natal_moon_longitude = moon_data[0]
 
+    # Строим лунарную карту
     chart = build_lunar_chart(
         natal_moon_longitude,
         year,
@@ -644,6 +426,7 @@ def lunar_v1(
         lon,
     )
 
+    # Полный анализ
     result = run_full_pipeline(chart)
     prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
 
