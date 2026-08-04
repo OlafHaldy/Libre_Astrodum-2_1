@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 
 import os
 import logging
+import requests
 from dotenv import load_dotenv
 
 # ==========================
@@ -40,6 +41,57 @@ logger.info(f"Swiss version = {swe.version}")
 app = FastAPI(title="Liber Astrodum 2.1")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# ================== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПОИСКА ГОРОДА ==================
+
+def geocode_city(city: str):
+    """
+    Получить координаты города через OpenStreetMap Nominatim.
+    """
+    url = "https://nominatim.openstreetmap.org/search"
+    headers = {
+        "User-Agent": "LiberAstrodum/2.1 (olafhaldy.pages.dev)"
+    }
+    params = {
+        "q": city,
+        "format": "json",
+        "limit": 1
+    }
+    r = requests.get(url, params=params, headers=headers, timeout=15)
+    if r.status_code != 200:
+        raise Exception("Ошибка обращения к Nominatim")
+    data = r.json()
+    if not data:
+        raise Exception(f"Город '{city}' не найден")
+    return float(data[0]["lat"]), float(data[0]["lon"])
+
+# ================== API ПОИСКА ГОРОДА (автодополнение) ==================
+
+@app.get("/api/city-search")
+def city_search(q: str = Query(..., min_length=2)):
+    """Поиск городов для автодополнения."""
+    url = "https://nominatim.openstreetmap.org/search"
+    headers = {
+        "User-Agent": "LiberAstrodum/2.1 (olafhaldy.pages.dev)"
+    }
+    params = {
+        "q": q,
+        "format": "json",
+        "limit": 5,
+        "accept-language": "ru",
+        "countrycodes": "ua,ru,by",
+    }
+    r = requests.get(url, params=params, headers=headers, timeout=15)
+    if r.status_code != 200:
+        return []
+    data = r.json()
+    results = []
+    for place in data:
+        results.append({
+            "display_name": place["display_name"],
+            "lat": float(place["lat"]),
+            "lon": float(place["lon"]),
+        })
+    return results
 
 # ================== HTML-СТРАНИЦА ==================
 
@@ -159,7 +211,6 @@ HTML_PAGE = r"""
         }
         .lang-btn.active { background: #b8860b; border-color: #ffd700; color: white; }
 
-        /* Сетка */
         .layout {
             display: flex;
             gap: 30px;
@@ -212,13 +263,6 @@ HTML_PAGE = r"""
             border-color: #b8860b;
             box-shadow: 0 0 10px rgba(184, 134, 11, 0.4);
         }
-        textarea { height: 90px; resize: vertical; }
-        select {
-            cursor: pointer;
-            appearance: none;
-            background: #1c1c1c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23d4af37' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E") no-repeat right 15px center;
-            padding-right: 35px;
-        }
         .row { display: flex; gap: 12px; }
         .row > div { flex: 1; }
         button {
@@ -253,23 +297,29 @@ HTML_PAGE = r"""
             backdrop-filter: blur(5px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
-        .section h3 {
-            font-family: 'Uncial Antiqua', cursive;
-            color: #d4af37;
-            font-size: 1.3em;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section p {
-            line-height: 1.7;
-            color: #f0f0f0;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-        }
         .loading { text-align: center; color: #d4af37; margin-top: 25px; font-style: italic; }
 
-        /* Мобильная версия */
+        #suggestions {
+            position: absolute;
+            background: #1c1c1c;
+            border: 1px solid #444;
+            border-radius: 10px;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 4px;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+        }
+        .suggestion-item:hover {
+            background: #2a2a2a;
+        }
+
         @media (max-width: 800px) {
             .layout { flex-direction: column; }
             .app-title h1 { font-size: 2em; padding: 0 50px; }
@@ -292,6 +342,11 @@ HTML_PAGE = r"""
         <div class="poem-author">— Олаф Халди</div>
         <div class="app-subtitle">
             · Едва уловимый шепот звезд ·
+        </div>
+
+        <div class="lang-switch">
+            <button class="lang-btn active" onclick="switchLang('ru')">Услышать</button>
+            <button class="lang-btn" onclick="switchLang('uk')">Почути</button>
         </div>
 
         <div class="layout">
@@ -318,15 +373,10 @@ HTML_PAGE = r"""
                             <input type="number" id="lunarMonth" value="8" min="1" max="12">
                         </div>
                     </div>
-                    <div class="row">
-                        <div>
-                            <label>Широта</label>
-                            <input type="number" id="lat" value="50.45" step="any">
-                        </div>
-                        <div>
-                            <label>Долгота</label>
-                            <input type="number" id="lon" value="30.52" step="any">
-                        </div>
+                    <div style="position: relative;">
+                        <label>Город рождения</label>
+                        <input type="text" id="birthCity" value="Киев" placeholder="Начните вводить город...">
+                        <div id="suggestions"></div>
                     </div>
                     <button onclick="askLunar()" style="margin-top: 15px;">Построить Лунар</button>
                     <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
@@ -336,6 +386,49 @@ HTML_PAGE = r"""
     </div>
 
     <script>
+        let selectedLat = 50.45;
+        let selectedLon = 30.52;
+
+        const birthCityInput = document.getElementById('birthCity');
+        const suggestionsBox = document.getElementById('suggestions');
+
+        birthCityInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length < 2) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    if (!data.length) {
+                        suggestionsBox.innerHTML = '<div class="suggestion-item" style="color:#888;">Ничего не найдено</div>';
+                        suggestionsBox.style.display = 'block';
+                        return;
+                    }
+                    data.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = place.display_name;
+                        div.addEventListener('click', function() {
+                            selectedLat = place.lat;
+                            selectedLon = place.lon;
+                            birthCityInput.value = place.display_name;
+                            suggestionsBox.style.display = 'none';
+                        });
+                        suggestionsBox.appendChild(div);
+                    });
+                    suggestionsBox.style.display = 'block';
+                });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!birthCityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
         async function askLunar() {
             const natalYear = document.getElementById('natalYear').value;
             const natalMonth = document.getElementById('natalMonth').value;
@@ -345,9 +438,6 @@ HTML_PAGE = r"""
 
             const year = document.getElementById('lunarYear').value;
             const month = document.getElementById('lunarMonth').value || 1;
-
-            const lat = document.getElementById('lat').value || 50.45;
-            const lon = document.getElementById('lon').value || 30.52;
 
             const resultBlock = document.getElementById('lunarResult');
             resultBlock.style.display = 'block';
@@ -361,8 +451,8 @@ HTML_PAGE = r"""
                 natal_day: natalDay,
                 natal_hour: natalHour,
                 natal_minute: natalMinute,
-                lat,
-                lon
+                lat: selectedLat,
+                lon: selectedLon
             });
 
             try {
