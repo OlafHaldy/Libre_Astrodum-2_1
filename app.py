@@ -92,7 +92,6 @@ HTML_PAGE = r"""
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Liber Astrodum – Книга Звездного Дара</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128302;</text></svg>">
@@ -160,6 +159,10 @@ HTML_PAGE = r"""
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
         }
+        .planet-list table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .planet-list th, .planet-list td { padding: 8px; text-align: left; border-bottom: 1px solid #444; }
+        .planet-list th { color: #d4af37; }
+        .interpretation-text { margin-top: 20px; line-height: 1.7; }
     </style>
 </head>
 <body>
@@ -204,11 +207,8 @@ HTML_PAGE = r"""
         <div id="result" style="display: none; margin-top: 20px; width: 100%;">
             <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
                 <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
-                <div style="width: 300px; height: 300px; margin: 0 auto 20px auto;">
-                    <canvas id="chart" width="300" height="300"></canvas>
-                </div>
-                <div id="planetList" style="margin-bottom: 20px;"></div>
-                <div id="interpretationText"></div>
+                <div id="planetList" class="planet-list" style="margin-bottom: 20px;"></div>
+                <div id="interpretationText" class="interpretation-text"></div>
             </div>
         </div>
     </div>
@@ -368,27 +368,6 @@ HTML_PAGE = r"""
                 }
                 planetListHtml += '</table>';
                 document.getElementById('planetList').innerHTML = planetListHtml;
-
-                const ctx = document.getElementById('chart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [{
-                            data: Object.values(data.planets).map(p => ({
-                                x: Math.cos(p.longitude * Math.PI / 180) * 100,
-                                y: Math.sin(p.longitude * Math.PI / 180) * 100
-                            })),
-                            backgroundColor: '#d4af37',
-                            pointRadius: 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        scales: { x: { display: false }, y: { display: false } },
-                        plugins: { legend: { display: false } }
-                    }
-                });
 
                 document.getElementById('interpretationText').innerHTML = data.interpretation.replace(/\n/g, '<br>');
                 showOverlay('Aquarius');
