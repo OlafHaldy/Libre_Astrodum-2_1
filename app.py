@@ -238,7 +238,8 @@ HTML_PAGE = r"""
         </div>
     </div>
 
-    <script>
+<script>
+    // --- Заставка и цитаты ---
     const signEmojis = {
         'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
         'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
@@ -296,23 +297,15 @@ HTML_PAGE = r"""
         setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 10000);
     }
 
-    function showOverlay(signKey) {
-        const emoji = signEmojis[signKey] || '❓';
-        const name = signNamesRu[signKey] || signKey;
-        document.getElementById('signEmoji').innerHTML = emoji;
-        document.getElementById('signName').textContent = name;
-        document.getElementById('overlay').style.display = 'flex';
-        setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 8000);
-    }
+    // --- Координаты по умолчанию ---
     let birthLat = 50.4188;
-    let birthLon = 25.7456; // Дубно
+    let birthLon = 25.7456;
     let lunarLat = 50.6199;
-    let lunarLon = 26.2516; // Ровно
+    let lunarLon = 26.2516;
 
     // --- Поиск города рождения ---
     const birthCityInput = document.getElementById('birthCity');
     const suggestionsBox = document.getElementById('suggestions');
-
     birthCityInput.addEventListener('input', function() {
         const query = this.value.trim();
         if (query.length < 2) { suggestionsBox.style.display = 'none'; return; }
@@ -340,7 +333,6 @@ HTML_PAGE = r"""
                 suggestionsBox.style.display = 'block';
             });
     });
-
     document.addEventListener('click', function(e) {
         if (!birthCityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
             suggestionsBox.style.display = 'none';
@@ -350,7 +342,6 @@ HTML_PAGE = r"""
     // --- Поиск места встречи ---
     const lunarCityInput = document.getElementById('lunarCity');
     const lunarSuggestionsBox = document.getElementById('lunarSuggestions');
-
     lunarCityInput.addEventListener('input', function() {
         const query = this.value.trim();
         if (query.length < 2) { lunarSuggestionsBox.style.display = 'none'; return; }
@@ -378,7 +369,6 @@ HTML_PAGE = r"""
                 lunarSuggestionsBox.style.display = 'block';
             });
     });
-
     document.addEventListener('click', function(e) {
         if (!lunarCityInput.contains(e.target) && !lunarSuggestionsBox.contains(e.target)) {
             lunarSuggestionsBox.style.display = 'none';
@@ -399,8 +389,6 @@ HTML_PAGE = r"""
         resultBlock.style.display = 'block';
         resultBlock.innerHTML = '<div class="loading">Звёзды советуют...</div>';
 
-        // ВАЖНО: отправляем координаты места встречи как lat/lon,
-        // а координаты рождения — как birth_lat/birth_lon
         const params = new URLSearchParams({
             year, month,
             natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
@@ -412,12 +400,35 @@ HTML_PAGE = r"""
         try {
             const response = await fetch('/api/v1/lunar?' + params.toString());
             const data = await response.json();
-            if (data.interpretation) {
-                resultBlock.innerHTML = `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
-            } else {
-                resultBlock.innerHTML = '<div class="details">Интерпретация временно недоступна.</div>';
+
+            // --- Строим таблицу планет ---
+            let planetsHtml = '<h3>Планеты в знаках</h3><ul>';
+            const planets = data.analysis.chart.planets;
+            for (const [name, info] of Object.entries(planets)) {
+                const emoji = signEmojis[info.sign] || '';
+                planetsHtml += `<li>${emoji} ${name}: ${info.degree}° ${info.sign}</li>`;
             }
-            showOverlay('Aquarius'); // Временный пример, потом заменим на data.moon_sign
+            planetsHtml += '</ul>';
+
+            // --- Строим список домов ---
+            let housesHtml = '<h3>Дома</h3><ul>';
+            const houses = data.analysis.chart.houses;
+            for (const [num, info] of Object.entries(houses)) {
+                if (parseInt(num) >= 1 && parseInt(num) <= 12) {
+                    housesHtml += `<li>Дом ${num}: ${info.degree}° ${info.sign}</li>`;
+                }
+            }
+            housesHtml += '</ul>';
+
+            // --- Показываем результат ---
+            resultBlock.innerHTML = `
+                <div class="tech-panel">
+                    ${planetsHtml}
+                    ${housesHtml}
+                </div>
+                <div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>
+            `;
+            showOverlay('Aquarius'); // Временный пример
         } catch (e) {
             resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
         }
