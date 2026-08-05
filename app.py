@@ -387,6 +387,7 @@ HTML_PAGE = r"""
     });
 
     // --- Запрос лунара ---
+    // --- Запрос лунара ---
     async function askLunar() {
         const natalYear = document.getElementById('natalYear').value;
         const natalMonth = document.getElementById('natalMonth').value;
@@ -411,70 +412,26 @@ HTML_PAGE = r"""
         try {
             const response = await fetch('/api/v1/lunar?' + params.toString());
             const data = await response.json();
-                        // Скрываем форму и показываем холст для результатов
-            document.getElementById('lunarCard').style.display = 'none';
+
+            // 1. Скрываем форму и показываем холст для результатов
+            document.getElementById('formContainer').style.display = 'none';
             document.getElementById('result').style.display = 'block';
 
-            // --- Строим таблицу планет ---
-            let planetsHtml = '<h3>Планеты в знаках</h3><ul>';
+            // 2. Строим красивый список планет
+            let planetListHtml = '<div class="planet-list"><h3>Планеты в знаках</h3><ul>';
             const planets = data.analysis.chart.planets;
             for (const [name, info] of Object.entries(planets)) {
                 const emoji = signEmojis[info.sign] || '';
-                planetsHtml += `<li>${emoji} ${name}: ${info.degree}° ${info.sign}</li>`;
+                planetListHtml += `<li>${emoji} ${name}: ${info.degree}° ${info.sign}</li>`;
             }
-            planetsHtml += '</ul>';
+            planetListHtml += '</ul></div>';
 
-            // --- Строим список домов ---
-            let housesHtml = '<h3>Дома</h3><ul>';
-            const houses = data.analysis.chart.houses;
-            for (const [num, info] of Object.entries(houses)) {
-                if (parseInt(num) >= 1 && parseInt(num) <= 12) {
-                    housesHtml += `<li>Дом ${num}: ${info.degree}° ${info.sign}</li>`;
-                }
-            }
-            housesHtml += '</ul>';
+            // 3. Показываем список планет и интерпретацию
+            document.getElementById('planetList').innerHTML = planetListHtml;
+            resultBlock.innerHTML = `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
 
-            // --- Показываем результат ---
-            resultBlock.innerHTML = `
-                <div class="tech-panel">
-                    ${planetsHtml}
-                    ${housesHtml}
-                </div>
-                        // Рисуем диаграмму
-        const planets = data.analysis.chart.planets;
-        const labels = Object.keys(planets);
-        const longitudes = Object.values(planets).map(p => p.longitude);
-
-        const ctx = document.getElementById('chart').getContext('2d');
-        new Chart(ctx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Планеты',
-                    data: longitudes.map((lon, i) => ({x: Math.cos(lon * Math.PI / 180) * 100, y: Math.sin(lon * Math.PI / 180) * 100})),
-                    backgroundColor: 'gold',
-                    pointRadius: 5
-                }]
-                                let planetList = '<div class="planet-list"><h3>Планеты в знаках</h3><ul>';
-                const planets = data.analysis.chart.planets;
-                for (const [name, info] of Object.entries(planets)) {
-                    const emoji = signEmojis[info.sign] || '';
-                    planetList += `<li>${emoji} ${name}: ${info.degree}° ${info.sign}</li>`;
-                }
-                planetList += '</ul></div>';
-                resultBlock.innerHTML += planetList;
-            },
-            options: {
-                scales: {
-                    x: { display: false },
-                    y: { display: false }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
-                <div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>
-            `;
-            showOverlay('Aquarius'); // Временный пример
+            // 4. Показываем заставку
+            showOverlay('Aquarius');
         } catch (e) {
             resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
         }
