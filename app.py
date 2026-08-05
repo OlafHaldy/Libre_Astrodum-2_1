@@ -437,7 +437,8 @@ HTML_PAGE = r"""
         } catch (e) {
             resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
         }
-    }
+    } 
+    
 </script>
     <div id="result" style="display: none; margin-top: 20px;"><div id="result" style="display: none; margin-top: 20px;">
     <canvas id="chart" width="300" height="300"></canvas>
