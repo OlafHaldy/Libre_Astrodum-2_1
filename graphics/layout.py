@@ -3,141 +3,64 @@ Liber Astrodum
 
 graphics/layout.py
 
-Автоматическое размещение подписей планет.
+Wheel Layout
+Версия 3.0
 
-Версия 2.0
+Единая геометрия астрологического колеса.
 """
 
-import math
+from dataclasses import dataclass
 
 
-class PlanetLayout:
+@dataclass
+class WheelLayout:
 
-    BASE_RADIUS = 245
+    width: int
+    height: int
 
-    RADIUS_STEP = 18
+    def __post_init__(self):
 
-    GROUP_DISTANCE = 7.0
+        # ---------------------------------
+        # Центр
+        # ---------------------------------
 
-    FAN_STEP = 4.0
+        self.cx = self.width / 2
+        self.cy = self.height / 2
 
-    def __init__(self, planets):
+        # ---------------------------------
+        # Внешний радиус
+        # ---------------------------------
 
-        self.planets = planets
+        self.radius = min(self.width, self.height) * 0.45
 
-    # ---------------------------------------------------------
+        # ---------------------------------
+        # Кольца
+        # ---------------------------------
 
-    @staticmethod
-    def normalize(angle):
-        return angle % 360
+        self.r_outer = self.radius
 
-    # ---------------------------------------------------------
+        self.r_signs = self.radius - 25
 
-    @staticmethod
-    def circular_difference(a, b):
+        self.r_house_ring = self.radius - 65
 
-        d = (b - a + 180) % 360 - 180
-        return d
+        self.r_houses = self.radius - 105
 
-    # ---------------------------------------------------------
+        self.r_planets = self.radius - 145
 
-    def group_planets(self):
+        self.r_aspects = self.radius - 180
 
-        planets = sorted(
-            self.planets,
-            key=lambda p: p["longitude"]
-        )
+        self.r_center = self.radius - 225
 
-        groups = []
+        # ---------------------------------
+        # Размеры
+        # ---------------------------------
 
-        current = []
+        self.planet_radius = 15
 
-        for planet in planets:
+        self.house_font = 18
 
-            if not current:
-                current.append(planet)
-                continue
+        self.sign_font = 26
 
-            prev = current[-1]
+        self.degree_font = 10
 
-            diff = abs(
-                self.circular_difference(
-                    prev["longitude"],
-                    planet["longitude"]
-                )
-            )
-
-            if diff <= self.GROUP_DISTANCE:
-
-                current.append(planet)
-
-            else:
-
-                groups.append(current)
-                current = [planet]
-
-        if current:
-            groups.append(current)
-
-        return groups
-
-    # ---------------------------------------------------------
-
-    def build(self):
-
-        result = []
-
-        groups = self.group_planets()
-
-        for group in groups:
-
-            # -----------------------------
-            # Одиночная планета
-            # -----------------------------
-
-            if len(group) == 1:
-
-                p = dict(group[0])
-
-                p["label_angle"] = self.normalize(
-                    p["longitude"]
-                )
-
-                p["label_radius"] = self.BASE_RADIUS
-
-                result.append(p)
-
-                continue
-
-            # -----------------------------
-            # Центр группы
-            # -----------------------------
-
-            center = sum(
-                p["longitude"] for p in group
-            ) / len(group)
-
-            n = len(group)
-
-            start = center - self.FAN_STEP * (n - 1) / 2
-
-            for i, planet in enumerate(group):
-
-                p = dict(planet)
-
-                p["label_angle"] = self.normalize(
-                    start + i * self.FAN_STEP
-                )
-
-                p["label_radius"] = (
-                    self.BASE_RADIUS
-                    + i * self.RADIUS_STEP
-                )
-
-                result.append(p)
-
-        result.sort(
-            key=lambda p: p["longitude"]
-        )
-
-        return result
+        self.aspect_width = 1.4
