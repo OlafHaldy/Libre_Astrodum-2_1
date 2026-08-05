@@ -91,7 +91,6 @@ HTML_PAGE = r"""
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -99,7 +98,6 @@ HTML_PAGE = r"""
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128302;</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-    
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cormorant Infant', serif;
@@ -114,7 +112,6 @@ HTML_PAGE = r"""
             position: relative;
             overflow-x: hidden;
         }
-        /* ... (весь твой красивый CSS, который был раньше, без изменений) ... */
         .container { max-width: 700px; width: 100%; }
         .app-title h1 {
             font-family: 'UnifrakturMaguntia', 'Uncial Antiqua', cursive;
@@ -125,21 +122,9 @@ HTML_PAGE = r"""
             background-clip: text;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
             text-align: center; margin-bottom: 10px;
-            
         }
         .poem { color: #c092f9; font-style: italic; font-size: 1.15em; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Marck Script', cursive; margin-bottom: 5px; }
         .poem-author { color: #b8860b; font-size: 0.95em; margin-bottom: 20px; font-style: normal; font-family: 'Caveat', cursive; }
-        .card {
-            background-image: url('/static/card_bg.jpg');
-            background-size: cover;
-            background-color: rgba(30, 20, 10, 0.6);
-            background-blend-mode: overlay;
-            border: 1px solid #5a5a5a;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-        }
         label { display: block; margin-top: 18px; color: #256057; font-size: 1.2em; font-family: 'Caveat', cursive; }
         input, select { width: 100%; padding: 12px; margin-top: 6px; background: #1c1c1c; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Cormorant Infant', serif; }
         input:focus { outline: none; border-color: #b8860b; box-shadow: 0 0 10px rgba(184, 134, 11, 0.4); }
@@ -151,48 +136,25 @@ HTML_PAGE = r"""
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184, 134, 11, 0.5); }
         .loading { text-align: center; color: #d4af37; margin-top: 25px; font-style: italic; }
-        #suggestions {
+        #suggestions, #lunarSuggestions {
             position: absolute; background: #1c1c1c; border: 1px solid #444; border-radius: 10px;
             width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 4px; display: none;
         }
         .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; }
         .suggestion-item:hover { background: #2a2a2a; }
         .hint { font-size: 0.85em; color: #888; margin-top: 4px; }
-                #overlay {
-            position: fixed;
-            top: 0; left: 0;
+        #overlay {
+            position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(9, 10, 15, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-        }
-
-
-                #overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(9, 10, 15, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; flex-direction: column;
         }
         #overlay .sign-emoji { font-size: 100px; animation: float 2s ease-in-out infinite; }
         #overlay .sign-name {
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 2em;
-            color: #d4af37;
-            margin-top: 15px;
+            font-family: 'Uncial Antiqua', cursive; font-size: 2em;
+            color: #d4af37; margin-top: 15px;
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
         }
         @keyframes float {
             0%, 100% { transform: translateY(0); }
@@ -200,19 +162,17 @@ HTML_PAGE = r"""
         }
     </style>
 </head>
-
 <body>
     <div id="overlay">
         <div class="sign-emoji" id="signEmoji"></div>
         <div class="sign-name" id="signName"></div>
-    
     </div>
+
     <div class="container">
         <div class="app-title"><h1>Liber Astrodum</h1></div>
         <div class="poem">Спроси у Сатурна о будущей горсти беды<br>И он не обманет, как люди – меняя обличье.<br>О радостной встрече - Юпитера скажут следы<br>(Где Кронос молчит, там от Зевса исходит величье)</div>
         <div class="poem-author">— Олаф Халди</div>
 
-        <!-- НАЧАЛО: Оборачиваем форму в контейнер -->
         <div id="formContainer">
             <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☽ Лунар — Прогноз на месяц</h3>
             <div class="row">
@@ -239,218 +199,204 @@ HTML_PAGE = r"""
                 <div style="flex: 1;"><label>Месяц прогноза</label><input type="number" id="lunarMonth" value="8" min="1" max="12"></div>
             </div>
             <button onclick="askLunar()">Построить Лунар</button>
-            <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
-        </div>
-        <div id="result" style="display: none; margin-top: 20px;">
-            <canvas id="chart" width="300" height="300"></canvas>
-            <div id="planetList"></div>
         </div>
 
+        <div id="result" style="display: none; margin-top: 20px; width: 100%;">
+            <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
+                <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
+                <div style="width: 300px; height: 300px; margin: 0 auto 20px auto;">
+                    <canvas id="chart" width="300" height="300"></canvas>
+                </div>
+                <div id="planetList" style="margin-bottom: 20px;"></div>
+                <div id="interpretationText"></div>
+            </div>
+        </div>
     </div>
-    </div>
 
-<script>
-    // --- Заставка и цитаты ---
-    const signEmojis = {
-        'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
-        'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
-        'Libra': '♎', 'Scorpio': '♏', 'Sagittarius': '♐',
-        'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
-    };
-    const signNamesRu = {
-        'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
-        'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
-        'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
-        'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
-    };
-    const signMottos = {
-        'Aries': '«Я — первый луч рассвета, пробуждающий мир к действию.»',
-        'Taurus': '«Я — плодородная земля, что превращает семя в древо жизни.»',
-        'Gemini': '«Я — мост между мирами, где слово обретает плоть.»',
-        'Cancer': '«Я — колыбель души, хранящая память всех начал.»',
-        'Leo': '«Я — свет, что зажигает другие светильники, не теряя себя.»',
-        'Virgo': '«Я — служитель порядка, превращающий хаос в исцеление.»',
-        'Libra': '«Я — точка равновесия, где встречаются свет и тень.»',
-        'Scorpio': '«Я — пламя, сжигающее старое, чтобы из пепла восстало новое.»',
-        'Sagittarius': '«Я — стрела, пущенная в бесконечность, ищущая истину.»',
-        'Capricorn': '«Я — вершина, к которой ведут десять тысяч шагов.»',
-        'Aquarius': '«Я — вода жизни, изливающаяся на жаждущее человечество.»',
-        'Pisces': '«Я — океан, где растворяются все границы и рождается вера.»'
-    };
-    const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
+    <script>
+        const signEmojis = {
+            'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
+            'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
+            'Libra': '♎', 'Scorpio': '♏', 'Sagittarius': '♐',
+            'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
+        };
+        const signNamesRu = {
+            'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+            'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+            'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+            'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+        };
+        const signMottos = {
+            'Aries': '«Я — первый луч рассвета, пробуждающий мир к действию.»',
+            'Taurus': '«Я — плодородная земля, что превращает семя в древо жизни.»',
+            'Gemini': '«Я — мост между мирами, где слово обретает плоть.»',
+            'Cancer': '«Я — колыбель души, хранящая память всех начал.»',
+            'Leo': '«Я — свет, что зажигает другие светильники, не теряя себя.»',
+            'Virgo': '«Я — служитель порядка, превращающий хаос в исцеление.»',
+            'Libra': '«Я — точка равновесия, где встречаются свет и тень.»',
+            'Scorpio': '«Я — пламя, сжигающее старое, чтобы из пепла восстало новое.»',
+            'Sagittarius': '«Я — стрела, пущенная в бесконечность, ищущая истину.»',
+            'Capricorn': '«Я — вершина, к которой ведут десять тысяч шагов.»',
+            'Aquarius': '«Я — вода жизни, изливающаяся на жаждущее человечество.»',
+            'Pisces': '«Я — океан, где растворяются все границы и рождается вера.»'
+        };
+        const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
 
-    function showOverlay(signKey) {
-        const emoji = signEmojis[signKey] || '❓';
-        const name = signNamesRu[signKey] || signKey;
-        const motto = signMottos[signKey] || '';
-        
-        document.getElementById('signEmoji').innerHTML = emoji;
-        document.getElementById('signName').textContent = name;
-        
-        const oldMotto = document.getElementById('signMotto');
-        const oldAuthor = document.getElementById('signMottoAuthor');
-        if (oldMotto) oldMotto.remove();
-        if (oldAuthor) oldAuthor.remove();
-        
-        const mottoElement = document.createElement('div');
-        mottoElement.id = 'signMotto';
-        mottoElement.style.cssText = 'color: #d4af37; font-style: italic; font-size: 1.2em; margin-top: 15px; text-align: center; max-width: 450px; line-height: 1.5; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);';
-        mottoElement.textContent = motto;
-        document.getElementById('overlay').appendChild(mottoElement);
-        
-        const authorElement = document.createElement('div');
-        authorElement.id = 'signMottoAuthor';
-        authorElement.style.cssText = 'color: #b8860b; font-size: 0.9em; margin-top: 8px; text-align: center; font-style: normal;';
-        authorElement.textContent = signMottoAuthor;
-        document.getElementById('overlay').appendChild(authorElement);
-        
-        document.getElementById('overlay').style.display = 'flex';
-        setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 10000);
-    }
+        function showOverlay(signKey) {
+            const emoji = signEmojis[signKey] || '❓';
+            const name = signNamesRu[signKey] || signKey;
+            const motto = signMottos[signKey] || '';
+            document.getElementById('signEmoji').innerHTML = emoji;
+            document.getElementById('signName').textContent = name;
+            const oldMotto = document.getElementById('signMotto');
+            const oldAuthor = document.getElementById('signMottoAuthor');
+            if (oldMotto) oldMotto.remove();
+            if (oldAuthor) oldAuthor.remove();
+            const mottoElement = document.createElement('div');
+            mottoElement.id = 'signMotto';
+            mottoElement.style.cssText = 'color: #d4af37; font-style: italic; font-size: 1.2em; margin-top: 15px; text-align: center; max-width: 450px; line-height: 1.5; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);';
+            mottoElement.textContent = motto;
+            document.getElementById('overlay').appendChild(mottoElement);
+            const authorElement = document.createElement('div');
+            authorElement.id = 'signMottoAuthor';
+            authorElement.style.cssText = 'color: #b8860b; font-size: 0.9em; margin-top: 8px; text-align: center; font-style: normal;';
+            authorElement.textContent = signMottoAuthor;
+            document.getElementById('overlay').appendChild(authorElement);
+            document.getElementById('overlay').style.display = 'flex';
+            setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 10000);
+        }
 
-    // --- Координаты по умолчанию ---
-    let birthLat = 50.4188;
-    let birthLon = 25.7456;
-    let lunarLat = 50.6199;
-    let lunarLon = 26.2516;
+        let birthLat = 50.4188, birthLon = 25.7456;
+        let lunarLat = 50.6199, lunarLon = 26.2516;
 
-    // --- Поиск города рождения ---
-    const birthCityInput = document.getElementById('birthCity');
-    const suggestionsBox = document.getElementById('suggestions');
-    birthCityInput.addEventListener('input', function() {
-        const query = this.value.trim();
-        if (query.length < 2) { suggestionsBox.style.display = 'none'; return; }
-        fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
-            .then(r => r.json())
-            .then(data => {
-                suggestionsBox.innerHTML = '';
-                if (!data.length) {
-                    suggestionsBox.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
+        const birthCityInput = document.getElementById('birthCity');
+        const suggestionsBox = document.getElementById('suggestions');
+        birthCityInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length < 2) { suggestionsBox.style.display = 'none'; return; }
+            fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    if (!data.length) {
+                        suggestionsBox.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
+                        suggestionsBox.style.display = 'block';
+                        return;
+                    }
+                    data.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = place.display_name;
+                        div.addEventListener('click', function() {
+                            birthLat = place.lat; birthLon = place.lon;
+                            birthCityInput.value = place.display_name;
+                            suggestionsBox.style.display = 'none';
+                        });
+                        suggestionsBox.appendChild(div);
+                    });
                     suggestionsBox.style.display = 'block';
-                    return;
-                }
-                data.forEach(place => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.textContent = place.display_name;
-                    div.addEventListener('click', function() {
-                        birthLat = place.lat;
-                        birthLon = place.lon;
-                        birthCityInput.value = place.display_name;
-                        suggestionsBox.style.display = 'none';
-                    });
-                    suggestionsBox.appendChild(div);
                 });
-                suggestionsBox.style.display = 'block';
-            });
-    });
-    document.addEventListener('click', function(e) {
-        if (!birthCityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-            suggestionsBox.style.display = 'none';
-        }
-    });
-
-    // --- Поиск места встречи ---
-    const lunarCityInput = document.getElementById('lunarCity');
-    const lunarSuggestionsBox = document.getElementById('lunarSuggestions');
-    lunarCityInput.addEventListener('input', function() {
-        const query = this.value.trim();
-        if (query.length < 2) { lunarSuggestionsBox.style.display = 'none'; return; }
-        fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
-            .then(r => r.json())
-            .then(data => {
-                lunarSuggestionsBox.innerHTML = '';
-                if (!data.length) {
-                    lunarSuggestionsBox.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
-                    lunarSuggestionsBox.style.display = 'block';
-                    return;
-                }
-                data.forEach(place => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.textContent = place.display_name;
-                    div.addEventListener('click', function() {
-                        lunarLat = place.lat;
-                        lunarLon = place.lon;
-                        lunarCityInput.value = place.display_name;
-                        lunarSuggestionsBox.style.display = 'none';
-                    });
-                    lunarSuggestionsBox.appendChild(div);
-                });
-                lunarSuggestionsBox.style.display = 'block';
-            });
-    });
-    document.addEventListener('click', function(e) {
-        if (!lunarCityInput.contains(e.target) && !lunarSuggestionsBox.contains(e.target)) {
-            lunarSuggestionsBox.style.display = 'none';
-        }
-    });
-
-    // --- Запрос лунара ---
-    // --- Запрос лунара ---
-    // --- Запрос лунара ---
-    // --- Запрос лунара ---
-    // --- Запрос лунара ---
-    async function askLunar() {
-        const natalYear = document.getElementById('natalYear').value;
-        const natalMonth = document.getElementById('natalMonth').value;
-        const natalDay = document.getElementById('natalDay').value;
-        const natalHour = document.getElementById('natalHour').value || 12;
-        const natalMinute = document.getElementById('natalMinute').value || 0;
-        const year = document.getElementById('lunarYear').value;
-        const month = document.getElementById('lunarMonth').value || 1;
-
-        const resultBlock = document.getElementById('lunarResult');
-        resultBlock.style.display = 'block';
-        resultBlock.innerHTML = '<div class="loading">Звёзды советуют...</div>';
-
-        const params = new URLSearchParams({
-            year, month,
-            natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
-            natal_hour: natalHour, natal_minute: natalMinute,
-            lat: lunarLat, lon: lunarLon,
-            birth_lat: birthLat, birth_lon: birthLon
+        });
+        document.addEventListener('click', function(e) {
+            if (!birthCityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
         });
 
-        try {
-            const response = await fetch('/api/v1/lunar?' + params.toString());
-            const data = await response.json();
-
-            // 1. Скрываем форму и показываем холст для результатов
-            document.getElementById('formContainer').style.display = 'none';
-            document.getElementById('result').style.display = 'block';
-
-            // 2. Строим красивый список планет
-            let planetListHtml = '<div class="planet-list"><h3>Планеты в знаках</h3><ul>';
-            const planets = data.analysis.chart.planets;
-            for (const [name, info] of Object.entries(planets)) {
-                const emoji = signEmojis[info.sign] || '';
-                planetListHtml += `<li>${emoji} ${name}: ${info.degree}° ${info.sign}</li>`;
+        const lunarCityInput = document.getElementById('lunarCity');
+        const lunarSuggestionsBox = document.getElementById('lunarSuggestions');
+        lunarCityInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length < 2) { lunarSuggestionsBox.style.display = 'none'; return; }
+            fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    lunarSuggestionsBox.innerHTML = '';
+                    if (!data.length) {
+                        lunarSuggestionsBox.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
+                        lunarSuggestionsBox.style.display = 'block';
+                        return;
+                    }
+                    data.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = place.display_name;
+                        div.addEventListener('click', function() {
+                            lunarLat = place.lat; lunarLon = place.lon;
+                            lunarCityInput.value = place.display_name;
+                            lunarSuggestionsBox.style.display = 'none';
+                        });
+                        lunarSuggestionsBox.appendChild(div);
+                    });
+                    lunarSuggestionsBox.style.display = 'block';
+                });
+        });
+        document.addEventListener('click', function(e) {
+            if (!lunarCityInput.contains(e.target) && !lunarSuggestionsBox.contains(e.target)) {
+                lunarSuggestionsBox.style.display = 'none';
             }
-            planetListHtml += '</ul></div>';
+        });
 
-            // 3. Выводим всё на страницу: и список, и интерпретацию
-            resultBlock.innerHTML = planetListHtml + `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
+        async function askLunar() {
+            const natalYear = document.getElementById('natalYear').value;
+            const natalMonth = document.getElementById('natalMonth').value;
+            const natalDay = document.getElementById('natalDay').value;
+            const natalHour = document.getElementById('natalHour').value || 12;
+            const natalMinute = document.getElementById('natalMinute').value || 0;
+            const year = document.getElementById('lunarYear').value;
+            const month = document.getElementById('lunarMonth').value || 1;
 
-            // 4. Показываем заставку
-            showOverlay('Aquarius');
-        } catch (e) {
-            resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
+            const params = new URLSearchParams({
+                year, month,
+                natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
+                natal_hour: natalHour, natal_minute: natalMinute,
+                lat: lunarLat, lon: lunarLon,
+                birth_lat: birthLat, birth_lon: birthLon
+            });
+
+            try {
+                const response = await fetch('/api/v1/lunar?' + params.toString());
+                const data = await response.json();
+
+                document.getElementById('formContainer').style.display = 'none';
+                document.getElementById('result').style.display = 'block';
+
+                let planetListHtml = '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+                planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
+                for (const [name, info] of Object.entries(data.planets)) {
+                    planetListHtml += `<tr><td>${name}</td><td>${info.sign}</td><td>${info.degree}°</td></tr>`;
+                }
+                planetListHtml += '</table>';
+                document.getElementById('planetList').innerHTML = planetListHtml;
+
+                const ctx = document.getElementById('chart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            data: Object.values(data.planets).map(p => ({
+                                x: Math.cos(p.longitude * Math.PI / 180) * 100,
+                                y: Math.sin(p.longitude * Math.PI / 180) * 100
+                            })),
+                            backgroundColor: '#d4af37',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: { x: { display: false }, y: { display: false } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                document.getElementById('interpretationText').innerHTML = data.interpretation.replace(/\n/g, '<br>');
+                showOverlay('Aquarius');
+            } catch (e) {
+                document.getElementById('result').innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
+            }
         }
-    } 
-    
-</script>
-    <div id="result" style="display: none; margin-top: 20px;"><div id="result" style="display: none; margin-top: 20px;">
-    <canvas id="chart" width="300" height="300"></canvas>
-    <div id="planetList"></div>
-    <div id="result" style="display: none; margin-top: 20px;">
-    <canvas id="chart" width="300" height="300"></canvas>
-    <div id="planetList"></div>
-    <!-- НОВЫЙ БЛОК ДЛЯ КРАСИВОЙ ШАПКИ -->
-    <div id="lunarHeader" style="text-align: center; margin-bottom: 20px;"></div>
-</div>
-</div>
-</div>
+    </script>
 </body>
 </html>
 """
@@ -482,8 +428,6 @@ def lunar_v1(
     from core.prompt_builder import build_prompt_from_dict
     from ai import generate
 
-    
-        # 1. Находим натальную Луну с точным историческим UTC-смещением
     from datetime import datetime
     import requests
     import os
@@ -515,7 +459,6 @@ def lunar_v1(
     natal_moon_longitude = moon_data[0]
     print(f"[NATAL] Natal Moon longitude: {natal_moon_longitude:.4f}°")
 
-    # 2. Строим лунарную карту через ПРОФЕССИОНАЛЬНЫЙ БИЛДЕР
     chart = build_lunar_chart(
         natal_moon_longitude,
         year, month,
@@ -524,7 +467,6 @@ def lunar_v1(
         natal_day=natal_day
     )
 
-    # 3. Прогон через новое ядро
     result = run_full_pipeline(chart)
     prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
 
@@ -538,5 +480,7 @@ def lunar_v1(
         "date": chart.datetime,
         "interpretation": interpretation,
         "analysis": result["analysis"],
+        "planets": chart.planets,
+        "houses": chart.houses,
+        "aspects": chart.aspects
     }
-    
