@@ -122,6 +122,7 @@ HTML_PAGE = r"""
             background-clip: text;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
             text-align: center; margin-bottom: 10px;
+            
         }
         .poem { color: #c092f9; font-style: italic; font-size: 1.15em; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Marck Script', cursive; margin-bottom: 5px; }
         .poem-author { color: #b8860b; font-size: 0.95em; margin-bottom: 20px; font-style: normal; font-family: 'Caveat', cursive; }
@@ -165,6 +166,19 @@ HTML_PAGE = r"""
             z-index: 1000;
             flex-direction: column;
         }
+
+
+                #overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(9, 10, 15, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+        }
         #overlay .sign-emoji { font-size: 100px; animation: float 2s ease-in-out infinite; }
         #overlay .sign-name {
             font-family: 'Uncial Antiqua', cursive;
@@ -177,6 +191,10 @@ HTML_PAGE = r"""
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
         }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
     </style>
 </head>
 
@@ -184,6 +202,7 @@ HTML_PAGE = r"""
     <div id="overlay">
         <div class="sign-emoji" id="signEmoji"></div>
         <div class="sign-name" id="signName"></div>
+    
     </div>
     <div class="container">
         <div class="app-title"><h1>Liber Astrodum</h1></div>
@@ -220,7 +239,7 @@ HTML_PAGE = r"""
     </div>
 
     <script>
-        const signEmojis = {
+    const signEmojis = {
         'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
         'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
         'Libra': '♎', 'Scorpio': '♏', 'Sagittarius': '♐',
@@ -232,6 +251,50 @@ HTML_PAGE = r"""
         'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
         'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
     };
+    const signMottos = {
+        'Aries': '«Я — первый луч рассвета, пробуждающий мир к действию.»',
+        'Taurus': '«Я — плодородная земля, что превращает семя в древо жизни.»',
+        'Gemini': '«Я — мост между мирами, где слово обретает плоть.»',
+        'Cancer': '«Я — колыбель души, хранящая память всех начал.»',
+        'Leo': '«Я — свет, что зажигает другие светильники, не теряя себя.»',
+        'Virgo': '«Я — служитель порядка, превращающий хаос в исцеление.»',
+        'Libra': '«Я — точка равновесия, где встречаются свет и тень.»',
+        'Scorpio': '«Я — пламя, сжигающее старое, чтобы из пепла восстало новое.»',
+        'Sagittarius': '«Я — стрела, пущенная в бесконечность, ищущая истину.»',
+        'Capricorn': '«Я — вершина, к которой ведут десять тысяч шагов.»',
+        'Aquarius': '«Я — вода жизни, изливающаяся на жаждущее человечество.»',
+        'Pisces': '«Я — океан, где растворяются все границы и рождается вера.»'
+    };
+    const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
+
+    function showOverlay(signKey) {
+        const emoji = signEmojis[signKey] || '❓';
+        const name = signNamesRu[signKey] || signKey;
+        const motto = signMottos[signKey] || '';
+        
+        document.getElementById('signEmoji').innerHTML = emoji;
+        document.getElementById('signName').textContent = name;
+        
+        const oldMotto = document.getElementById('signMotto');
+        const oldAuthor = document.getElementById('signMottoAuthor');
+        if (oldMotto) oldMotto.remove();
+        if (oldAuthor) oldAuthor.remove();
+        
+        const mottoElement = document.createElement('div');
+        mottoElement.id = 'signMotto';
+        mottoElement.style.cssText = 'color: #d4af37; font-style: italic; font-size: 1.2em; margin-top: 15px; text-align: center; max-width: 450px; line-height: 1.5; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);';
+        mottoElement.textContent = motto;
+        document.getElementById('overlay').appendChild(mottoElement);
+        
+        const authorElement = document.createElement('div');
+        authorElement.id = 'signMottoAuthor';
+        authorElement.style.cssText = 'color: #b8860b; font-size: 0.9em; margin-top: 8px; text-align: center; font-style: normal;';
+        authorElement.textContent = signMottoAuthor;
+        document.getElementById('overlay').appendChild(authorElement);
+        
+        document.getElementById('overlay').style.display = 'flex';
+        setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 10000);
+    }
 
     function showOverlay(signKey) {
         const emoji = signEmojis[signKey] || '❓';
