@@ -13,7 +13,7 @@ from graphics.layers.aspects import AspectsLayer
 from graphics.layers.base import BaseLayer
 from graphics.layers.zodiac_sectors import ZodiacSectorsLayer
 from graphics.layers.house_numbers import HouseNumbersLayer
-from graphics.layers.leader_lines import LeaderLinesLayer
+
 
 
 class WheelRenderer:
