@@ -66,7 +66,7 @@ class WheelRenderer:
 
 ]
 
-        ]
+        
 
         for layer in layers:
             layer.draw()
