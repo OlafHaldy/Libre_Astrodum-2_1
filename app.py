@@ -470,3 +470,4 @@ def lunar_v1(
     "aspects": chart.aspects,
     "wheel": wheel_svg
 }
+
