@@ -91,12 +91,15 @@ HTML_PAGE = r"""
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
     <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Liber Astrodum – Книга Звездного Дара</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128302;</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
+    
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cormorant Infant', serif;
@@ -209,6 +212,8 @@ HTML_PAGE = r"""
         <div class="poem">Спроси у Сатурна о будущей горсти беды<br>И он не обманет, как люди – меняя обличье.<br>О радостной встрече - Юпитера скажут следы<br>(Где Кронос молчит, там от Зевса исходит величье)</div>
         <div class="poem-author">— Олаф Халди</div>
 
+        <!-- НАЧАЛО: Оборачиваем форму в контейнер -->
+        <div id="formContainer">
             <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☽ Лунар — Прогноз на месяц</h3>
             <div class="row">
                 <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
@@ -236,6 +241,12 @@ HTML_PAGE = r"""
             <button onclick="askLunar()">Построить Лунар</button>
             <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
         </div>
+        <div id="result" style="display: none; margin-top: 20px;">
+            <canvas id="chart" width="300" height="300"></canvas>
+            <div id="planetList"></div>
+        </div>
+
+    </div>
     </div>
 
 <script>
@@ -400,6 +411,9 @@ HTML_PAGE = r"""
         try {
             const response = await fetch('/api/v1/lunar?' + params.toString());
             const data = await response.json();
+                        // Скрываем форму и показываем холст для результатов
+            document.getElementById('lunarCard').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
 
             // --- Строим таблицу планет ---
             let planetsHtml = '<h3>Планеты в знаках</h3><ul>';
@@ -426,6 +440,30 @@ HTML_PAGE = r"""
                     ${planetsHtml}
                     ${housesHtml}
                 </div>
+                        // Рисуем диаграмму
+        const planets = data.analysis.chart.planets;
+        const labels = Object.keys(planets);
+        const longitudes = Object.values(planets).map(p => p.longitude);
+
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Планеты',
+                    data: longitudes.map((lon, i) => ({x: Math.cos(lon * Math.PI / 180) * 100, y: Math.sin(lon * Math.PI / 180) * 100})),
+                    backgroundColor: 'gold',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
                 <div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>
             `;
             showOverlay('Aquarius'); // Временный пример
@@ -434,6 +472,11 @@ HTML_PAGE = r"""
         }
     }
 </script>
+    <div id="result" style="display: none; margin-top: 20px;"><div id="result" style="display: none; margin-top: 20px;">
+    <canvas id="chart" width="300" height="300"></canvas>
+    <div id="planetList"></div>
+</div>
+</div>
 </body>
 </html>
 """
