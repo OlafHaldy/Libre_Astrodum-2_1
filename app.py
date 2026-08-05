@@ -207,8 +207,11 @@ HTML_PAGE = r"""
         <div id="result" style="display: none; margin-top: 20px; width: 100%;">
             <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
                 <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
-                <div id="planetList" class="planet-list" style="margin-bottom: 20px;"></div>
-                <div id="interpretationText" class="interpretation-text"></div>
+                <div id="wheelContainer"></div>
+
+                <div id="planetList"></div>
+
+                <div id="interpretationText"></div>
             </div>
         </div>
     </div>
@@ -247,6 +250,7 @@ HTML_PAGE = r"""
             const name = signNamesRu[signKey] || signKey;
             const motto = signMottos[signKey] || '';
             document.getElementById('signEmoji').innerHTML = emoji;
+            document.getElementById("wheelContainer").innerHTML = data.wheel;
             document.getElementById('signName').textContent = name;
             const oldMotto = document.getElementById('signMotto');
             const oldAuthor = document.getElementById('signMottoAuthor');
@@ -406,6 +410,7 @@ def lunar_v1(
     from core.pipeline import run_full_pipeline
     from core.prompt_builder import build_prompt_from_dict
     from ai import generate
+    from graphics.wheel_renderer import draw_wheel
 
     from datetime import datetime
     import requests
@@ -445,6 +450,7 @@ def lunar_v1(
         natal_month=natal_month,
         natal_day=natal_day
     )
+    wheel_svg = draw_wheel(chart)
 
     result = run_full_pipeline(chart)
     prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
@@ -456,10 +462,11 @@ def lunar_v1(
         interpretation = "Интерпретация временно недоступна."
 
     return {
-        "date": chart.datetime,
-        "interpretation": interpretation,
-        "analysis": result["analysis"],
-        "planets": chart.planets,
-        "houses": chart.houses,
-        "aspects": chart.aspects
-    }
+    "date": chart.datetime,
+    "interpretation": interpretation,
+    "analysis": result["analysis"],
+    "planets": chart.planets,
+    "houses": chart.houses,
+    "aspects": chart.aspects,
+    "wheel": wheel_svg
+}
