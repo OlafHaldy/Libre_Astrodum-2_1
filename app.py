@@ -388,6 +388,7 @@ HTML_PAGE = r"""
 
     // --- Запрос лунара ---
     // --- Запрос лунара ---
+    // --- Запрос лунара ---
     async function askLunar() {
         const natalYear = document.getElementById('natalYear').value;
         const natalMonth = document.getElementById('natalMonth').value;
@@ -426,9 +427,8 @@ HTML_PAGE = r"""
             }
             planetListHtml += '</ul></div>';
 
-            // 3. Показываем список планет и интерпретацию
-            document.getElementById('planetList').innerHTML = planetListHtml;
-            resultBlock.innerHTML = `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
+            // 3. Выводим всё на страницу: и список, и интерпретацию
+            resultBlock.innerHTML = planetListHtml + `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
 
             // 4. Показываем заставку
             showOverlay('Aquarius');
