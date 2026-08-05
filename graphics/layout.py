@@ -3,64 +3,68 @@ Liber Astrodum
 
 graphics/layout.py
 
-Wheel Layout
-Версия 3.0
+Единая геометрия колеса.
 
-Единая геометрия астрологического колеса.
+Версия 1.0
 """
 
-from dataclasses import dataclass
 
-
-@dataclass
 class WheelLayout:
 
-    width: int
-    height: int
+    def __init__(self, width=900, height=900):
 
-    def __post_init__(self):
+        self.width = width
+        self.height = height
 
-        # ---------------------------------
+        # ------------------------------------
         # Центр
-        # ---------------------------------
+        # ------------------------------------
 
-        self.cx = self.width / 2
-        self.cy = self.height / 2
+        self.cx = width / 2
+        self.cy = height / 2
 
-        # ---------------------------------
-        # Внешний радиус
-        # ---------------------------------
+        # ------------------------------------
+        # Основные радиусы
+        # ------------------------------------
 
-        self.radius = min(self.width, self.height) * 0.45
+        self.r_outer = 430
 
-        # ---------------------------------
-        # Кольца
-        # ---------------------------------
+        self.r_signs = 395
 
-        self.r_outer = self.radius
+        self.r_houses = 325
 
-        self.r_signs = self.radius - 25
+        self.r_planets = 255
 
-        self.r_house_ring = self.radius - 65
+        self.r_aspects = 215
 
-        self.r_houses = self.radius - 105
+        self.r_center = 45
 
-        self.r_planets = self.radius - 145
+        # ------------------------------------
+        # Толщина колец
+        # ------------------------------------
 
-        self.r_aspects = self.radius - 180
+        self.sign_band = self.r_outer - self.r_signs
 
-        self.r_center = self.radius - 225
+        self.house_band = self.r_signs - self.r_houses
 
-        # ---------------------------------
-        # Размеры
-        # ---------------------------------
+        self.planet_band = self.r_houses - self.r_planets
 
-        self.planet_radius = 15
+        # ------------------------------------
+        # Отступы
+        # ------------------------------------
 
-        self.house_font = 18
+        self.planet_label_offset = 22
 
-        self.sign_font = 26
+        self.house_number_offset = 18
 
-        self.degree_font = 10
+        self.sign_glyph_offset = 20
 
-        self.aspect_width = 1.4
+        # ------------------------------------
+        # Линии
+        # ------------------------------------
+
+        self.cusp_inner = self.r_planets
+
+        self.cusp_outer = self.r_signs
+
+        self.aspect_radius = self.r_aspects

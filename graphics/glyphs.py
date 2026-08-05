@@ -1,163 +1,84 @@
 """
 Liber Astrodum
+
 graphics/glyphs.py
 
-Версия 4.1
-Глифы + русские названия.
+Все символы проекта.
+
+Версия 3.0
 """
 
-# ----------------------------------------------------
-# ЗНАКИ ЗОДИАКА
-# ----------------------------------------------------
+# ======================================================
+# Знаки Зодиака
+# ======================================================
 
-ZODIAC = {
-    "Aries": {
-        "glyph": "♈",
-        "ru": "Овен",
-        "short": "Ове"
-    },
-    "Taurus": {
-        "glyph": "♉",
-        "ru": "Телец",
-        "short": "Тел"
-    },
-    "Gemini": {
-        "glyph": "♊",
-        "ru": "Близнецы",
-        "short": "Бли"
-    },
-    "Cancer": {
-        "glyph": "♋",
-        "ru": "Рак",
-        "short": "Рак"
-    },
-    "Leo": {
-        "glyph": "♌",
-        "ru": "Лев",
-        "short": "Лев"
-    },
-    "Virgo": {
-        "glyph": "♍",
-        "ru": "Дева",
-        "short": "Дев"
-    },
-    "Libra": {
-        "glyph": "♎",
-        "ru": "Весы",
-        "short": "Вес"
-    },
-    "Scorpio": {
-        "glyph": "♏",
-        "ru": "Скорпион",
-        "short": "Ско"
-    },
-    "Sagittarius": {
-        "glyph": "♐",
-        "ru": "Стрелец",
-        "short": "Стр"
-    },
-    "Capricorn": {
-        "glyph": "♑",
-        "ru": "Козерог",
-        "short": "Коз"
-    },
-    "Aquarius": {
-        "glyph": "♒",
-        "ru": "Водолей",
-        "short": "Вод"
-    },
-    "Pisces": {
-        "glyph": "♓",
-        "ru": "Рыбы",
-        "short": "Рыб"
-    },
+ZODIAC_GLYPHS = {
+    "Aries": "♈",
+    "Taurus": "♉",
+    "Gemini": "♊",
+    "Cancer": "♋",
+    "Leo": "♌",
+    "Virgo": "♍",
+    "Libra": "♎",
+    "Scorpio": "♏",
+    "Sagittarius": "♐",
+    "Capricorn": "♑",
+    "Aquarius": "♒",
+    "Pisces": "♓",
 }
 
-# ----------------------------------------------------
-# ПЛАНЕТЫ
-# ----------------------------------------------------
-
-PLANETS = {
-    "Sun": {
-        "glyph": "☉",
-        "ru": "Солнце",
-        "short": "☉"
-    },
-    "Moon": {
-        "glyph": "☽",
-        "ru": "Луна",
-        "short": "☽"
-    },
-    "Mercury": {
-        "glyph": "☿",
-        "ru": "Меркурий",
-        "short": "☿"
-    },
-    "Venus": {
-        "glyph": "♀",
-        "ru": "Венера",
-        "short": "♀"
-    },
-    "Mars": {
-        "glyph": "♂",
-        "ru": "Марс",
-        "short": "♂"
-    },
-    "Jupiter": {
-        "glyph": "♃",
-        "ru": "Юпитер",
-        "short": "♃"
-    },
-    "Saturn": {
-        "glyph": "♄",
-        "ru": "Сатурн",
-        "short": "♄"
-    },
-    "Uranus": {
-        "glyph": "♅",
-        "ru": "Уран",
-        "short": "♅"
-    },
-    "Neptune": {
-        "glyph": "♆",
-        "ru": "Нептун",
-        "short": "♆"
-    },
-    "Pluto": {
-        "glyph": "♇",
-        "ru": "Плутон",
-        "short": "♇"
-    },
-    "Chiron": {
-        "glyph": "⚷",
-        "ru": "Хирон",
-        "short": "⚷"
-    },
+ZODIAC_NAMES = {
+    "Aries": "Овен",
+    "Taurus": "Телец",
+    "Gemini": "Близнецы",
+    "Cancer": "Рак",
+    "Leo": "Лев",
+    "Virgo": "Дева",
+    "Libra": "Весы",
+    "Scorpio": "Скорпион",
+    "Sagittarius": "Стрелец",
+    "Capricorn": "Козерог",
+    "Aquarius": "Водолей",
+    "Pisces": "Рыбы",
 }
 
-# ----------------------------------------------------
-# СЛУЖЕБНЫЕ ФУНКЦИИ
-# ----------------------------------------------------
+# ======================================================
+# Планеты
+# ======================================================
 
-def zodiac_glyph(sign):
-    return ZODIAC.get(sign, {}).get("glyph", "")
+PLANET_GLYPHS = {
+    "Sun": "☉",
+    "Moon": "☽",
+    "Mercury": "☿",
+    "Venus": "♀",
+    "Mars": "♂",
+    "Jupiter": "♃",
+    "Saturn": "♄",
+    "Uranus": "♅",
+    "Neptune": "♆",
+    "Pluto": "♇",
+    "True Node": "☊",
+    "Mean Node": "☊",
+    "Chiron": "⚷",
+    "Lilith": "⚸",
+    "Fortuna": "⊗",
+}
 
+# ======================================================
+# Дома
+# ======================================================
 
-def zodiac_name(sign):
-    return ZODIAC.get(sign, {}).get("ru", sign)
-
-
-def zodiac_short(sign):
-    return ZODIAC.get(sign, {}).get("short", sign[:3])
-
-
-def planet_glyph(name):
-    return PLANETS.get(name, {}).get("glyph", "")
-
-
-def planet_name(name):
-    return PLANETS.get(name, {}).get("ru", name)
-
-
-def planet_short(name):
-    return PLANETS.get(name, {}).get("short", name)
+HOUSE_NUMBERS = {
+    1: "I",
+    2: "II",
+    3: "III",
+    4: "IV",
+    5: "V",
+    6: "VI",
+    7: "VII",
+    8: "VIII",
+    9: "IX",
+    10: "X",
+    11: "XI",
+    12: "XII",
+}
