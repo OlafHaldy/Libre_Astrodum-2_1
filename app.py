@@ -455,6 +455,14 @@ HTML_PAGE = r"""
                     backgroundColor: 'gold',
                     pointRadius: 5
                 }]
+                                let planetList = '<div class="planet-list"><h3>Планеты в знаках</h3><ul>';
+                const planets = data.analysis.chart.planets;
+                for (const [name, info] of Object.entries(planets)) {
+                    const emoji = signEmojis[info.sign] || '';
+                    planetList += `<li>${emoji} ${name}: ${info.degree}° ${info.sign}</li>`;
+                }
+                planetList += '</ul></div>';
+                resultBlock.innerHTML += planetList;
             },
             options: {
                 scales: {
