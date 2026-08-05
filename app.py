@@ -390,6 +390,7 @@ HTML_PAGE = r"""
     // --- Запрос лунара ---
     // --- Запрос лунара ---
     // --- Запрос лунара ---
+    // --- Запрос лунара ---
     async function askLunar() {
         const natalYear = document.getElementById('natalYear').value;
         const natalMonth = document.getElementById('natalMonth').value;
@@ -419,13 +420,7 @@ HTML_PAGE = r"""
             document.getElementById('formContainer').style.display = 'none';
             document.getElementById('result').style.display = 'block';
 
-            // 2. Заполняем красивую шапку
-            document.getElementById('lunarHeader').innerHTML = `
-                <h2 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive;">☽ Лунар</h2>
-                <p style="color: #ccc; font-size: 1.1em;">Точный момент: ${data.date}</p>
-            `;
-
-            // 3. Строим список планет
+            // 2. Строим красивый список планет
             let planetListHtml = '<div class="planet-list"><h3>Планеты в знаках</h3><ul>';
             const planets = data.analysis.chart.planets;
             for (const [name, info] of Object.entries(planets)) {
@@ -434,21 +429,10 @@ HTML_PAGE = r"""
             }
             planetListHtml += '</ul></div>';
 
-            // 4. Строим список домов
-            let housesHtml = '<div class="planet-list"><h3>Дома</h3><ul>';
-            const houses = data.analysis.chart.houses;
-            for (const [num, info] of Object.entries(houses)) {
-                if (parseInt(num) >= 1 && parseInt(num) <= 12) {
-                    housesHtml += `<li>Дом ${num}: ${info.degree}° ${info.sign}</li>`;
-                }
-            }
-            housesHtml += '</ul></div>';
+            // 3. Выводим всё на страницу: и список, и интерпретацию
+            resultBlock.innerHTML = planetListHtml + `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
 
-            // 5. Выводим всё на страницу
-            document.getElementById('planetList').innerHTML = planetListHtml + housesHtml;
-            resultBlock.innerHTML = `<div class="details">${data.interpretation.replace(/\n/g, '<br>')}</div>`;
-
-            // 6. Показываем заставку
+            // 4. Показываем заставку
             showOverlay('Aquarius');
         } catch (e) {
             resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
