@@ -537,47 +537,30 @@ def lunar_v1(
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."
 
-    return {
-
+return {
     "report": {
-
         "title": "Лунар",
 
         "person": {
-
             "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
-            "birth_time": f"{natal_hour:02d}:{natal_minute:02d}"
-
+            "birth_time": f"{natal_hour:02d}:{natal_minute:02d}",
+            "birth_city": birth_city,
         },
 
         "calculation": {
-    "return_datetime": chart.datetime,
-    "house_system": "Placidus",
-
-    "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
-    "birth_city": birth_city,
-
-    "lunar_city": lunar_city,
-
-    "target_year": year,
-    "target_month": month
-}
-
+            "return_datetime": chart.datetime,
+            "house_system": "Placidus",
+            "lunar_city": lunar_city,
+            "target_year": year,
+            "target_month": month,
+        }
     },
 
     "date": chart.datetime,
-
     "interpretation": interpretation,
-
     "analysis": result["analysis"],
-
     "planets": chart.planets,
-
     "houses": chart.houses,
-
     "aspects": chart.aspects,
-
     "wheel": wheel_svg
-
 }
-
