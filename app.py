@@ -385,13 +385,14 @@ const params = new URLSearchParams({
                 const response = await fetch('/api/v1/lunar?' + params.toString());
 const data = await response.json();
 console.log("LUNAR DATA:", data);
+console.log("LUNAR REPORT:", JSON.stringify(data.report, null, 2));
 
 document.getElementById('formContainer').style.display = 'none';
 document.getElementById('result').style.display = 'block';
 
 document.getElementById('wheelContainer').innerHTML = data.wheel;
 
-const calc = data.calculation;
+const calc = data.report?.person || {};
 
 document.getElementById("lunarPassport").innerHTML = `
 <div style="
