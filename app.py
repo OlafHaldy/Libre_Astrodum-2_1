@@ -371,54 +371,58 @@ HTML_PAGE = r"""
 
             try {
                 const response = await fetch('/api/v1/lunar?' + params.toString());
-                const data = await response.json();
-                document.getElementById('result').style.display = 'block';
-                const calc = data.calculation;
+const data = await response.json();
+
+document.getElementById('formContainer').style.display = 'none';
+document.getElementById('result').style.display = 'block';
+
+document.getElementById('wheelContainer').innerHTML = data.wheel;
+
+const calc = data.calculation;
 
 document.getElementById("lunarPassport").innerHTML = `
-<h3 style="color:#d4af37;margin-bottom:12px;">
-Технические данные
-</h3>
+<div style="
+    margin:20px 0;
+    padding:18px;
+    border:1px solid #6f5620;
+    border-radius:12px;
+    background:rgba(20,20,20,.55);
+    color:#ddd;
+    line-height:1.7;
+">
+    <h3 style="margin-top:0;color:#d4af37;">
+        ✦ Паспорт лунара
+    </h3>
 
-<table style="width:100%;border-collapse:collapse;">
-<tr>
-<td><b>Дата рождения</b></td>
-<td>${document.getElementById("natalDay").value}.
-${document.getElementById("natalMonth").value}.
-${document.getElementById("natalYear").value}</td>
-</tr>
+    <table style="width:100%;border-collapse:collapse;">
+        <tr>
+            <td><b>Дата рождения</b></td>
+            <td>${calc.birth_date}</td>
+        </tr>
 
-<tr>
-<td><b>Время рождения</b></td>
-<td>${document.getElementById("natalHour").value}:${document.getElementById("natalMinute").value}</td>
-</tr>
+        <tr>
+            <td><b>Дата лунарного возвращения</b></td>
+            <td>${calc.return_datetime}</td>
+        </tr>
 
-<tr>
-<td><b>Лунар построен на</b></td>
-<td>${calc.return_datetime}</td>
-</tr>
+        <tr>
+            <td><b>Период действия</b></td>
+            <td>${calc.period}</td>
+        </tr>
 
-<tr>
-<td><b>Система домов</b></td>
-<td>${calc.house_system}</td>
-</tr>
+        <tr>
+            <td><b>Место построения</b></td>
+            <td>${calc.location}</td>
+        </tr>
 
-<tr>
-<td><b>Место рождения</b></td>
-<td>${document.getElementById("birthCity").value}</td>
-</tr>
-
-<tr>
-<td><b>Место Лунара</b></td>
-<td>${document.getElementById("lunarCity").value}</td>
-</tr>
-
-</table>
+        <tr>
+            <td><b>Система домов</b></td>
+            <td>${calc.house_system}</td>
+        </tr>
+    </table>
 `;
 
-                document.getElementById('formContainer').style.display = 'none';
-                document.getElementById('result').style.display = 'block';
-                document.getElementById('wheelContainer').innerHTML = data.wheel;
+               
 
                 let planetListHtml = '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
                 planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
@@ -530,12 +534,17 @@ def lunar_v1(
         },
 
         "calculation": {
+    "return_datetime": chart.datetime,
+    "house_system": "Placidus",
 
-            "return_datetime": chart.datetime,
+    "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
+    "birth_city": birth_city,
 
-            "house_system": "Placidus"
+    "lunar_city": lunar_city,
 
-        }
+    "target_year": year,
+    "target_month": month
+}
 
     },
 
