@@ -361,13 +361,25 @@ HTML_PAGE = r"""
             const year = document.getElementById('lunarYear').value;
             const month = document.getElementById('lunarMonth').value || 1;
 
-            const params = new URLSearchParams({
-                year, month,
-                natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
-                natal_hour: natalHour, natal_minute: natalMinute,
-                lat: lunarLat, lon: lunarLon,
-                birth_lat: birthLat, birth_lon: birthLon
-            });
+const params = new URLSearchParams({
+    year,
+    month,
+
+    natal_year: natalYear,
+    natal_month: natalMonth,
+    natal_day: natalDay,
+    natal_hour: natalHour,
+    natal_minute: natalMinute,
+
+    lat: lunarLat,
+    lon: lunarLon,
+
+    birth_lat: birthLat,
+    birth_lon: birthLon,
+
+    birth_city: document.getElementById("birthCity").value,
+    lunar_city: document.getElementById("lunarCity").value
+});
 
             try {
                 const response = await fetch('/api/v1/lunar?' + params.toString());
@@ -451,17 +463,22 @@ def home():
 
 @app.get("/api/v1/lunar")
 def lunar_v1(
-    year: int = Query(...),
-    month: int = Query(1),
-    natal_year: int = Query(...),
-    natal_month: int = Query(...),
-    natal_day: int = Query(...),
-    natal_hour: int = Query(12),
-    natal_minute: int = Query(0),
-    lat: float = Query(50.45),          # место встречи
-    lon: float = Query(30.52),
-    birth_lat: float = Query(50.45),    # место рождения
-    birth_lon: float = Query(30.52),
+    year: int,
+    month: int,
+    natal_year: int,
+    natal_month: int,
+    natal_day: int,
+    natal_hour: int,
+    natal_minute: int,
+
+    lat: float,
+    lon: float,
+
+    birth_lat: float,
+    birth_lon: float,
+
+    birth_city: str = "",
+    lunar_city: str = "",
 ):
     """Лунар через полный конвейер Liber Astrodum 2.0."""
     import swisseph as swe
