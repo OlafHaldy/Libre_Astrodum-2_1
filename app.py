@@ -477,7 +477,7 @@ def lunar_v1(
 
         "calculation": {
 
-            "return_datetime": chart.datetime.strftime("%d.%m.%Y %H:%M"),
+            "return_datetime": chart.datetime,
 
             "house_system": "Placidus"
 
