@@ -463,12 +463,41 @@ def lunar_v1(
         interpretation = "Интерпретация временно недоступна."
 
     return {
+
+    "report": {
+
+        "title": "Лунар",
+
+        "person": {
+
+            "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
+            "birth_time": f"{natal_hour:02d}:{natal_minute:02d}"
+
+        },
+
+        "calculation": {
+
+            "return_datetime": chart.datetime.strftime("%d.%m.%Y %H:%M"),
+
+            "house_system": "Placidus"
+
+        }
+
+    },
+
     "date": chart.datetime,
+
     "interpretation": interpretation,
+
     "analysis": result["analysis"],
+
     "planets": chart.planets,
+
     "houses": chart.houses,
+
     "aspects": chart.aspects,
+
     "wheel": wheel_svg
+
 }
 
