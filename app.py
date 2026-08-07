@@ -250,7 +250,7 @@ HTML_PAGE = r"""
             const name = signNamesRu[signKey] || signKey;
             const motto = signMottos[signKey] || '';
             document.getElementById('signEmoji').innerHTML = emoji;
-            document.getElementById("wheelContainer").innerHTML = data.wheel;
+            
             document.getElementById('signName').textContent = name;
             const oldMotto = document.getElementById('signMotto');
             const oldAuthor = document.getElementById('signMottoAuthor');
@@ -364,6 +364,7 @@ HTML_PAGE = r"""
 
                 document.getElementById('formContainer').style.display = 'none';
                 document.getElementById('result').style.display = 'block';
+                document.getElementById('wheelContainer').innerHTML = data.wheel;
 
                 let planetListHtml = '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
                 planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
