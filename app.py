@@ -412,7 +412,7 @@ document.getElementById("lunarPassport").innerHTML = `
     <table style="width:100%;border-collapse:collapse;">
         <tr>
             <td><b>Дата рождения</b></td>
-            <td>${calc.birth_date}</td>
+            <td>${person.birth_date}</td>
         </tr>
 
         <tr>
@@ -422,12 +422,12 @@ document.getElementById("lunarPassport").innerHTML = `
 
         <tr>
             <td><b>Период действия</b></td>
-            <td>${calc.period}</td>
+            <td>${calc.target_month}.${calc.target_year}</td>
         </tr>
 
         <tr>
             <td><b>Место построения</b></td>
-            <td>${calc.location}</td>
+            <td>${calc.lunar_city}</td>
         </tr>
 
         <tr>
