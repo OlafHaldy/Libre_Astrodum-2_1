@@ -392,7 +392,8 @@ document.getElementById('result').style.display = 'block';
 
 document.getElementById('wheelContainer').innerHTML = data.wheel;
 
-const calc = data.report?.person || {};
+const person = data.report?.person || {};
+const calc = data.report?.calculation || {};
 
 document.getElementById("lunarPassport").innerHTML = `
 <div style="
