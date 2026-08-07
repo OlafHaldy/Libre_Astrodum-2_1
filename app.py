@@ -384,6 +384,7 @@ const params = new URLSearchParams({
             try {
                 const response = await fetch('/api/v1/lunar?' + params.toString());
 const data = await response.json();
+console.log("LUNAR DATA:", data);
 
 document.getElementById('formContainer').style.display = 'none';
 document.getElementById('result').style.display = 'block';
