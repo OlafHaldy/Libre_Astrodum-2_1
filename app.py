@@ -208,6 +208,17 @@ HTML_PAGE = r"""
             <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
                 <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
                 <div id="wheelContainer"></div>
+                <div id="lunarPassport"
+     style="
+        margin:20px 0;
+        padding:16px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:rgba(0,0,0,.25);
+        color:#ddd;">
+</div>
+                
+
 
                 <div id="planetList"></div>
 
@@ -361,6 +372,49 @@ HTML_PAGE = r"""
             try {
                 const response = await fetch('/api/v1/lunar?' + params.toString());
                 const data = await response.json();
+                document.getElementById('result').style.display = 'block';
+                const calc = data.calculation;
+
+document.getElementById("lunarPassport").innerHTML = `
+<h3 style="color:#d4af37;margin-bottom:12px;">
+Технические данные
+</h3>
+
+<table style="width:100%;border-collapse:collapse;">
+<tr>
+<td><b>Дата рождения</b></td>
+<td>${document.getElementById("natalDay").value}.
+${document.getElementById("natalMonth").value}.
+${document.getElementById("natalYear").value}</td>
+</tr>
+
+<tr>
+<td><b>Время рождения</b></td>
+<td>${document.getElementById("natalHour").value}:${document.getElementById("natalMinute").value}</td>
+</tr>
+
+<tr>
+<td><b>Лунар построен на</b></td>
+<td>${calc.return_datetime}</td>
+</tr>
+
+<tr>
+<td><b>Система домов</b></td>
+<td>${calc.house_system}</td>
+</tr>
+
+<tr>
+<td><b>Место рождения</b></td>
+<td>${document.getElementById("birthCity").value}</td>
+</tr>
+
+<tr>
+<td><b>Место Лунара</b></td>
+<td>${document.getElementById("lunarCity").value}</td>
+</tr>
+
+</table>
+`;
 
                 document.getElementById('formContainer').style.display = 'none';
                 document.getElementById('result').style.display = 'block';
