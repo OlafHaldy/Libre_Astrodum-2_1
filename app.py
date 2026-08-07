@@ -447,8 +447,10 @@ document.getElementById("lunarPassport").innerHTML = `
                 document.getElementById('interpretationText').innerHTML = data.interpretation.replace(/\n/g, '<br>');
                 showOverlay('Aquarius');
             } catch (e) {
-                document.getElementById('result').innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
-            }
+    console.error("LUNAR ERROR:", e);
+    document.getElementById('result').innerHTML =
+        '<div class="verdict">Ошибка: ' + e.message + '</div>';
+}
         }
     </script>
 </body>
