@@ -1,19 +1,19 @@
 """
 Liber Astrodum
 SVG Wheel Renderer
-Версия 5.0
+
+Версия 6.0
 """
 
 from graphics.layout import WheelLayout
 
-from graphics.layers.zodiac import ZodiacLayer
-from graphics.layers.houses import HousesLayer
-from graphics.layers.planets import PlanetsLayer
-from graphics.layers.aspects import AspectsLayer
 from graphics.layers.base import BaseLayer
 from graphics.layers.zodiac_sectors import ZodiacSectorsLayer
+from graphics.layers.zodiac import ZodiacLayer
+from graphics.layers.houses import HousesLayer
 from graphics.layers.house_numbers import HouseNumbersLayer
-
+from graphics.layers.aspects import AspectsLayer
+from graphics.layers.planets import PlanetsLayer
 
 
 class WheelRenderer:
@@ -33,45 +33,42 @@ class WheelRenderer:
         self.r_signs = self.layout.r_signs
         self.r_houses = self.layout.r_houses
         self.r_planets = self.layout.r_planets
+        self.r_aspects = self.layout.r_aspects
 
         self.elements = []
 
-    # ----------------------------------------------------
+    # --------------------------------------------------
 
     def _add(self, svg):
 
         self.elements.append(svg)
 
-    # ----------------------------------------------------
+    # --------------------------------------------------
 
     def build(self):
 
         layers = [
 
-    BaseLayer(self),
+            BaseLayer(self),
 
-    ZodiacSectorsLayer(self),
+            ZodiacSectorsLayer(self),
 
-    ZodiacLayer(self),
+            ZodiacLayer(self),
 
-    HousesLayer(self),
+            HousesLayer(self),
 
-    HouseNumbersLayer(self),
+            HouseNumbersLayer(self),
 
-    AspectsLayer(self),
+            AspectsLayer(self),
 
-    LeaderLinesLayer(self),
+            PlanetsLayer(self),
 
-    PlanetsLayer(self),
-
-]
-
-        
+        ]
 
         for layer in layers:
             layer.draw()
 
-    # ----------------------------------------------------
+    # --------------------------------------------------
 
     def render(self):
 
