@@ -537,7 +537,7 @@ def lunar_v1(
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."
 
-return {
+    return {
     "report": {
         "title": "Лунар",
 
