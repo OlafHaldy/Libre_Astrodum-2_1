@@ -40,33 +40,62 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
     # Теперь ищем в расширенном интервале: 30 дней до и после
     # запрашиваемого месяца.
     # ============================================================
+    # ============================================================
+    # Шаг 1: Поиск точного момента возврата Луны
+    # Ищем возврат, чей период действия покрывает указанный месяц.
+    # ============================================================
     import datetime as dt
-    target_date = dt.date(year, month, 1)
-    start_date = target_date - dt.timedelta(days=30)
-    jd_start = swe.julday(start_date.year, start_date.month, start_date.day, 12.0)
-    print(f"[4] Starting search from JD {jd_start:.4f} ({start_date} 12:00 UT)")
-
+    
     DEGREES_PER_DAY = 13.176
-    max_iterations = 600  # Увеличим на всякий случай
+    max_iterations = 200
 
-    for i in range(max_iterations):
-        moon_data, _ = swe.calc_ut(jd_start, swe.MOON)
-        moon_lon = moon_data[0]
-        diff = (natal_moon_longitude - moon_lon + 180) % 360 - 180
+    def find_return(jd_start_val):
+        """Ищет ближайший возврат Луны от заданного JD."""
+        jd = jd_start_val
+        for _ in range(max_iterations):
+            moon_data, _ = swe.calc_ut(jd, swe.MOON)
+            moon_lon = moon_data[0]
+            diff = (natal_moon_longitude - moon_lon + 180) % 360 - 180
+            if abs(diff) < 0.0001:
+                return jd
+            step = diff / DEGREES_PER_DAY
+            if abs(step) > 5:
+                step = 5 if step > 0 else -5
+            jd += step
+        return jd
 
-        if abs(diff) < 0.0001:
-            jd_lunar = jd_start
-            print(f"[5] Converged at iteration {i}: JD={jd_lunar:.4f}, diff={diff:.6f}°")
-            break
+    # Ищем возврат, начиная с 1-го числа запрошенного месяца
+    jd_start = swe.julday(year, month, 1, 12.0)
+    print(f"[4] Starting search from JD {jd_start:.4f} ({year}-{month:02d}-01 12:00 UT)")
+    
+    jd_candidate = find_return(jd_start)
+    y_ret, m_ret, _, _ = swe.revjul(jd_candidate)
+    print(f"[5] First candidate: {int(y_ret)}-{int(m_ret):02d}")
 
-        step_days = diff / DEGREES_PER_DAY
-        if abs(step_days) > 5:
-            step_days = 5 if step_days > 0 else -5
-        jd_start += step_days
+    # Проверяем, покрывает ли найденный возврат запрошенный месяц
+    # Возврат покрывает месяц, если он происходит в пределах 14 дней
+    # до начала или в течение самого месяца
+    target_first = dt.date(year, month, 1)
+    return_date = dt.date(int(y_ret), int(m_ret), 1)
+    days_diff = (return_date - target_first).days
+
+    if -14 <= days_diff <= 31:
+        # Возврат покрывает месяц — отлично
+        jd_lunar = jd_candidate
+        print(f"[5] Return covers target month. Using JD={jd_lunar:.4f}")
+    elif days_diff < -14:
+        # Возврат слишком рано — перескакиваем на следующий (~27.3 дня вперёд)
+        jd_next = jd_candidate + 27.3
+        print(f"[5] Return too early. Searching next from JD={jd_next:.4f}")
+        jd_lunar = find_return(jd_next)
     else:
-        jd_lunar = jd_start
-        print(f"[5] Max iterations reached. Using JD={jd_lunar:.4f}")
+        # Возврат слишком поздно — перескакиваем на предыдущий
+        jd_prev = jd_candidate - 27.3
+        print(f"[5] Return too late. Searching previous from JD={jd_prev:.4f}")
+        jd_lunar = find_return(jd_prev)
 
+    y_final, m_final, _, _ = swe.revjul(jd_lunar)
+    print(f"[5] Final return: {int(y_final)}-{int(m_final):02d}")
     # ============================================================
     # Шаг 2: Конвертация JD в календарную дату
     # ============================================================
