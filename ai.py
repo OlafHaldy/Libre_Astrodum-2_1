@@ -158,7 +158,9 @@ def _call_gemini(prompt_text, temperature=0.7, max_tokens=3000):
             raise AIError("Gemini returned invalid response.")
 
     raise AIError("Gemini quota exceeded after retries.")
-    def _call_deepseek(prompt_text, model="deepseek-chat", temperature=0.7, max_tokens=3000):
+
+
+def _call_deepseek(prompt_text, model="deepseek-chat", temperature=0.7, max_tokens=3000):
     api_key = os.getenv("DEEPSEEK_API_KEY")
     if not api_key:
         raise AIError("DEEPSEEK_API_KEY не задан")
