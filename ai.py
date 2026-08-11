@@ -5,10 +5,73 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+
 class AIError(Exception):
     pass
 
+
+
 TIMEOUT = 120
+SECTION_KEYS = [
+    "MAIN",
+    "STRENGTHS",
+    "WEAKNESSES",
+    "PSYCHOLOGY",
+    "TENSION",
+    "HERMETIC",
+    "TRANSFORMATION",
+    "CONCLUSION",
+]
+
+
+def _normalize_interpretation(text: str) -> str:
+    """
+    Приводит ответ AI к формату восьми секций,
+    который ожидает frontend.
+
+    Если AI уже вернул [SECTION:...] — ответ не изменяется.
+    Если AI вернул ровно 8 абзацев — добавляем маркеры автоматически.
+    """
+    if not text:
+        return text
+    text = text.replace(r"\:", ":")
+
+    # AI уже выполнил требуемый формат.
+    if "[SECTION:MAIN]" in text:
+        return text.strip()
+
+    # Разбиваем обычный ответ на абзацы.
+    paragraphs = [
+        part.strip()
+        for part in text.split("\n\n")
+        if part.strip()
+    ]
+
+    # Автоматически восстанавливаем структуру только
+    # если получили ровно восемь смысловых абзацев.
+    if len(paragraphs) == 8:
+        sections = []
+
+        for key, paragraph in zip(SECTION_KEYS, paragraphs):
+            sections.append(
+                f"[SECTION:{key}]\n{paragraph}"
+            )
+
+        normalized = "\n\n".join(sections)
+
+        logger.info(
+            "AI interpretation normalized into 8 sections."
+        )
+
+        return normalized
+
+    logger.warning(
+        "AI interpretation has no section markers and contains %s paragraphs; "
+        "leaving response unchanged.",
+        len(paragraphs),
+    )
+
+    return text.strip()
 
 def _call_groq(prompt_text, model="llama-3.3-70b-versatile", temperature=0.7, max_tokens=3000):
     api_key = os.getenv("GROQ_API_KEY")
@@ -97,7 +160,7 @@ def _call_gemini(prompt_text, temperature=0.7, max_tokens=3000):
     raise AIError("Gemini quota exceeded after retries.")
 
 def generate(prompt) -> str:
-    # Умный разбор: если prompt — словарь (как из prompt_engine), берём prompt_text
+    # Умный разбор: если prompt — словарь, берём prompt_text
     if isinstance(prompt, dict):
         prompt_text = prompt.get("prompt_text") or prompt.get("content") or ""
     else:
@@ -105,12 +168,21 @@ def generate(prompt) -> str:
 
     try:
         logger.info("Trying Groq...")
-        return _call_groq(prompt_text)
+        return _normalize_interpretation(
+            _call_groq(prompt_text)
+        )
+
     except AIError as e:
         logger.warning("Groq failed: %s", e)
+
         try:
             logger.info("Trying Gemini...")
-            return _call_gemini(prompt_text)
+            return _normalize_interpretation(
+                _call_gemini(prompt_text)
+            )
+
         except AIError as e2:
             logger.warning("Gemini failed: %s", e2)
-            raise AIError("All AI providers unavailable, falling back to autonomous engine.")
+            raise AIError(
+                "All AI providers unavailable, falling back to autonomous engine."
+            )

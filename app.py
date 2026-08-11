@@ -163,6 +163,259 @@ HTML_PAGE = r"""
         .planet-list th, .planet-list td { padding: 8px; text-align: left; border-bottom: 1px solid #444; }
         .planet-list th { color: #d4af37; }
         .interpretation-text { margin-top: 20px; line-height: 1.7; }
+        /* ===== ЛУНАР — ОФОРМЛЕНИЕ ОТЧЁТА ===== */
+
+#lunarPassport,
+#planetList,
+#aspectList,
+#houseList,
+#interpretationText {
+    margin-top: 24px;
+}
+/* ===== БЛОКИ ИНТЕРПРЕТАЦИИ ===== */
+
+.interpretation-block {
+    position: relative;
+    margin: 18px 0;
+    padding: 20px 22px 22px 24px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(35, 35, 35, 0.78),
+            rgba(10, 10, 10, 0.58)
+        );
+
+    border: 1px solid rgba(212, 175, 55, 0.20);
+    border-left: 3px solid rgba(212, 175, 55, 0.55);
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.22);
+
+    transition:
+        border-color 0.25s ease,
+        background 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* Небольшой эффект при наведении */
+.interpretation-block:hover {
+    border-color: rgba(212, 175, 55, 0.38);
+    border-left-color: rgba(212, 175, 55, 0.85);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(42, 42, 42, 0.82),
+            rgba(12, 12, 12, 0.64)
+        );
+}
+
+/* Заголовок блока */
+.interpretation-block-title {
+    margin-bottom: 13px;
+
+    color: #d4af37;
+    font-size: 1.15rem;
+    font-weight: 600;
+
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+
+    padding-bottom: 9px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+/* Сам текст */
+.interpretation-block-text {
+    color: #e4e4e4;
+
+    font-size: 1rem;
+    line-height: 1.8;
+
+    text-align: left;
+}
+
+/* Первый блок — главный */
+.interpretation-block:first-child {
+    border-left-color: #d4af37;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(55, 45, 20, 0.32),
+            rgba(15, 15, 15, 0.62)
+        );
+}
+
+.interpretation-block:first-child .interpretation-block-title {
+    font-size: 1.25rem;
+}
+
+/* Последний блок — итог */
+.interpretation-block:last-child {
+    margin-top: 24px;
+    border-left-color: rgba(212, 175, 55, 0.75);
+}
+
+/* Мобильная версия */
+@media (max-width: 600px) {
+
+    .interpretation-block {
+        margin: 14px 0;
+        padding: 16px 16px 18px 18px;
+    }
+
+    .interpretation-block-title {
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+    }
+
+    .interpretation-block:first-child .interpretation-block-title {
+        font-size: 1.08rem;
+    }
+
+    .interpretation-block-text {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+}
+
+/* Заголовки секций */
+#lunarPassport::before {
+    content: "✦ Паспорт лунара";
+}
+
+#planetList::before {
+    content: "✦ Планеты";
+}
+
+#aspectList::before {
+    content: "✦ Аспекты";
+}
+
+#houseList::before {
+    content: "✦ Дома";
+}
+
+#interpretationText::before {
+    content: "✦ Интерпретация";
+}
+
+#lunarPassport::before,
+#planetList::before,
+#aspectList::before,
+#houseList::before,
+#interpretationText::before {
+    display: block;
+    margin-bottom: 14px;
+    color: #d4af37;
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+/* Все таблицы отчёта */
+#lunarPassport table,
+#planetList table,
+#aspectList table,
+#houseList table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Ячейки */
+#lunarPassport td,
+#planetList td,
+#planetList th,
+#aspectList td,
+#aspectList th,
+#houseList td,
+#houseList th {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: left;
+}
+
+/* Заголовки таблиц */
+#planetList th,
+#aspectList th,
+#houseList th {
+    color: #d4af37;
+    font-weight: 600;
+    background: rgba(212, 175, 55, 0.06);
+}
+
+/* Последняя строка без нижней линии */
+#lunarPassport tr:last-child td,
+#planetList tr:last-child td,
+#aspectList tr:last-child td,
+#houseList tr:last-child td {
+    border-bottom: none;
+}
+
+/* Подсветка строк при наведении */
+#planetList tr:hover,
+#aspectList tr:hover,
+#houseList tr:hover {
+    background: rgba(212, 175, 55, 0.05);
+}
+
+/* Левая колонка паспорта */
+#lunarPassport td:first-child {
+    width: 38%;
+    color: #c9b878;
+}
+
+/* Значения паспорта */
+#lunarPassport td:last-child {
+    color: #f0f0f0;
+}
+
+/* Интерпретация */
+#interpretationText {
+    margin-top: 30px;
+    padding: 22px 24px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 12px;
+    line-height: 1.8;
+    color: #e5e5e5;
+}
+
+/* Заголовок интерпретации внутри панели */
+#interpretationText::before {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+/* Мобильная версия */
+@media (max-width: 600px) {
+
+    #lunarPassport td,
+    #planetList td,
+    #planetList th,
+    #aspectList td,
+    #aspectList th,
+    #houseList td,
+    #houseList th {
+        padding: 9px 8px;
+        font-size: 0.9rem;
+    }
+
+    #lunarPassport td:first-child {
+        width: 45%;
+    }
+
+    #interpretationText {
+        padding: 18px 15px;
+        line-height: 1.7;
+    }
+}
     </style>
 </head>
 <body>
@@ -221,6 +474,8 @@ HTML_PAGE = r"""
 
 
                 <div id="planetList"></div>
+                <div id="aspectList"></div>
+                <div id="houseList"></div>
 
                 <div id="interpretationText"></div>
             </div>
@@ -352,109 +607,206 @@ HTML_PAGE = r"""
             }
         });
 
-        async function askLunar() {
-            const natalYear = document.getElementById('natalYear').value;
-            const natalMonth = document.getElementById('natalMonth').value;
-            const natalDay = document.getElementById('natalDay').value;
-            const natalHour = document.getElementById('natalHour').value || 12;
-            const natalMinute = document.getElementById('natalMinute').value || 0;
-            const year = document.getElementById('lunarYear').value;
-            const month = document.getElementById('lunarMonth').value || 1;
+    async function askLunar() {
+        const planetNames = {
+            Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
+            Venus: 'Венера', Mars: 'Марс', Jupiter: 'Юпитер', Saturn: 'Сатурн'
+        };
+        const signNames = {
+            Aries: 'Овен', Taurus: 'Телец', Gemini: 'Близнецы', Cancer: 'Рак',
+            Leo: 'Лев', Virgo: 'Дева', Libra: 'Весы', Scorpio: 'Скорпион',
+            Sagittarius: 'Стрелец', Capricorn: 'Козерог', Aquarius: 'Водолей', Pisces: 'Рыбы'
+        };
+        const aspectNames = {
+            conjunction: 'соединение', opposition: 'оппозиция', square: 'квадрат',
+            trine: 'тригон', sextile: 'секстиль', quincunx: 'квинконс'
+        };
+        const aspectSymbols = {
+            conjunction: '☌', opposition: '☍', square: '□',
+            trine: '△', sextile: '⚹', quincunx: '⚻'
+        };
 
-const params = new URLSearchParams({
-    year,
-    month,
+        const natalYear = document.getElementById('natalYear').value;
+        const natalMonth = document.getElementById('natalMonth').value;
+        const natalDay = document.getElementById('natalDay').value;
+        const natalHour = document.getElementById('natalHour').value || 12;
+        const natalMinute = document.getElementById('natalMinute').value || 0;
+        const year = document.getElementById('lunarYear').value;
+        const month = document.getElementById('lunarMonth').value || 1;
 
-    natal_year: natalYear,
-    natal_month: natalMonth,
-    natal_day: natalDay,
-    natal_hour: natalHour,
-    natal_minute: natalMinute,
+        // Скрываем форму и показываем анимацию загрузки
+        document.getElementById('formContainer').style.display = 'none';
+        const resultBlock = document.getElementById('result');
+        resultBlock.style.display = 'block';
+        resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
-    lat: lunarLat,
-    lon: lunarLon,
+        const params = new URLSearchParams({
+            year, month,
+            natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
+            natal_hour: natalHour, natal_minute: natalMinute,
+            lat: lunarLat, lon: lunarLon,
+            birth_lat: birthLat, birth_lon: birthLon,
+            birth_city: document.getElementById("birthCity").value,
+            lunar_city: document.getElementById("lunarCity").value
+        });
 
-    birth_lat: birthLat,
-    birth_lon: birthLon,
+        try {
+            const response = await fetch('/api/v1/lunar?' + params.toString());
+            const data = await response.json();
 
-    birth_city: document.getElementById("birthCity").value,
-    lunar_city: document.getElementById("lunarCity").value
-});
+            // Показываем заставку
+            // Определяем знак для заставки по Луне (главная планета лунара)
+const sunSign = data.natal_sun_sign || 'Aquarius';
+showOverlay(sunSign);
+            // Паспорт лунара
+            const person = data.report?.person || {};
+            const calc = data.report?.calculation || {};
+            const passportHtml = `
+                <div style="margin:20px 0;padding:18px;border:1px solid #6f5620;border-radius:12px;background:rgba(20,20,20,.55);color:#ddd;line-height:1.7;">
+                    <h3 style="margin-top:0;color:#d4af37;">✦ Паспорт лунара</h3>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr><td><b>Дата рождения</b></td><td>${person.birth_date || '—'}</td></tr>
+                        <tr><td><b>Дата лунарного возвращения</b></td><td>${calc.return_datetime || '—'}</td></tr>
+                        <tr><td><b>Период действия</b></td><td>${calc.target_month || ''}.${calc.target_year || ''}</td></tr>
+                        <tr><td><b>Место построения</b></td><td>${calc.lunar_city || '—'}</td></tr>
+                        <tr><td><b>Система домов</b></td><td>${calc.house_system || '—'}</td></tr>
+                    </table>
+                </div>
+            `;
 
-            try {
-                const response = await fetch('/api/v1/lunar?' + params.toString());
-const data = await response.json();
-console.log("LUNAR DATA:", data);
-console.log("LUNAR REPORT:", JSON.stringify(data.report, null, 2));
+            // Колесо
+            const wheelHtml = data.wheel ? `<div id="wheelContainer">${data.wheel}</div>` : '';
 
-document.getElementById('formContainer').style.display = 'none';
-document.getElementById('result').style.display = 'block';
-
-document.getElementById('wheelContainer').innerHTML = data.wheel;
-
-const person = data.report?.person || {};
-const calc = data.report?.calculation || {};
-
-document.getElementById("lunarPassport").innerHTML = `
-<div style="
-    margin:20px 0;
-    padding:18px;
-    border:1px solid #6f5620;
-    border-radius:12px;
-    background:rgba(20,20,20,.55);
-    color:#ddd;
-    line-height:1.7;
-">
-    <h3 style="margin-top:0;color:#d4af37;">
-        ✦ Паспорт лунара
-    </h3>
-
-    <table style="width:100%;border-collapse:collapse;">
-        <tr>
-            <td><b>Дата рождения</b></td>
-            <td>${person.birth_date}</td>
-        </tr>
-
-        <tr>
-            <td><b>Дата лунарного возвращения</b></td>
-            <td>${calc.return_datetime}</td>
-        </tr>
-
-        <tr>
-            <td><b>Период действия</b></td>
-            <td>${calc.target_month}.${calc.target_year}</td>
-        </tr>
-
-        <tr>
-            <td><b>Место построения</b></td>
-            <td>${calc.lunar_city}</td>
-        </tr>
-
-        <tr>
-            <td><b>Система домов</b></td>
-            <td>${calc.house_system}</td>
-        </tr>
-    </table>
-`;
-
-               
-
-                let planetListHtml = '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
+            // Таблица планет
+            let planetListHtml = '<h3 style="color:#d4af37;">Планеты в знаках</h3>';
+            planetListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+            planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
+            if (data.planets) {
                 for (const [name, info] of Object.entries(data.planets)) {
-                    planetListHtml += `<tr><td>${name}</td><td>${info.sign}</td><td>${info.degree}°</td></tr>`;
+                    const planet = planetNames[name] || name;
+                    const sign = signNames[info.sign] || info.sign;
+                    planetListHtml += `<tr><td>${planet}</td><td>${sign}</td><td>${info.degree}°</td></tr>`;
                 }
-                planetListHtml += '</table>';
-                document.getElementById('planetList').innerHTML = planetListHtml;
+            }
+            planetListHtml += '</table>';
 
-                document.getElementById('interpretationText').innerHTML = data.interpretation.replace(/\n/g, '<br>');
-                showOverlay('Aquarius');
-            } catch (e) {
-    console.error("LUNAR ERROR:", e);
-    document.getElementById('result').innerHTML =
-        '<div class="verdict">Ошибка: ' + e.message + '</div>';
-}
+            // Таблица домов
+            let houseListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Дома</h3>';
+            houseListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+            houseListHtml += '<tr><th>Дом</th><th>Знак</th><th>Градус</th></tr>';
+            for (let i = 1; i <= 12; i++) {
+                const house = data.houses?.[i];
+                if (house) {
+                    const sign = signNames[house.sign] || house.sign;
+                    houseListHtml += `<tr><td>${i}</td><td>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
+                }
+            }
+            const asc = data.houses?.Ascendant;
+            const mc = data.houses?.MC;
+            if (asc) {
+                const sign = signNames[asc.sign] || asc.sign;
+                houseListHtml += `<tr><td><b>ASC</b></td><td>${sign}</td><td>${asc.degree?.toFixed(2)}°</td></tr>`;
+            }
+            if (mc) {
+                const sign = signNames[mc.sign] || mc.sign;
+                houseListHtml += `<tr><td><b>MC</b></td><td>${sign}</td><td>${mc.degree?.toFixed(2)}°</td></tr>`;
+            }
+            houseListHtml += '</table>';
+
+            // Таблица аспектов
+            let aspectListHtml = '';
+            if (data.aspects && data.aspects.length > 0) {
+                aspectListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Аспекты</h3>';
+                aspectListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+                aspectListHtml += '<tr><th>Планета 1</th><th>Аспект</th><th>Планета 2</th><th>Угол</th></tr>';
+                for (const aspect of data.aspects) {
+                    const p1 = planetNames[aspect.planet1] || aspect.planet1;
+                    const p2 = planetNames[aspect.planet2] || aspect.planet2;
+                    const name = aspectNames[aspect.type] || aspect.type;
+                    const symbol = aspectSymbols[aspect.type] || '';
+                    aspectListHtml += `<tr><td>${p1}</td><td>${symbol} ${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
+                }
+                aspectListHtml += '</table>';
+            }
+
+            // Интерпретация с парсингом секций
+            // Интерпретация с парсингом секций
+            const interpretationText = data.interpretation || '';
+            console.log("INTERPRETATION RAW:", interpretationText.substring(0, 500));
+            
+            const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
+            const interpretationSections = [];
+            let match;
+            while ((match = sectionRegex.exec(interpretationText)) !== null) {
+                interpretationSections.push({
+                    key: match[1],
+                    start: sectionRegex.lastIndex,
+                    markerStart: match.index
+                });
+            }
+            
+            console.log("SECTIONS FOUND:", interpretationSections.length);
+            
+            let interpretationHtml = '';
+            
+            if (interpretationSections.length > 0) {
+                // Есть маркеры — парсим по секциям
+                const interpretationTitles = {
+                    MAIN: 'Главная тема', STRENGTHS: 'Сильные стороны', WEAKNESSES: 'Слабые места',
+                    PSYCHOLOGY: 'Психологический слой', TENSION: 'Внутреннее напряжение',
+                    HERMETIC: 'Герметический смысл', TRANSFORMATION: 'Путь преобразования', CONCLUSION: 'Итог'
+                };
+                for (let i = 0; i < interpretationSections.length; i++) {
+                    const section = interpretationSections[i];
+                    const endPos = i + 1 < interpretationSections.length
+                        ? interpretationSections[i + 1].markerStart
+                        : interpretationText.length;
+                    const sectionText = interpretationText.slice(section.start, endPos).trim();
+                    if (sectionText) {
+                        const title = interpretationTitles[section.key] || section.key;
+                        interpretationHtml += `
+                            <div class="interpretation-block">
+                                <div class="interpretation-block-title">✦ ${title}</div>
+                                <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `;
+                    }
+                }
+            } else {
+                // Нет маркеров — показываем как есть, убирая маркеры если они в другом формате
+                const cleanText = interpretationText
+                    .replace(/\[SECTION:\w+\]\s*/g, '')
+                    .replace(/SECTION:\w+\s*/g, '')
+                    .trim();
+                
+                if (cleanText) {
+                    interpretationHtml = `
+                        <div class="interpretation-block">
+                            <div class="interpretation-block-text">${cleanText.replace(/\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                } else {
+                    interpretationHtml = '<p>Интерпретация временно недоступна.</p>';
+                }
+            }
+            // Собираем всё вместе
+            resultBlock.innerHTML = `
+                <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
+                    <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
+                    ${wheelHtml}
+                    ${passportHtml}
+                    ${planetListHtml}
+                    ${houseListHtml}
+                    ${aspectListHtml}
+                    <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
+                    ${interpretationHtml}
+                </div>
+            `;
+        } catch (e) {
+            console.error("LUNAR ERROR:", e);
+            resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
         }
+    }
     </script>
 </body>
 </html>
@@ -522,8 +874,12 @@ def lunar_v1(
     )
     moon_data, _ = swe.calc_ut(jd_natal, swe.MOON)
     natal_moon_longitude = moon_data[0]
-    print(f"[NATAL] Natal Moon longitude: {natal_moon_longitude:.4f}°")
-
+        # Определяем знак натального Солнца для заставки
+    sun_data, _ = swe.calc_ut(jd_natal, swe.SUN)
+    sun_longitude = sun_data[0]
+    SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+             'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    natal_sun_sign = SIGNS[int(sun_longitude // 30)]
     chart = build_lunar_chart(
         natal_moon_longitude,
         year, month,
@@ -535,37 +891,47 @@ def lunar_v1(
 
     result = run_full_pipeline(chart)
     prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
-
+    print("\n===== LUNAR PROMPT =====")
+    print(prompt)
+    print("===== END LUNAR PROMPT =====\n")
+    print("\n===== PROMPT CHECK =====")
+    print(prompt[-5000:])
+    print("===== END PROMPT CHECK =====\n")
     try:
         interpretation = generate(prompt)
+        print("\n===== LUNAR INTERPRETATION =====")
+        print(repr(interpretation))
+        print("===== END INTERPRETATION =====\n")
     except Exception as e:
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."
 
     return {
-    "report": {
-        "title": "Лунар",
+        "report": {
+            "title": "Лунар",
 
-        "person": {
-            "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
-            "birth_time": f"{natal_hour:02d}:{natal_minute:02d}",
-            "birth_city": birth_city,
+            "person": {
+                "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
+                "birth_time": f"{natal_hour:02d}:{natal_minute:02d}",
+                "birth_city": birth_city,
+            },
+
+            "calculation": {
+                "return_datetime": chart.datetime,
+                "house_system": "Placidus",
+                "lunar_city": lunar_city,
+                "target_year": year,
+                "target_month": month,
+            }
         },
 
-        "calculation": {
-            "return_datetime": chart.datetime,
-            "house_system": "Placidus",
-            "lunar_city": lunar_city,
-            "target_year": year,
-            "target_month": month,
-        }
-    },
-
-    "date": chart.datetime,
-    "interpretation": interpretation,
-    "analysis": result["analysis"],
-    "planets": chart.planets,
-    "houses": chart.houses,
-    "aspects": chart.aspects,
+        "date": chart.datetime,
+        "interpretation": interpretation,
+        "analysis": result["analysis"],
+        "planets": chart.planets,
+        "houses": chart.houses,
+        "aspects": chart.aspects,
+        "natal_sun_sign": natal_sun_sign,  # ← новое поле
     "wheel": wheel_svg
 }
+   
