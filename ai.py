@@ -10,8 +10,8 @@ class AIError(Exception):
     pass
 
 
-
 TIMEOUT = 120
+
 SECTION_KEYS = [
     "MAIN",
     "STRENGTHS",
@@ -25,44 +25,25 @@ SECTION_KEYS = [
 
 
 def _normalize_interpretation(text: str) -> str:
-    """
-    Приводит ответ AI к формату восьми секций,
-    который ожидает frontend.
-
-    Если AI уже вернул [SECTION:...] — ответ не изменяется.
-    Если AI вернул ровно 8 абзацев — добавляем маркеры автоматически.
-    """
     if not text:
         return text
     text = text.replace(r"\:", ":")
 
-    # AI уже выполнил требуемый формат.
     if "[SECTION:MAIN]" in text:
         return text.strip()
 
-    # Разбиваем обычный ответ на абзацы.
     paragraphs = [
         part.strip()
         for part in text.split("\n\n")
         if part.strip()
     ]
 
-    # Автоматически восстанавливаем структуру только
-    # если получили ровно восемь смысловых абзацев.
     if len(paragraphs) == 8:
         sections = []
-
         for key, paragraph in zip(SECTION_KEYS, paragraphs):
-            sections.append(
-                f"[SECTION:{key}]\n{paragraph}"
-            )
-
+            sections.append(f"[SECTION:{key}]\n{paragraph}")
         normalized = "\n\n".join(sections)
-
-        logger.info(
-            "AI interpretation normalized into 8 sections."
-        )
-
+        logger.info("AI interpretation normalized into 8 sections.")
         return normalized
 
     logger.warning(
@@ -70,8 +51,8 @@ def _normalize_interpretation(text: str) -> str:
         "leaving response unchanged.",
         len(paragraphs),
     )
-
     return text.strip()
+
 
 def _call_groq(prompt_text, model="llama-3.3-70b-versatile", temperature=0.7, max_tokens=3000):
     api_key = os.getenv("GROQ_API_KEY")
@@ -116,6 +97,7 @@ def _call_groq(prompt_text, model="llama-3.3-70b-versatile", temperature=0.7, ma
             raise AIError("Groq returned invalid response.")
 
     raise AIError("Groq quota exceeded after retries.")
+
 
 def _call_gemini(prompt_text, temperature=0.7, max_tokens=3000):
     api_key = os.getenv("GEMINI_API_KEY")
@@ -204,6 +186,7 @@ def _call_deepseek(prompt_text, model="deepseek-chat", temperature=0.7, max_toke
 
     raise AIError("DeepSeek quota exceeded after retries.")
 
+
 def generate(prompt) -> str:
     if isinstance(prompt, dict):
         prompt_text = prompt.get("prompt_text") or prompt.get("content") or ""
@@ -231,5 +214,3 @@ def generate(prompt) -> str:
     except AIError as e2:
         logger.warning("Gemini failed: %s", e2)
         raise AIError("All AI providers unavailable, falling back to autonomous engine.")
-                "All AI providers unavailable, falling back to autonomous engine."
-            )
