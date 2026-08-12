@@ -72,6 +72,76 @@
             margin-top: 15px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
         }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+                /* ===== БЛОКИ ИНТЕРПРЕТАЦИИ ===== */
+        .interpretation-block {
+            position: relative;
+            margin: 18px 0;
+            padding: 20px 22px 22px 24px;
+            background: linear-gradient(135deg, rgba(35, 35, 35, 0.78), rgba(10, 10, 10, 0.58));
+            border: 1px solid rgba(212, 175, 55, 0.20);
+            border-left: 3px solid rgba(212, 175, 55, 0.55);
+            border-radius: 10px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+        }
+
+        .interpretation-block:hover {
+            border-color: rgba(212, 175, 55, 0.38);
+            border-left-color: rgba(212, 175, 55, 0.85);
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.82), rgba(12, 12, 12, 0.64));
+        }
+
+        .interpretation-block-title {
+            margin-bottom: 13px;
+            color: #d4af37;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding-bottom: 9px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+        }
+
+        .interpretation-block-text {
+            color: #e4e4e4;
+            font-size: 1rem;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        /* Первый блок — главный */
+        .interpretation-block:first-child {
+            border-left-color: #d4af37;
+            background: linear-gradient(135deg, rgba(55, 45, 20, 0.32), rgba(15, 15, 15, 0.62));
+        }
+
+        .interpretation-block:first-child .interpretation-block-title {
+            font-size: 1.25rem;
+        }
+
+        /* Последний блок — итог */
+        .interpretation-block:last-child {
+            margin-top: 24px;
+            border-left-color: rgba(212, 175, 55, 0.75);
+        }
+
+        @media (max-width: 600px) {
+            .interpretation-block {
+                margin: 14px 0;
+                padding: 16px 16px 18px 18px;
+            }
+            .interpretation-block-title {
+                font-size: 1rem;
+                letter-spacing: 0.04em;
+            }
+            .interpretation-block:first-child .interpretation-block-title {
+                font-size: 1.08rem;
+            }
+            .interpretation-block-text {
+                font-size: 0.95rem;
+                line-height: 1.7;
+            }
+        }
     </style>
 </head>
 <body>
