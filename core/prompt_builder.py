@@ -24,10 +24,16 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
 
     main_theme_text = ""
     if mt:
-        planet = getattr(mt, 'planet', mt.get('planet', '?')) if hasattr(mt, 'get') or hasattr(mt, 'planet') else '?'
-        house = getattr(mt, 'house', mt.get('house', '?')) if hasattr(mt, 'get') or hasattr(mt, 'house') else '?'
-        sign = getattr(mt, 'sign', mt.get('sign', '?')) if hasattr(mt, 'get') or hasattr(mt, 'sign') else '?'
-        dispositor = getattr(mt, 'dispositor', mt.get('dispositor', '?')) if hasattr(mt, 'get') or hasattr(mt, 'dispositor') else '?'
+        if isinstance(mt, dict):
+            planet = mt.get("planet", "?")
+            house = mt.get("house", "?")
+            sign = mt.get("sign", "?")
+            dispositor = mt.get("dispositor", "?")
+        else:
+            planet = getattr(mt, "planet", "?")
+            house = getattr(mt, "house", "?")
+            sign = getattr(mt, "sign", "?")
+            dispositor = getattr(mt, "dispositor", "?")
 
         main_theme_text = (
             f"Главная тема карты:\n"
