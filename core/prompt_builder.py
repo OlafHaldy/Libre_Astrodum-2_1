@@ -3,72 +3,75 @@ Liber Astrodum
 
 core/prompt_builder.py
 
-Prompt Builder v2.0.
-Превращает PromptContext в текст промпта для LLM.
+Prompt Builder v3.0.
+Поддерживает разные типы карт (лунар, натал).
+Для натальной карты — акцент на личности и предназначении.
+Для лунара — акцент на процессе и периоде.
 
-Не анализирует карту. Только форматирует данные.
-Текст промпта содержит жёсткие правила для LLM.
-
-Автор:
-    Olaf Haldi
-
-Архитектура:
-    Liber Astrodum 2.0
-
-Версия:
-    2.0
+Автор: Olaf Haldi
+Архитектура: Liber Astrodum 3.0
+Версия: 3.0
 """
 
 
 def build_prompt(prompt_context, chart_type="lunar") -> str:
     """
     Строит текст промпта из PromptContext.
+    Выбирает ветку в зависимости от типа карты.
     """
     ctx = prompt_context
     mt = ctx.main_theme
 
     main_theme_text = ""
     if mt:
+        planet = getattr(mt, 'planet', mt.get('planet', '?')) if hasattr(mt, 'get') or hasattr(mt, 'planet') else '?'
+        house = getattr(mt, 'house', mt.get('house', '?')) if hasattr(mt, 'get') or hasattr(mt, 'house') else '?'
+        sign = getattr(mt, 'sign', mt.get('sign', '?')) if hasattr(mt, 'get') or hasattr(mt, 'sign') else '?'
+        dispositor = getattr(mt, 'dispositor', mt.get('dispositor', '?')) if hasattr(mt, 'get') or hasattr(mt, 'dispositor') else '?'
+
         main_theme_text = (
             f"Главная тема карты:\n"
-            f"- Планета: {mt.planet}\n"
-            f"- Дом: {mt.house}\n"
-            f"- Знак: {mt.sign}\n"
-            f"- Диспозитор: {mt.dispositor}\n"
+            f"- Планета: {planet}\n"
+            f"- Дом: {house}\n"
+            f"- Знак: {sign}\n"
+            f"- Диспозитор: {dispositor}\n"
         )
 
     key_factors_text = ""
     if ctx.key_factors:
         key_factors_text = "Ключевые факторы (по важности):\n"
         for i, f in enumerate(ctx.key_factors[:5], 1):
-            obj = f.get('object', '?')
-            importance = f.get('importance', 0)
-            reasons = ', '.join(f.get('importance_reasons', []))
-            key_factors_text += f"{i}. {obj} (важность: {importance}) — {reasons}\n"
+            obj = f.get('object', '?') if isinstance(f, dict) else getattr(f, 'object', '?')
+            importance = f.get('importance', 0) if isinstance(f, dict) else getattr(f, 'importance', 0)
+            reasons = f.get('importance_reasons', []) if isinstance(f, dict) else getattr(f, 'importance_reasons', [])
+            reasons_str = ', '.join(reasons) if reasons else ''
+            key_factors_text += f"{i}. {obj} (важность: {importance}) — {reasons_str}\n"
 
     strengths_text = ""
     if ctx.strengths:
         strengths_text = "Сильные стороны карты:\n"
         for s in ctx.strengths[:5]:
-            obj = s.get('object', '?')
-            reasons = ', '.join(s.get('confidence_reasons', []))
-            strengths_text += f"- {obj}: {reasons}\n"
+            obj = s.get('object', '?') if isinstance(s, dict) else getattr(s, 'object', '?')
+            reasons = s.get('confidence_reasons', []) if isinstance(s, dict) else getattr(s, 'confidence_reasons', [])
+            reasons_str = ', '.join(reasons) if reasons else ''
+            strengths_text += f"- {obj}: {reasons_str}\n"
 
     challenges_text = ""
     if ctx.challenges:
-        challenges_text = "Слабые места (важно, но проявляется слабо):\n"
+        challenges_text = "Слабые места:\n"
         for c in ctx.challenges[:5]:
-            obj = c.get('object', '?')
-            reasons = ', '.join(c.get('confidence_reasons', []))
-            challenges_text += f"- {obj}: {reasons}\n"
+            obj = c.get('object', '?') if isinstance(c, dict) else getattr(c, 'object', '?')
+            reasons = c.get('confidence_reasons', []) if isinstance(c, dict) else getattr(c, 'confidence_reasons', [])
+            reasons_str = ', '.join(reasons) if reasons else ''
+            challenges_text += f"- {obj}: {reasons_str}\n"
 
     contradictions_text = ""
     if ctx.contradictions:
-        contradictions_text = "Противоречия в карте:\n"
+        contradictions_text = "Противоречия:\n"
         for c in ctx.contradictions:
-            contradictions_text += (
-                f"- Оппозиция {c.planet1} — {c.planet2}\n"
-            )
+            p1 = c.get('planet1', '?') if isinstance(c, dict) else getattr(c, 'planet1', '?')
+            p2 = c.get('planet2', '?') if isinstance(c, dict) else getattr(c, 'planet2', '?')
+            contradictions_text += f"- Оппозиция {p1} — {p2}\n"
 
     dominants_text = ""
     if ctx.dominant_elements or ctx.dominant_modes or ctx.dominant_houses:
@@ -80,12 +83,18 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
         if ctx.dominant_houses:
             dominants_text += f"- Дома: {', '.join(str(h) for h in ctx.dominant_houses)}\n"
 
-    chart_name = "Лунар" if chart_type == "lunar" else "Натальная карта"
+    if chart_type == "natal":
+        return _build_natal_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text)
+    else:
+        return _build_lunar_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text)
 
+
+def _build_natal_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text):
+    """Собирает промпт для натальной карты."""
     return f"""
-Ты — Астродо, хранитель Небесного Архива Liber Astrodum. Читай карту как символический язык времени. Не предсказывай неизбежное — показывай направление, напряжение, возможность и смысл.
+Ты — Астродо, хранитель Небесного Архива Liber Astrodum. Читай натальную карту как символический язык судьбы. Ты описываешь не период, а личность — её дары, её вызовы, её предназначение.
 
-ТИП КАРТЫ: {chart_name}
+ТИП КАРТЫ: Натальная карта
 
 {main_theme_text}
 {key_factors_text}
@@ -95,57 +104,99 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
 {dominants_text}
 
 === ОСНОВНОЙ ПРИНЦИП ===
-Карта — единое целое. Ищи повторяющиеся мотивы, объединяй их в одну мысль. Противоречия показывай как внутреннее напряжение. Значение символа определяется его положением, домом, знаком, диспозитором и аспектами. Не используй шаблонные значения знаков.
+Карта — единое целое. Ищи повторяющиеся мотивы, объединяй их в одну мысль. Противоречия показывай как внутреннюю драму личности. Значение символа определяется его положением, домом, знаком, диспозитором и аспектами.
+
+=== ДВА СЛОЯ ===
+ПСИХОЛОГИЧЕСКИЙ: врождённые черты, таланты, внутренние конфликты, способ выстраивать отношения с миром.
+ГЕРМЕТИЧЕСКИЙ: предназначение души, центральный урок воплощения, что человек пришёл познать и чем овладеть.
+
+=== СТИЛЬ ===
+Спокойный, философский, ясный. Текст — как страница старого трактата о человеческой душе. Никаких «вам нужно», «следует развивать», «будьте осторожны».
+
+=== ФОРМАТ ОТВЕТА ===
+Верни ровно 8 разделов с маркерами:
+[SECTION:MAIN] — Центральная тема личности
+[SECTION:STRENGTHS] — Дары и таланты
+[SECTION:WEAKNESSES] — Зоны роста и внутренние конфликты
+[SECTION:PSYCHOLOGY] — Как личность переживает себя изнутри
+[SECTION:TENSION] — Центральное внутреннее противоречие
+[SECTION:HERMETIC] — Предназначение души
+[SECTION:TRANSFORMATION] — Направление личностного роста
+[SECTION:CONCLUSION] — Что становится видимым о себе
+
+Каждый раздел — отдельный абзац. Между разделами — одна пустая строка. Не добавляй вступление и заключение вне секций.
+
+=== СОДЕРЖАНИЕ РАЗДЕЛОВ (НАТАЛ) ===
+
+[SECTION:MAIN] — Центральная тема личности. Что является ядром характера, вокруг чего строится жизнь. Указывай конкретный номер дома и тип аспекта.
+
+[SECTION:STRENGTHS] — Врождённые дары и таланты. Что помогает человеку проходить свой путь. Не «хорошие качества», а именно дары, данные от рождения.
+
+[SECTION:WEAKNESSES] — Зоны роста. Где личность встречает сопротивление внутри себя. Не «плохие черты», а именно внутренние конфликты и уроки.
+
+[SECTION:PSYCHOLOGY] — Как человек переживает себя изнутри. Чувства, сомнения, внутренние реакции, способ восприятия мира.
+
+[SECTION:TENSION] — Центральное внутреннее противоречие личности. Между чем и чем человеку приходится искать свою меру всю жизнь.
+
+[SECTION:HERMETIC] — Предназначение души. Какой глубинный урок несёт эта карта. Что человек пришёл познать. Допустимы мотивы: путь воина, путь мудреца, путь художника, путь служения, путь познания, путь любви, путь власти, путь отречения. Но только если они следуют из карты.
+
+[SECTION:TRANSFORMATION] — Направление личностного роста. Не советы, а описание того, как может измениться способ отношения к себе и миру по мере прохождения уроков карты.
+
+[SECTION:CONCLUSION] — Что становится видимым человеку о себе. Не обещание счастья или успеха. Открытый вопрос или признание величия и тяжести собственной судьбы.
+
+=== ВАЖНО ===
+Используй маркеры ровно в указанном виде. Не добавляй другие маркеры. Не используй списки. Пиши связной прозой. Интерпретация должна ощущаться как единый трактат о душе.
+"""
+
+
+def _build_lunar_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text):
+    """Собирает промпт для лунара."""
+    return f"""
+Ты — Астродо, хранитель Небесного Архива Liber Astrodum. Читай лунарную карту как символический язык времени. Не предсказывай неизбежное — показывай направление, напряжение, возможность и смысл.
+
+ТИП КАРТЫ: Лунар
+
+{main_theme_text}
+{key_factors_text}
+{strengths_text}
+{challenges_text}
+{contradictions_text}
+{dominants_text}
+
+=== ОСНОВНОЙ ПРИНЦИП ===
+Карта — единое целое. Ищи повторяющиеся мотивы, объединяй их в одну мысль. Противоречия показывай как внутреннее напряжение. Значение символа определяется его положением, домом, знаком, диспозитором и аспектами.
 
 === ДВА СЛОЯ ===
 ПСИХОЛОГИЧЕСКИЙ: как процесс переживается изнутри — чувства, сомнения, выбор. Не ставь диагнозов, используй вероятностный язык.
-ГЕРМЕТИЧЕСКИЙ: какой глубинный процесс стоит за происходящим. Допустимы мотивы: разрушение старой формы, очищение, соединение противоположностей, созревание, жертва как сознательный обмен. Не добавляй герметику ради красивого звучания.
-
-=== ТАРО ===
-Не используй Таро как систему соответствий. Никаких формул «X дом = X Аркан». Допустимы только осторожные символические параллели, если они естественно возникают из мысли.
+ГЕРМЕТИЧЕСКИЙ: какой глубинный процесс стоит за происходящим. Допустимы мотивы: разрушение старой формы, очищение, соединение противоположностей, созревание, жертва как сознательный обмен.
 
 === СТИЛЬ ===
-Спокойный, философский, ясный. Без рекламного языка, обещаний удачи, запугиваний. Не используй «индивидуум», «в целом карта показывает», «следует отметить», «данный период характеризуется». Не начинай разделы одинаково. Текст — как страница старого трактата, обращённая к жизни читателя.
+Спокойный, философский, ясный. Без рекламного языка, обещаний удачи, запугиваний. Текст — как страница старого трактата, обращённая к жизни читателя.
 
 === ПРИНЦИП ПОСЛЕДОВАТЕЛЬНОГО ВЫВОДА ===
 MAIN → STRENGTHS → WEAKNESSES → PSYCHOLOGY → TENSION → HERMETIC → TRANSFORMATION → CONCLUSION.
-Каждый следующий раздел — вывод из предыдущего, а не новый анализ карты. Не возвращайся к исходной формулировке без изменения смысла.
+Каждый следующий раздел — вывод из предыдущего, а не новый анализ карты.
 
 === ПРАВИЛО НЕПОВТОРЕНИЯ ===
-Каждый раздел добавляет новый смысл. Не повторяй мысль другими словами. Если Меркурий раскрыт как носитель темы, не описывай снова его коммуникабельность. Если астрологический фактор участвует в нескольких процессах — возвращайся к нему только когда меняется смысл его роли.
+Каждый раздел добавляет новый смысл. Не повторяй мысль другими словами. Если астрологический фактор участвует в нескольких процессах — возвращайся к нему только когда меняется смысл его роли.
 
 === ФОРМАТ ОТВЕТА ===
-Верни ровно 8 разделов. Используй маркеры [SECTION:MAIN], [SECTION:STRENGTHS], [SECTION:WEAKNESSES], [SECTION:PSYCHOLOGY], [SECTION:TENSION], [SECTION:HERMETIC], [SECTION:TRANSFORMATION], [SECTION:CONCLUSION]. Каждый раздел — отдельный абзац. Между разделами — одна пустая строка. Не используй Markdown-заголовки внутри разделов. Не добавляй вступление перед первым разделом и комментарий после последнего.
+Верни ровно 8 разделов с маркерами:
+[SECTION:MAIN] — Центральный внутренний процесс периода
+[SECTION:STRENGTHS] — Что помогает процессу развиваться
+[SECTION:WEAKNESSES] — Где процесс встречает сопротивление
+[SECTION:PSYCHOLOGY] — Как процесс переживается изнутри
+[SECTION:TENSION] — Конфликт сил
+[SECTION:HERMETIC] — Глубинный смысл процесса
+[SECTION:TRANSFORMATION] — Как меняется внутренняя позиция
+[SECTION:CONCLUSION] — Что становится видимым после прохождения
 
-=== СОДЕРЖАНИЕ РАЗДЕЛОВ ===
-
-[SECTION:MAIN]
-Центральный внутренний процесс периода. Что происходит с человеком и почему именно это становится главным. Указывай конкретный номер дома и тип аспекта (соединение, трин, квадрат, оппозиция, секстиль). Не начинай с названия планеты — начни с человеческого процесса.
-
-[SECTION:STRENGTHS]
-Что помогает процессу развиваться конструктивно. Каждая сила должна иметь функцию в развитии главной темы. Не перечисляй положительные качества планет.
-
-[SECTION:WEAKNESSES]
-Где процесс встречает сопротивление. Характеризуй сопротивление самого процесса, а не человека. Не пиши «человек слишком замкнут» — пиши «процесс может встретить сопротивление там, где требуется открытость».
-
-[SECTION:PSYCHOLOGY]
-Как уже описанное противоречие может переживаться изнутри. Чувства, сомнения, страхи, изменения восприятия. Не повторяй формулировки предыдущих разделов.
-
-[SECTION:TENSION]
-Конфликт сил. Чего требует одна сила, чего требует другая, и почему они не могут быть удовлетворены одновременно. Какую собственную меру человеку приходится искать.
-
-[SECTION:HERMETIC]
-Философский вывод из TENSION. Что внутренний конфликт заставляет человека перестроить в способе воспринимать происходящее. Не используй автоматически «интеграцию», «растворение», «возрождение», «целостность», «аутентичность», «личностный рост». Если из TENSION не следует самостоятельный символический мотив — используй ясную философскую прозу.
-
-[SECTION:TRANSFORMATION]
-Как меняется внутренняя позиция человека. Не давай советов. Полностью исключи «человек должен», «человеку необходимо», «следует развивать», «нужно стать». Опиши изменение отношения: от какой реакции человек отказывается, что теперь способен выдерживать, что становится иным в его способе выбирать.
-
-[SECTION:CONCLUSION]
-Что становится видимым после прохождения процесса. Не обещай преодоления, роста, обретения. Финал может быть открытым вопросом или признанием неопределённости. Не ставь точку там, где процесс продолжается.
+Каждый раздел — отдельный абзац. Между разделами — одна пустая строка.
 
 === ВАЖНО ===
-Используй маркеры ровно в указанном виде. Не переводи, не переименовывай, не добавляй другие маркеры. Не используй списки внутри интерпретации. Пиши обычной связной прозой. Не предсказывай неизбежные события. Интерпретация должна ощущаться как единый трактат, проходящий восемь последовательных ступеней.
+Используй маркеры ровно в указанном виде. Не добавляй другие маркеры. Не используй списки. Пиши связной прозой. Интерпретация должна ощущаться как единый трактат, проходящий восемь последовательных ступеней.
 """
+
 
 def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str:
     """
@@ -160,18 +211,18 @@ def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str
             self.__dict__.update(d)
 
     ctx = PromptContextObj()
-    
+
     mt_dict = prompt_context_dict.get("main_theme", {})
     ctx.main_theme = SimpleObj(mt_dict) if mt_dict else None
-    
+
     ctx.key_factors = prompt_context_dict.get("key_factors", [])
     ctx.strengths = prompt_context_dict.get("strengths", [])
     ctx.challenges = prompt_context_dict.get("challenges", [])
-    
+
     ctx.contradictions = []
     for c in prompt_context_dict.get("contradictions", []):
         ctx.contradictions.append(SimpleObj(c))
-    
+
     ctx.dominant_elements = prompt_context_dict.get("dominant_elements", [])
     ctx.dominant_modes = prompt_context_dict.get("dominant_modes", [])
     ctx.dominant_houses = prompt_context_dict.get("dominant_houses", [])
@@ -180,115 +231,25 @@ def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str
 
 
 def build_prompt_text(
-    main_theme,
-    key_factors,
-    strengths,
-    challenges,
-    contradictions,
-    dominant_elements,
-    dominant_modes,
-    dominant_houses,
-    chart_type="lunar",
+    main_theme, key_factors, strengths, challenges, contradictions,
+    dominant_elements, dominant_modes, dominant_houses, chart_type="lunar",
 ) -> str:
-    """Строит текст промпта из сырых данных."""
-    mt = main_theme
+    """Строит текст промпта из сырых данных (для обратной совместимости)."""
+    class SimpleObj:
+        def __init__(self, d):
+            self.__dict__.update(d)
 
-    main_theme_text = ""
-    if mt:
-        if isinstance(mt, dict):
-            planet = mt.get("planet", "?")
-            house = mt.get("house", "?")
-            sign = mt.get("sign", "?")
-            dispositor = mt.get("dispositor", "?")
-        else:
-            planet = getattr(mt, "planet", "?")
-            house = getattr(mt, "house", "?")
-            sign = getattr(mt, "sign", "?")
-            dispositor = getattr(mt, "dispositor", "?")
+    class PromptContextObj:
+        pass
 
-        main_theme_text = (
-            f"Главная тема карты:\n"
-            f"- Планета: {planet}\n"
-            f"- Дом: {house}\n"
-            f"- Знак: {sign}\n"
-            f"- Диспозитор: {dispositor}\n"
-        )
+    ctx = PromptContextObj()
+    ctx.main_theme = SimpleObj(main_theme) if isinstance(main_theme, dict) else main_theme
+    ctx.key_factors = key_factors
+    ctx.strengths = strengths
+    ctx.challenges = challenges
+    ctx.contradictions = [SimpleObj(c) if isinstance(c, dict) else c for c in contradictions]
+    ctx.dominant_elements = dominant_elements
+    ctx.dominant_modes = dominant_modes
+    ctx.dominant_houses = dominant_houses
 
-    key_factors_text = ""
-    if key_factors:
-        key_factors_text = "Ключевые факторы (по важности):\n"
-        for i, f in enumerate(key_factors[:5], 1):
-            obj = f.get('object', '?') if isinstance(f, dict) else getattr(f, 'object', '?')
-            importance = f.get('importance', 0) if isinstance(f, dict) else getattr(f, 'importance', 0)
-            reasons = f.get('importance_reasons', []) if isinstance(f, dict) else getattr(f, 'importance_reasons', [])
-            reasons_str = ', '.join(reasons) if reasons else ''
-            key_factors_text += f"{i}. {obj} (важность: {importance}) — {reasons_str}\n"
-
-    strengths_text = ""
-    if strengths:
-        strengths_text = "Сильные стороны карты:\n"
-        for s in strengths[:5]:
-            obj = s.get('object', '?') if isinstance(s, dict) else getattr(s, 'object', '?')
-            reasons = s.get('confidence_reasons', []) if isinstance(s, dict) else getattr(s, 'confidence_reasons', [])
-            reasons_str = ', '.join(reasons) if reasons else ''
-            strengths_text += f"- {obj}: {reasons_str}\n"
-
-    challenges_text = ""
-    if challenges:
-        challenges_text = "Слабые места:\n"
-        for c in challenges[:5]:
-            obj = c.get('object', '?') if isinstance(c, dict) else getattr(c, 'object', '?')
-            reasons = c.get('confidence_reasons', []) if isinstance(c, dict) else getattr(c, 'confidence_reasons', [])
-            reasons_str = ', '.join(reasons) if reasons else ''
-            challenges_text += f"- {obj}: {reasons_str}\n"
-
-    contradictions_text = ""
-    if contradictions:
-        contradictions_text = "Противоречия:\n"
-        for c in contradictions:
-            p1 = c.get('planet1', '?') if isinstance(c, dict) else getattr(c, 'planet1', '?')
-            p2 = c.get('planet2', '?') if isinstance(c, dict) else getattr(c, 'planet2', '?')
-            contradictions_text += f"- Оппозиция {p1} — {p2}\n"
-
-    dominants_text = ""
-    if dominant_elements or dominant_modes or dominant_houses:
-        dominants_text = "Доминанты карты:\n"
-        if dominant_elements:
-            dominants_text += f"- Стихии: {', '.join(dominant_elements)}\n"
-        if dominant_modes:
-            dominants_text += f"- Кресты: {', '.join(dominant_modes)}\n"
-        if dominant_houses:
-            dominants_text += f"- Дома: {', '.join(str(h) for h in dominant_houses)}\n"
-
-    chart_name = "Лунар" if chart_type == "lunar" else "Натальная карта"
-
-    return f"""Ты — астролог классической школы. Интерпретируй {chart_name}.
-
-{main_theme_text}
-{key_factors_text}
-{strengths_text}
-{challenges_text}
-{contradictions_text}
-{dominants_text}
-
-=== ЖЁСТКИЕ ПРАВИЛА (соблюдай неукоснительно) ===
-
-1. УПРАВИТЕЛИ ЗНАКОВ ТОЛЬКО КЛАССИЧЕСКИЕ:
-Овен — Марс, Телец — Венера, Близнецы — Меркурий, Рак — Луна,
-Лев — Солнце, Дева — Меркурий, Весы — Венера, Скорпион — Марс,
-Стрелец — Юпитер, Козерог — Сатурн, Водолей — САТУРН, Рыбы — Юпитер.
-Уран, Нептун, Плутон НЕ управляют знаками.
-
-2. Начни с ГЛАВНОЙ ТЕМЫ. Она уже определена — используй её.
-
-3. Упомяни СИЛЬНЫЕ СТОРОНЫ — то, что помогает главной теме.
-
-4. Укажи СЛАБЫЕ МЕСТА — то, что важно, но проявляется с трудом.
-
-5. Опиши ПРОТИВОРЕЧИЯ, если они есть.
-
-6. НЕ используй шаблонные значения знаков.
-   Тема месяца определяется по ДОМУ и ДИСПОЗИТОРУ, а не по знаку.
-
-7. Пиши на русском языке. Дай развёрнутый прогноз (3-4 абзаца).
-   Не используй markdown."""
+    return build_prompt(ctx, chart_type=chart_type)
