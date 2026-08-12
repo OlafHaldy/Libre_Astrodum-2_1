@@ -85,8 +85,6 @@ def city_search(q: str = Query(..., min_length=2)):
         })
     return results
 
-# ================== HTML-СТРАНИЦА ==================
-
 HTML_PAGE = r"""<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -100,14 +98,28 @@ HTML_PAGE = r"""<!DOCTYPE html>
         body {
             font-family: 'Cormorant Infant', serif;
             min-height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.65)), url('/static/bg.jpg') no-repeat center center fixed;
-            background-size: cover;
             color: #f0f0f0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        #bg-video {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: -1;
         }
         .container { max-width: 700px; width: 100%; text-align: center; }
         .app-title h1 {
@@ -136,6 +148,11 @@ HTML_PAGE = r"""<!DOCTYPE html>
     </style>
 </head>
 <body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="/static/bg_main.mp4" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
     <div class="container">
         <div class="app-title"><h1>Liber Astrodum</h1></div>
         <div class="poem">Спроси у Сатурна о будущей горсти беды<br>И он не обманет, как люди – меняя обличье.<br>О радостной встрече - Юпитера скажут следы<br>(Где Кронос молчит, там от Зевса исходит величье)</div>
