@@ -297,6 +297,10 @@
             try {
                 const response = await fetch('/api/v1/natal?' + params.toString());
                 const data = await response.json();
+                                // Извлекаем данные из analysis.chart
+                data.planets = data.analysis?.chart?.planets || {};
+                data.houses = data.analysis?.chart?.houses || {};
+                data.aspects = data.analysis?.chart?.aspects || [];
 
                 const sunSign = data.natal_sun_sign || 'Aquarius';
                 showOverlay(sunSign);
