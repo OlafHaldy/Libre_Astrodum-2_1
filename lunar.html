@@ -237,6 +237,24 @@
         });
 
         async function askLunar() {
+            const planetNames = {
+                Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
+                Venus: 'Венера', Mars: 'Марс', Jupiter: 'Юпитер', Saturn: 'Сатурн'
+            };
+            const signNames = {
+                Aries: 'Овен', Taurus: 'Телец', Gemini: 'Близнецы', Cancer: 'Рак',
+                Leo: 'Лев', Virgo: 'Дева', Libra: 'Весы', Scorpio: 'Скорпион',
+                Sagittarius: 'Стрелец', Capricorn: 'Козерог', Aquarius: 'Водолей', Pisces: 'Рыбы'
+            };
+            const aspectNames = {
+                conjunction: 'соединение', opposition: 'оппозиция', square: 'квадрат',
+                trine: 'тригон', sextile: 'секстиль', quincunx: 'квинконс'
+            };
+            const aspectSymbols = {
+                conjunction: '☌', opposition: '☍', square: '□',
+                trine: '△', sextile: '⚹', quincunx: '⚻'
+            };
+
             const natalYear = document.getElementById('natalYear').value;
             const natalMonth = document.getElementById('natalMonth').value;
             const natalDay = document.getElementById('natalDay').value;
@@ -261,21 +279,119 @@
                 const response = await fetch('/api/v1/lunar?' + params.toString());
                 const data = await response.json();
 
+                // Заставка
                 const sunSign = data.natal_sun_sign || 'Aquarius';
                 showOverlay(sunSign);
 
-                let html = `
+                // Колесо
+                const wheelHtml = data.wheel ? `<div style="text-align:center;margin-bottom:20px;">${data.wheel}</div>` : '';
+
+                // Таблица планет
+                let planetListHtml = '<h3 style="color:#d4af37;">Планеты в знаках</h3>';
+                planetListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+                planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
+                if (data.planets) {
+                    for (const [name, info] of Object.entries(data.planets)) {
+                        const planet = planetNames[name] || name;
+                        const sign = signNames[info.sign] || info.sign;
+                        planetListHtml += `<tr><td>${planet}</td><td>${sign}</td><td>${info.degree}°</td></tr>`;
+                    }
+                }
+                planetListHtml += '</table>';
+
+                // Таблица домов
+                let houseListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Дома</h3>';
+                houseListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+                houseListHtml += '<tr><th>Дом</th><th>Знак</th><th>Градус</th></tr>';
+                for (let i = 1; i <= 12; i++) {
+                    const house = data.houses?.[i];
+                    if (house) {
+                        const sign = signNames[house.sign] || house.sign;
+                        houseListHtml += `<tr><td>${i}</td><td>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
+                    }
+                }
+                const asc = data.houses?.Ascendant;
+                const mc = data.houses?.MC;
+                if (asc) {
+                    const sign = signNames[asc.sign] || asc.sign;
+                    houseListHtml += `<tr><td><b>ASC</b></td><td>${sign}</td><td>${asc.degree?.toFixed(2)}°</td></tr>`;
+                }
+                if (mc) {
+                    const sign = signNames[mc.sign] || mc.sign;
+                    houseListHtml += `<tr><td><b>MC</b></td><td>${sign}</td><td>${mc.degree?.toFixed(2)}°</td></tr>`;
+                }
+                houseListHtml += '</table>';
+
+                // Таблица аспектов
+                let aspectListHtml = '';
+                if (data.aspects && data.aspects.length > 0) {
+                    aspectListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Аспекты</h3>';
+                    aspectListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
+                    aspectListHtml += '<tr><th>Планета 1</th><th>Аспект</th><th>Планета 2</th><th>Угол</th></tr>';
+                    for (const aspect of data.aspects) {
+                        const p1 = planetNames[aspect.planet1] || aspect.planet1;
+                        const p2 = planetNames[aspect.planet2] || aspect.planet2;
+                        const name = aspectNames[aspect.type] || aspect.type;
+                        const symbol = aspectSymbols[aspect.type] || '';
+                        aspectListHtml += `<tr><td>${p1}</td><td>${symbol} ${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
+                    }
+                    aspectListHtml += '</table>';
+                }
+
+                // Интерпретация с парсингом секций
+                const interpretationText = data.interpretation || '';
+                const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
+                const interpretationSections = [];
+                let match;
+                while ((match = sectionRegex.exec(interpretationText)) !== null) {
+                    interpretationSections.push({
+                        key: match[1],
+                        start: sectionRegex.lastIndex,
+                        markerStart: match.index
+                    });
+                }
+                
+                let interpretationHtml = '';
+                if (interpretationSections.length > 0) {
+                    const interpretationTitles = {
+                        MAIN: 'Главная тема', STRENGTHS: 'Сильные стороны', WEAKNESSES: 'Слабые места',
+                        PSYCHOLOGY: 'Психологический слой', TENSION: 'Внутреннее напряжение',
+                        HERMETIC: 'Герметический смысл', TRANSFORMATION: 'Путь преобразования', CONCLUSION: 'Итог'
+                    };
+                    for (let i = 0; i < interpretationSections.length; i++) {
+                        const section = interpretationSections[i];
+                        const endPos = i + 1 < interpretationSections.length
+                            ? interpretationSections[i + 1].markerStart
+                            : interpretationText.length;
+                        const sectionText = interpretationText.slice(section.start, endPos).trim();
+                        if (sectionText) {
+                            const title = interpretationTitles[section.key] || section.key;
+                            interpretationHtml += `
+                                <div class="interpretation-block">
+                                    <div class="interpretation-block-title">✦ ${title}</div>
+                                    <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${interpretationText.replace(/\n/g, '<br>')}</div></div>`;
+                }
+
+                // Собираем всё вместе
+                resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
                         <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
-                        <div style="margin-bottom: 20px;">
-                            <strong>Дата возврата:</strong> ${data.date || '—'}
-                        </div>
-                        <div class="interpretation-text">${(data.interpretation || 'Интерпретация временно недоступна.').replace(/\n/g, '<br>')}</div>
+                        ${wheelHtml}
+                        ${planetListHtml}
+                        ${houseListHtml}
+                        ${aspectListHtml}
+                        <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
+                        ${interpretationHtml}
                         <br>
                         <a href="/lunar" class="back-btn">← Построить новый лунар</a>
                     </div>
                 `;
-                resultBlock.innerHTML = html;
             } catch (e) {
                 resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
             }
