@@ -821,7 +821,7 @@ showOverlay(sunSign);
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return HTML_MAIN
+    return HTML_PAGE
 @app.get("/lunar", response_class=HTMLResponse)
 def lunar_page():
     return open("lunar.html", "r", encoding="utf-8").read()
