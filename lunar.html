@@ -334,6 +334,8 @@
             const month = document.getElementById('lunarMonth').value || 1;
 
             const resultBlock = document.getElementById('result');
+                        // Скрываем форму
+            document.querySelector('.card').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
@@ -459,7 +461,7 @@
                         <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
                         ${interpretationHtml}
                         <br>
-                        <a href="/lunar" class="back-btn">← Построить новый лунар</a>
+                        <a href="/" class="back-btn">← В главное меню</a>
                     </div>
                 `;
             } catch (e) {

@@ -281,6 +281,8 @@
             const natalMinute = document.getElementById('natalMinute').value || 0;
 
             const resultBlock = document.getElementById('result');
+                        // Скрываем форму
+            document.querySelector('.card').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
@@ -387,7 +389,7 @@
                         <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
                         ${interpretationHtml}
                         <br>
-                        <a href="/natal" class="back-btn">← Построить новую карту</a>
+                        <a href="/" class="back-btn">← В главное меню</a>
                     </div>
                 `;
             } catch (e) {
