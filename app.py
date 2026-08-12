@@ -821,8 +821,10 @@ showOverlay(sunSign);
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return HTML_PAGE
-
+    return HTML_MAIN
+@app.get("/lunar", response_class=HTMLResponse)
+def lunar_page():
+    return open("lunar.html", "r", encoding="utf-8").read()
 # ================== НОВЫЙ API (Лунар) ==================
 
 @app.get("/api/v1/lunar")
@@ -941,4 +943,5 @@ def lunar_v1(
         "natal_sun_sign": natal_sun_sign,  # ← новое поле
     "wheel": wheel_svg
 }
+
    

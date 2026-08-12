@@ -1,0 +1,141 @@
+"""
+Liber Astrodum — Генератор страниц
+Создаёт отдельные HTML-страницы для каждого режима
+и обновляет главную страницу с карточками-меню.
+"""
+
+import os
+
+PAGES = {
+    "lunar.html": r"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liber Astrodum — Лунар</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128302;</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Infant', serif;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.65)), url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .container { max-width: 700px; width: 100%; }
+        .app-title h1 {
+            font-family: 'UnifrakturMaguntia', 'Uncial Antiqua', cursive;
+            font-size: 3em;
+            background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
+            text-align: center; margin-bottom: 10px;
+        }
+        .back-btn {
+            background: none; border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
+            transition: all 0.3s; display: inline-block;
+        }
+        .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
+        .card {
+            background-image: url('/static/card_bg.jpg'); background-size: cover;
+            background-color: rgba(30, 20, 10, 0.6); background-blend-mode: overlay;
+            border: 1px solid #5a5a5a; border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+        }
+        label { display: block; margin-top: 18px; color: #256057; font-size: 1.2em; font-family: 'Caveat', cursive; }
+        input, select { width: 100%; padding: 12px; margin-top: 6px; background: #1c1c1c; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Cormorant Infant', serif; }
+        input:focus { outline: none; border-color: #b8860b; box-shadow: 0 0 10px rgba(184, 134, 11, 0.4); }
+        .row { display: flex; gap: 12px; } .row > div { flex: 1; }
+        button {
+            background: linear-gradient(135deg, #b8860b, #d4af37); color: #1a1a1a;
+            border: none; padding: 14px 30px; font-size: 18px; font-weight: bold;
+            border-radius: 12px; cursor: pointer; margin-top: 25px; width: 100%;
+            font-family: 'Cormorant Infant', serif; text-transform: uppercase;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184, 134, 11, 0.5); }
+        .loading { text-align: center; color: #d4af37; margin-top: 25px; font-style: italic; }
+        .suggestions-dropdown {
+            position: absolute; background: #1c1c1c; border: 1px solid #444; border-radius: 10px;
+            width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 4px; display: none;
+        }
+        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; }
+        .suggestion-item:hover { background: #2a2a2a; }
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(9, 10, 15, 0.95); display: none; justify-content: center;
+            align-items: center; z-index: 1000; flex-direction: column;
+        }
+        #overlay .sign-emoji { font-size: 100px; animation: float 2s ease-in-out infinite; }
+        #overlay .sign-name {
+            font-family: 'Uncial Antiqua', cursive; font-size: 2em; color: #d4af37;
+            margin-top: 15px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Назад</a>
+        <div class="card">
+            <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☽ Лунар — Прогноз на месяц</h3>
+            <div class="row">
+                <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
+                <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
+                <div><label>День</label><input type="number" id="natalDay" value="14"></div>
+            </div>
+            <div class="row">
+                <div><label>Час рождения</label><input type="number" id="natalHour" value="6"></div>
+                <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
+            </div>
+            <div style="position: relative;">
+                <label>Город рождения</label>
+                <input type="text" id="birthCity" value="Дубно" placeholder="Начните вводить город...">
+                <div id="suggestions" class="suggestions-dropdown"></div>
+            </div>
+            <div style="position: relative; margin-top: 18px;">
+                <label>Место встречи лунара (где вы сейчас)</label>
+                <input type="text" id="lunarCity" value="Ровно" placeholder="Начните вводить город...">
+                <div id="lunarSuggestions" class="suggestions-dropdown"></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 18px;">
+                <div style="flex: 1;"><label>Год прогноза</label><input type="number" id="lunarYear" value="2026"></div>
+                <div style="flex: 1;"><label>Месяц прогноза</label><input type="number" id="lunarMonth" value="8" min="1" max="12"></div>
+            </div>
+            <button onclick="askLunar()">Построить Лунар</button>
+            <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
+        </div>
+        <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
+    </div>
+    <div id="overlay">
+        <div class="sign-emoji" id="signEmoji"></div>
+        <div class="sign-name" id="signName"></div>
+    </div>
+    <script>
+        // Вставь сюда весь JavaScript для лунара (поиск города, askLunar, showOverlay, signMottos)
+        // Он уже есть в твоём app.py — скопируй его сюда
+    </script>
+</body>
+</html>"""
+}
+
+# Создаём страницы
+for filename, content in PAGES.items():
+    filepath = os.path.join(os.path.dirname(__file__), filename)
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"[OK] {filename} создан")
+
+print("\nГотово! Теперь:")
+print("1. Скопируй JavaScript из app.py в lunar.html (функции askLunar, showOverlay, поиск города)")
+print("2. Добавь в app.py маршруты для новых страниц")
+print("3. Замени главную страницу на карточки-меню")
