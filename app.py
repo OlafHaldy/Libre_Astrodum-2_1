@@ -163,11 +163,11 @@ HTML_PAGE = r"""<!DOCTYPE html>
                 <div class="menu-card-title">Лунар</div>
                 <div class="menu-card-desc">Прогноз на месяц</div>
             </a>
-            <div class="menu-card menu-card-disabled">
+            <a href="/natal" class="menu-card">
                 <div class="menu-card-icon">☉</div>
                 <div class="menu-card-title">Натальная карта</div>
-                <div class="menu-card-desc">В разработке</div>
-            </div>
+                <div class="menu-card-desc">Карта рождения</div>
+            </a>
             <div class="menu-card menu-card-disabled">
                 <div class="menu-card-icon">☀</div>
                 <div class="menu-card-title">Соляр</div>
@@ -197,13 +197,60 @@ HTML_PAGE = r"""<!DOCTYPE html>
 def home():
     return HTML_PAGE
 
-@app.get("/", response_class=HTMLResponse)
-def home():
-    return HTML_PAGE
 @app.get("/lunar", response_class=HTMLResponse)
 def lunar_page():
     return open("lunar.html", "r", encoding="utf-8").read()
-# ================== НОВЫЙ API (Лунар) ==================
+
+@app.get("/natal", response_class=HTMLResponse)
+def natal_page():
+    return open("natal.html", "r", encoding="utf-8").read()
+
+# ================== API НАТАЛЬНОЙ КАРТЫ ==================
+
+@app.get("/api/v1/natal")
+def natal_v1(
+    natal_year: int,
+    natal_month: int,
+    natal_day: int,
+    natal_hour: int = 12,
+    natal_minute: int = 0,
+    lat: float = 50.45,
+    lon: float = 30.52,
+):
+    """Натальная карта через полный конвейер."""
+    import swisseph as swe
+    from builders.natal_builder import build_natal_chart
+    from core.pipeline import run_full_pipeline
+    from core.prompt_builder import build_prompt_from_dict
+    from ai import generate
+    from graphics.wheel_renderer import draw_wheel
+
+    chart = build_natal_chart(natal_year, natal_month, natal_day, natal_hour, natal_minute, lat, lon)
+    wheel_svg = draw_wheel(chart)
+
+    result = run_full_pipeline(chart)
+    prompt = build_prompt_from_dict(result["prompt_context"], "natal")
+
+    try:
+        interpretation = generate(prompt)
+    except Exception as e:
+        logger.error(f"LLM failed: {e}")
+        interpretation = "Интерпретация временно недоступна."
+
+    sun_sign = chart.planets['Sun']['sign']
+
+    return {
+        "date": chart.datetime,
+        "interpretation": interpretation,
+        "analysis": result["analysis"],
+        "planets": chart.planets,
+        "houses": chart.houses,
+        "aspects": chart.aspects,
+        "natal_sun_sign": sun_sign,
+        "wheel": wheel_svg
+    }
+
+# ================== API ЛУНАРА ==================
 
 @app.get("/api/v1/lunar")
 def lunar_v1(
@@ -214,13 +261,10 @@ def lunar_v1(
     natal_day: int,
     natal_hour: int,
     natal_minute: int,
-
     lat: float,
     lon: float,
-
     birth_lat: float,
     birth_lon: float,
-
     birth_city: str = "",
     lunar_city: str = "",
 ):
@@ -231,12 +275,10 @@ def lunar_v1(
     from core.prompt_builder import build_prompt_from_dict
     from ai import generate
     from graphics.wheel_renderer import draw_wheel
-
     from datetime import datetime
     import requests
     import os
 
-    # Получаем реальное смещение от TimeZoneDB
     timestamp = int(datetime(natal_year, natal_month, natal_day, 12, 0, 0).timestamp())
     url = "https://api.timezonedb.com/v2.1/get-time-zone"
     params = {
@@ -253,7 +295,6 @@ def lunar_v1(
     if data["status"] != "OK":
         raise Exception(f"TimeZoneDB error: {data.get('message', 'unknown')}")
     utc_offset = data["gmtOffset"] / 3600.0
-    print(f"[NATAL] Historical UTC offset for birthplace: {utc_offset}h")
 
     jd_natal = swe.julday(
         natal_year, natal_month, natal_day,
@@ -261,12 +302,13 @@ def lunar_v1(
     )
     moon_data, _ = swe.calc_ut(jd_natal, swe.MOON)
     natal_moon_longitude = moon_data[0]
-        # Определяем знак натального Солнца для заставки
+
     sun_data, _ = swe.calc_ut(jd_natal, swe.SUN)
     sun_longitude = sun_data[0]
     SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
              'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
     natal_sun_sign = SIGNS[int(sun_longitude // 30)]
+
     chart = build_lunar_chart(
         natal_moon_longitude,
         year, month,
@@ -278,17 +320,9 @@ def lunar_v1(
 
     result = run_full_pipeline(chart)
     prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
-    print("\n===== LUNAR PROMPT =====")
-    print(prompt)
-    print("===== END LUNAR PROMPT =====\n")
-    print("\n===== PROMPT CHECK =====")
-    print(prompt[-5000:])
-    print("===== END PROMPT CHECK =====\n")
+
     try:
         interpretation = generate(prompt)
-        print("\n===== LUNAR INTERPRETATION =====")
-        print(repr(interpretation))
-        print("===== END INTERPRETATION =====\n")
     except Exception as e:
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."
@@ -296,13 +330,11 @@ def lunar_v1(
     return {
         "report": {
             "title": "Лунар",
-
             "person": {
                 "birth_date": f"{natal_day:02d}.{natal_month:02d}.{natal_year}",
                 "birth_time": f"{natal_hour:02d}:{natal_minute:02d}",
                 "birth_city": birth_city,
             },
-
             "calculation": {
                 "return_datetime": chart.datetime,
                 "house_system": "Placidus",
@@ -311,15 +343,14 @@ def lunar_v1(
                 "target_month": month,
             }
         },
-
         "date": chart.datetime,
         "interpretation": interpretation,
         "analysis": result["analysis"],
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
-        "natal_sun_sign": natal_sun_sign,  # ← новое поле
-    "wheel": wheel_svg
-}
+        "natal_sun_sign": natal_sun_sign,
+        "wheel": wheel_svg
+    }
 
    
