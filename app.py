@@ -416,6 +416,12 @@ HTML_PAGE = r"""
         line-height: 1.7;
     }
 }
+@media (max-width: 768px) {
+    .container { max-width: 100%; padding: 10px; }
+    table { font-size: 13px; }
+    button { font-size: 16px; padding: 12px; }
+    input, select { font-size: 14px; }
+}
     </style>
 </head>
 <body>
@@ -638,6 +644,7 @@ HTML_PAGE = r"""
         document.getElementById('formContainer').style.display = 'none';
         const resultBlock = document.getElementById('result');
         resultBlock.style.display = 'block';
+        <button onclick="location.reload()" style="margin-top:20px;background:#444;color:#d4af37;">← Построить новый лунар</button>
         resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
         const params = new URLSearchParams({
