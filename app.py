@@ -501,6 +501,95 @@ def daily_v1(sign: str = "Aquarius"):
         "interpretation": interpretation,
         "transits": transit_positions
     }
+@app.get("/api/v1/daily-personal")
+def daily_personal_v1(
+    natal_year: int,
+    natal_month: int,
+    natal_day: int,
+    natal_hour: int = 12,
+    natal_minute: int = 0,
+    lat: float = 50.45,
+    lon: float = 30.52,
+):
+    """Персональный прогноз на день по натальной карте."""
+    import swisseph as swe
+    from datetime import datetime
+    from ai import generate
+    from builders.natal_builder import build_natal_chart
+
+    # Строим натальную карту
+    chart = build_natal_chart(natal_year, natal_month, natal_day, natal_hour, natal_minute, lat, lon)
+
+    # Текущие транзиты
+    now = datetime.utcnow()
+    jd = swe.julday(now.year, now.month, now.day, now.hour + now.minute / 60.0)
+
+    PLANET_IDS = {
+        'Sun': swe.SUN, 'Moon': swe.MOON, 'Mercury': swe.MERCURY,
+        'Venus': swe.VENUS, 'Mars': swe.MARS, 'Jupiter': swe.JUPITER,
+        'Saturn': swe.SATURN
+    }
+    SIGNS_RU = ['Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева',
+                'Весы', 'Скорпион', 'Стрелец', 'Козерог', 'Водолей', 'Рыбы']
+    PLANET_NAMES_RU = {
+        'Sun': 'Солнце', 'Moon': 'Луна', 'Mercury': 'Меркурий',
+        'Venus': 'Венера', 'Mars': 'Марс', 'Jupiter': 'Юпитер',
+        'Saturn': 'Сатурн'
+    }
+
+    transit_text = []
+    for name, pid in PLANET_IDS.items():
+        t_data, _ = swe.calc_ut(jd, pid)
+        t_lon = t_data[0]
+        t_sign = SIGNS_RU[int(t_lon // 30)]
+        t_degree = round(t_lon % 30, 2)
+        transit_text.append(f"{PLANET_NAMES_RU.get(name, name)}: {t_degree}° {t_sign}")
+
+    # Натальные позиции
+    natal_text = []
+    for name, data in chart.planets.items():
+        n_sign = SIGNS_RU[int(data['longitude'] // 30)]
+        n_degree = round(data['longitude'] % 30, 2)
+        natal_text.append(f"{PLANET_NAMES_RU.get(name, name)}: {n_degree}° {n_sign}")
+
+    prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
+
+Составь персональный прогноз на сегодня.
+
+НАТАЛЬНАЯ КАРТА ЧЕЛОВЕКА:
+{chr(10).join(natal_text)}
+
+ТЕКУЩИЕ ПОЛОЖЕНИЯ ПЛАНЕТ:
+{chr(10).join(transit_text)}
+
+ВАЖНО:
+1. Используй только классических управителей знаков:
+Овен — Марс, Телец — Венера, Близнецы — Меркурий, Рак — Луна,
+Лев — Солнце, Дева — Меркурий, Весы — Венера, Скорпион — Марс,
+Стрелец — Юпитер, Козерог — Сатурн, Водолей — Сатурн, Рыбы — Юпитер.
+
+2. Найди, какая транзитная планета сегодня образует самый важный аспект к натальной карте.
+
+3. Дай короткий, но глубокий персональный прогноз.
+
+Требования:
+- Ровно 2-3 предложения
+- Афористичный, философский стиль
+- Без «вас ждёт», «будьте осторожны», «удачный день»
+- Обращайся к человеку лично, но без панибратства
+- Дай один неожиданный, но точный совет
+
+Не используй markdown. Не добавляй заголовков. Просто текст из 2-3 предложений."""
+
+    try:
+        interpretation = generate(prompt)
+    except Exception as e:
+        interpretation = "Сегодня звёзды говорят тихо. Прислушайся к тишине."
+
+    return {
+        "date": now.strftime("%Y-%m-%d"),
+        "interpretation": interpretation
+    }
 # ================== ЛУННЫЙ КАЛЕНДАРЬ ==================
 
 def get_moon_phase():
@@ -695,6 +784,9 @@ def natal_v1(
 @app.get("/daily", response_class=HTMLResponse)
 def daily_page():
     return open("daily.html", "r", encoding="utf-8").read()
+@app.get("/daily-personal", response_class=HTMLResponse)
+def daily_personal_page():
+    return open("daily_personal.html", "r", encoding="utf-8").read()
 @app.get("/api/v1/lunar")
 def lunar_v1(
     year: int,

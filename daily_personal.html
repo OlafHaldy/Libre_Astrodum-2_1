@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liber Astrodum — Персональный прогноз</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Infant', serif;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.65)), url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .container { max-width: 700px; width: 100%; }
+        .back-btn {
+            background: none; border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
+            transition: all 0.3s; display: inline-block; text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
+        .daily-title {
+            font-family: 'Cormorant SC', serif;
+            font-size: 2.5em;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+        .card {
+            background-image: url('/static/card_bg.jpg'); background-size: cover;
+            background-color: rgba(30, 20, 10, 0.6); background-blend-mode: overlay;
+            border: 1px solid #5a5a5a; border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+        }
+        label { display: block; margin-top: 18px; color: #256057; font-size: 1.2em; font-family: 'Caveat', cursive; }
+        input { width: 100%; padding: 12px; margin-top: 6px; background: #1c1c1c; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Cormorant Infant', serif; }
+        input:focus { outline: none; border-color: #b8860b; box-shadow: 0 0 10px rgba(184, 134, 11, 0.4); }
+        .row { display: flex; gap: 12px; } .row > div { flex: 1; }
+        button {
+            background: linear-gradient(135deg, #b8860b, #d4af37); color: #1a1a1a;
+            border: none; padding: 14px 30px; font-size: 18px; font-weight: bold;
+            border-radius: 12px; cursor: pointer; margin-top: 25px; width: 100%;
+            font-family: 'Cormorant Infant', serif; text-transform: uppercase;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184, 134, 11, 0.5); }
+        .suggestions-dropdown {
+            position: absolute; background: #1c1c1c; border: 1px solid #444; border-radius: 10px;
+            width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 4px; display: none;
+        }
+        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; }
+        .suggestion-item:hover { background: #2a2a2a; }
+        #scrollContainer {
+            display: none;
+            margin: 30px auto;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+        #scrollContainer img {
+            width: 100%;
+            height: auto;
+        }
+        #scrollText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3d2b1f;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3em;
+            line-height: 1.5;
+            max-width: 75%;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
+        }
+        @keyframes unroll {
+            0% { transform: scaleX(0); opacity: 0; }
+            100% { transform: scaleX(1); opacity: 1; }
+        }
+        .unroll-animation {
+            animation: unroll 1.5s ease-out;
+        }
+        @media (max-width: 600px) {
+            #scrollContainer { max-width: 100%; }
+            #scrollText { font-size: 0.75em; line-height: 1.4; max-width: 70%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/daily" class="back-btn">← Назад</a>
+        <div class="daily-title">Персональный прогноз на день</div>
+
+        <div class="card" id="formContainer">
+            <div class="row">
+                <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
+                <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
+                <div><label>День</label><input type="number" id="natalDay" value="14"></div>
+            </div>
+            <div class="row">
+                <div><label>Час рождения</label><input type="number" id="natalHour" value="6"></div>
+                <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
+            </div>
+            <div style="position: relative;">
+                <label>Место рождения</label>
+                <input type="text" id="birthCity" value="Дубно" placeholder="Начните вводить город...">
+                <div id="suggestions" class="suggestions-dropdown"></div>
+            </div>
+            <button onclick="askDailyPersonal()">Получить прогноз</button>
+        </div>
+
+        <div id="scrollContainer">
+            <img src="/static/scroll.png" alt="Свиток">
+            <div id="scrollText"></div>
+        </div>
+    </div>
+
+    <script>
+        let birthLat = 50.4188, birthLon = 25.7456;
+
+        const birthCityInput = document.getElementById('birthCity');
+        const suggestionsBox = document.getElementById('suggestions');
+        birthCityInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length < 2) { suggestionsBox.style.display = 'none'; return; }
+            fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    if (!data.length) {
+                        suggestionsBox.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
+                        suggestionsBox.style.display = 'block';
+                        return;
+                    }
+                    data.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = place.display_name;
+                        div.addEventListener('click', function() {
+                            birthLat = place.lat; birthLon = place.lon;
+                            birthCityInput.value = place.display_name;
+                            suggestionsBox.style.display = 'none';
+                        });
+                        suggestionsBox.appendChild(div);
+                    });
+                    suggestionsBox.style.display = 'block';
+                });
+        });
+        document.addEventListener('click', function(e) {
+            if (!birthCityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        async function askDailyPersonal() {
+            const natalYear = document.getElementById('natalYear').value;
+            const natalMonth = document.getElementById('natalMonth').value;
+            const natalDay = document.getElementById('natalDay').value;
+            const natalHour = document.getElementById('natalHour').value || 12;
+            const natalMinute = document.getElementById('natalMinute').value || 0;
+
+            // Скрываем форму
+            document.getElementById('formContainer').style.display = 'none';
+
+            // Показываем свиток
+            const scrollContainer = document.getElementById('scrollContainer');
+            const scrollText = document.getElementById('scrollText');
+            scrollText.innerHTML = 'Загрузка...';
+            scrollContainer.style.display = 'block';
+            scrollContainer.classList.remove('unroll-animation');
+            void scrollContainer.offsetWidth;
+            scrollContainer.classList.add('unroll-animation');
+
+            const params = new URLSearchParams({
+                natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
+                natal_hour: natalHour, natal_minute: natalMinute,
+                lat: birthLat, lon: birthLon
+            });
+
+            try {
+                const response = await fetch('/api/v1/daily-personal?' + params.toString());
+                const data = await response.json();
+                scrollText.innerHTML = data.interpretation || 'Сегодня звёзды говорят тихо.';
+            } catch (e) {
+                scrollText.innerHTML = 'Сегодня звёзды говорят тихо.';
+            }
+        }
+    </script>
+</body>
+</html>
