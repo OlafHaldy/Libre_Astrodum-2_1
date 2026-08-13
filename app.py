@@ -6,6 +6,7 @@ import os
 import logging
 import requests
 from dotenv import load_dotenv
+from datetime import datetime
 
 # ==========================
 # Загружаем переменные окружения
@@ -91,7 +92,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liber Astrodum — Книга Звездного Дара</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128302;</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
     <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -103,9 +104,8 @@ HTML_PAGE = r"""<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
         #bg-video {
             position: fixed;
@@ -121,30 +121,201 @@ HTML_PAGE = r"""<!DOCTYPE html>
             background: rgba(0, 0, 0, 0.55);
             z-index: -1;
         }
-        .container { max-width: 700px; width: 100%; text-align: center; }
+        .container { max-width: 1200px; width: 100%; }
+
+        /* Шапка: прогноз слева, заголовок по центру, луна справа */
+        .header {
+            display: grid;
+            grid-template-columns: 200px 1fr 220px;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-left { text-align: left; }
+        .header-left img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.3s, filter 0.3s;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+        }
+        .header-left img:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.7));
+        }
+        .header-left-label {
+            color: #d4af37;
+            font-family: 'Caveat', cursive;
+            font-size: 1.2em;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .header-center { text-align: center; }
         .app-title h1 {
             font-family: 'UnifrakturMaguntia', cursive;
-            font-size: 3.5em;
+            font-size: 3em;
             background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
-            margin-bottom: 10px;
         }
+        .header-right {
+            text-align: center;
+            background: rgba(28, 28, 28, 0.8);
+            border: 1px solid #444;
+            border-radius: 14px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .moon-phase {
+            font-size: 2.5em;
+            text-align: center;
+        }
+        .moon-label {
+            color: #d4af37;
+            font-family: 'Cormorant SC', serif;
+            font-size: 1.2em;
+            text-align: center;
+            margin: 10px 0;
+            font-style: normal;
+        }
+        .moon-sign, .lunar-day {
+            font-family: 'Cormorant Infant', serif;
+            font-size: 1em;
+            text-align: center;
+            margin: 5px 0;
+            color: #e4e4e4;
+        }
+        .event-title {
+            font-family: 'Cormorant SC', serif;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b8860b;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .event-text {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1em;
+            color: #f0f0f0;
+            line-height: 1.4;
+            text-align: center;
+        }
+
+        /* Стих */
+        .poem-section { text-align: center; margin-bottom: 30px; }
         .poem { color: #c092f9; font-style: italic; font-size: 1.15em; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Marck Script', cursive; }
-        .poem-author { color: #b8860b; font-size: 0.95em; margin-bottom: 30px; font-family: 'Caveat', cursive; }
-        .menu-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 600px; margin: 0 auto; }
-        .menu-card {
-            background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px;
-            padding: 25px 15px; text-align: center; cursor: pointer; transition: all 0.3s;
-            backdrop-filter: blur(5px); text-decoration: none; color: inherit; display: block;
+        .poem-author { color: #b8860b; font-size: 0.95em; font-family: 'Caveat', cursive; }
+
+        /* Крупные иконки Лунар и Натал */
+        .main-modes {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-bottom: 40px;
         }
-        .menu-card:hover { border-color: #b8860b; box-shadow: 0 0 15px rgba(184, 134, 11, 0.3); transform: translateY(-2px); }
-        .menu-card-icon { font-size: 2.5em; margin-bottom: 10px; }
-        .menu-card-title { color: #d4af37; font-family: 'Uncial Antiqua', cursive; font-size: 1.2em; margin-bottom: 5px; }
-        .menu-card-desc { color: #888; font-size: 0.9em; }
-        .menu-card-disabled { opacity: 0.4; cursor: not-allowed; }
-        .menu-card-disabled:hover { border-color: #444; box-shadow: none; transform: none; }
-        @media (max-width: 768px) { .menu-cards { grid-template-columns: repeat(2, 1fr); } }
+        .main-mode-card {
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .main-mode-card img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            transition: transform 0.3s, filter 0.3s;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
+        }
+        .main-mode-card:hover img {
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.7));
+        }
+        .main-mode-title {
+            color: #d4af37;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1.4em;
+            margin-top: 10px;
+        }
+        .main-mode-desc {
+            color: #888;
+            font-size: 1em;
+            margin-top: 3px;
+        }
+
+        /* Мелкие стандартные окна для режимов в разработке */
+        .dev-modes {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .dev-mode-card {
+            background: rgba(28, 28, 28, 0.8);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 15px 20px;
+            text-align: center;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .dev-mode-title {
+            color: #d4af37;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1em;
+        }
+        .dev-mode-desc {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 3px;
+        }
+
+        /* Лунный календарь */
+        .moon-phase { font-size: 2em; text-align: center; }
+        .moon-label { color: #d4af37; text-align: center; margin: 8px 0; font-style: italic; }
+        .moon-sign, .lunar-day { text-align: center; margin: 3px 0; font-size: 0.9em; }
+        .event-title { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: #b8860b; margin-top: 10px; margin-bottom: 3px; }
+        .event-text { color: #f0f0f0; line-height: 1.3; text-align: center; font-size: 0.85em; }
+
+        .error-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1c1c1c;
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+        }
+        .error-modal p { color: #f0f0f0; font-size: 1.15em; line-height: 1.6; margin-bottom: 25px; }
+        .error-modal button {
+            background: none;
+            border: 1px solid #b8860b;
+            color: #d4af37;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1em;
+        }
+        .overlay-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header { grid-template-columns: 1fr; }
+            .main-modes { flex-direction: column; align-items: center; }
+        }
     </style>
 </head>
 <body>
@@ -154,45 +325,294 @@ HTML_PAGE = r"""<!DOCTYPE html>
     <div class="overlay"></div>
 
     <div class="container">
-        <div class="app-title"><h1>Liber Astrodum</h1></div>
-        <div class="poem">Спроси у Сатурна о будущей горсти беды<br>И он не обманет, как люди – меняя обличье.<br>О радостной встрече - Юпитера скажут следы<br>(Где Кронос молчит, там от Зевса исходит величье)</div>
-        <div class="poem-author">— Олаф Халди</div>
-        <div class="menu-cards">
-            <a href="/lunar" class="menu-card">
-                <div class="menu-card-icon">🌙</div>
-                <div class="menu-card-title">Лунар</div>
-                <div class="menu-card-desc">Прогноз на месяц</div>
+        <div class="header">
+            <div class="header-left">
+                <a href="/daily">
+                    <img src="/static/zodiac/zodiac_circle.png" alt="Прогноз на день">
+                    
+                </a>
+            </div>
+            <div class="header-center">
+                <div class="app-title"><h1>Liber Astrodum</h1></div>
+            </div>
+            <div class="header-right">
+                <div class="side-widget-title">🌙 Лунный календарь</div>
+                <div id="moonWidget">Загрузка...</div>
+            </div>
+        </div>
+
+        <div class="poem-section">
+            <div class="poem">Спроси у Сатурна о будущей горсти беды<br>И он не обманет, как люди – меняя обличье.<br>О радостной встрече - Юпитера скажут следы<br>(Где Кронос молчит, там от Зевса исходит величье)</div>
+            <div class="poem-author">— Олаф Халди</div>
+        </div>
+
+        <div class="main-modes">
+            <a href="/lunar" class="main-mode-card">
+                <img src="/static/icons/icon_lunar.png" alt="Лунар">
+                <div class="main-mode-title">Лунар</div>
+                <div class="main-mode-desc">Прогноз на месяц</div>
             </a>
-            <a href="/natal" class="menu-card">
-                <div class="menu-card-icon">☉</div>
-                <div class="menu-card-title">Натальная карта</div>
-                <div class="menu-card-desc">Карта рождения</div>
+            <a href="/natal" class="main-mode-card">
+                <img src="/static/icons/icon_natal.png" alt="Натальная карта">
+                <div class="main-mode-title">Натальная карта</div>
+                <div class="main-mode-desc">Карта рождения</div>
             </a>
-            <div class="menu-card menu-card-disabled">
-                <div class="menu-card-icon">☀</div>
-                <div class="menu-card-title">Соляр</div>
-                <div class="menu-card-desc">В разработке</div>
+        </div>
+
+        <div class="dev-modes">
+            <div class="dev-mode-card">
+                <div class="dev-mode-title">☀ Соляр</div>
+                <div class="dev-mode-desc">В разработке</div>
             </div>
-            <div class="menu-card menu-card-disabled">
-                <div class="menu-card-icon">⏳</div>
-                <div class="menu-card-title">Прогрессии</div>
-                <div class="menu-card-desc">В разработке</div>
+            <div class="dev-mode-card">
+                <div class="dev-mode-title">⏳ Прогрессии</div>
+                <div class="dev-mode-desc">В разработке</div>
             </div>
-            <div class="menu-card menu-card-disabled">
-                <div class="menu-card-icon">💞</div>
-                <div class="menu-card-title">Синастрия</div>
-                <div class="menu-card-desc">В разработке</div>
+            <div class="dev-mode-card">
+                <div class="dev-mode-title">💞 Синастрия</div>
+                <div class="dev-mode-desc">В разработке</div>
             </div>
-            <div class="menu-card menu-card-disabled">
-                <div class="menu-card-icon">🔮</div>
-                <div class="menu-card-title">Элекция</div>
-                <div class="menu-card-desc">В разработке</div>
+            <div class="dev-mode-card">
+                <div class="dev-mode-title">🔮 Элекция</div>
+                <div class="dev-mode-desc">В разработке</div>
             </div>
         </div>
     </div>
+
+    <div id="errorOverlay" class="overlay-bg" onclick="closeErrorModal()"></div>
+    <div id="errorModal" class="error-modal">
+        <p>Звёзды, как и астролог-мечтатель, любят покой. Позвольте ему отложить до завтра ваш запрос.</p>
+        <button onclick="closeErrorModal()">Принимаю</button>
+    </div>
+
+    <script>
+        function showErrorModal() {
+            document.getElementById('errorOverlay').style.display = 'block';
+            document.getElementById('errorModal').style.display = 'block';
+        }
+        function closeErrorModal() {
+            document.getElementById('errorOverlay').style.display = 'none';
+            document.getElementById('errorModal').style.display = 'none';
+        }
+
+        // Загружаем прогноз на день
+
+
+        // Загружаем лунный календарь
+        fetch('/widget')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('moonWidget').innerHTML = `
+                    <div class="moon-phase">${data.moon_emoji}</div>
+                    <div class="moon-label">${data.moon_phase}</div>
+                    <div class="moon-sign">Луна в знаке: ${data.moon_sign}</div>
+                    <div class="lunar-day">День ${data.lunar_day}: ${data.lunar_day_name}</div>
+
+                    <div class="event-title">🌿 Совет дня</div>
+                    <div class="event-text">${data.advice}</div>
+                `;
+            })
+            .catch(() => {
+                document.getElementById('moonWidget').innerHTML = 'Данные недоступны.';
+            });
+    </script>
 </body>
 </html>"""
+@app.get("/api/v1/daily")
+def daily_v1(sign: str = "Aquarius"):
+    """Короткий прогноз на день для знака зодиака."""
+    import swisseph as swe
+    from datetime import datetime
+    from ai import generate
 
+    # Текущие транзиты
+    now = datetime.utcnow()
+    jd = swe.julday(now.year, now.month, now.day, now.hour + now.minute / 60.0)
+
+    transit_positions = {}
+    SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+             'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    transit_positions = {}
+    SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+             'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    PLANET_IDS = {
+        'Sun': swe.SUN, 'Moon': swe.MOON, 'Mercury': swe.MERCURY,
+        'Venus': swe.VENUS, 'Mars': swe.MARS, 'Jupiter': swe.JUPITER,
+        'Saturn': swe.SATURN
+    }
+
+    SIGN_NAMES_RU = {
+        'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+        'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+        'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+        'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+    }
+    sign_ru = SIGN_NAMES_RU.get(sign, sign)
+
+    prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
+
+Составь короткий прогноз на сегодня для знака {sign_ru}.
+
+Текущие положения планет:
+{transit_text}
+
+ВАЖНО: Используй только классических управителей знаков:
+Овен — Марс, Телец — Венера, Близнецы — Меркурий, Рак — Луна,
+Лев — Солнце, Дева — Меркурий, Весы — Венера, Скорпион — Марс,
+Стрелец — Юпитер, Козерог — Сатурн, Водолей — Сатурн, Рыбы — Юпитер.
+
+Требования:
+1. Ровно 2-3 предложения
+2. Афористичный, философский стиль
+3. Без «вас ждёт», «будьте осторожны», «удачный день»
+4. Укажи, какая планета сегодня наиболее влияет на знак {sign_ru}
+5. Дай один неожиданный, но точный совет
+
+Не используй markdown. Не добавляй заголовков. Просто текст из 2-3 предложений."""
+    try:
+        interpretation = generate(prompt)
+    except Exception as e:
+        interpretation = "Сегодня звёзды говорят тихо. Прислушайся к тишине."
+
+    return {
+        "sign": sign,
+        "date": now.strftime("%Y-%m-%d"),
+        "interpretation": interpretation,
+        "transits": transit_positions
+    }
+# ================== ЛУННЫЙ КАЛЕНДАРЬ ==================
+
+def get_moon_phase():
+    """Возвращает полную информацию о Луне для виджета."""
+    now = datetime.utcnow()
+    jd = swe.julday(now.year, now.month, now.day, now.hour + now.minute / 60.0)
+    sun_lon = swe.calc_ut(jd, swe.SUN)[0][0]
+    moon_lon = swe.calc_ut(jd, swe.MOON)[0][0]
+    angle = (moon_lon - sun_lon) % 360
+
+    # Фаза Луны
+    if angle < 22.5 or angle >= 337.5:
+        phase_emoji = "🌑"
+        phase_name = "Новолуние"
+        phase_key = "new"
+    elif 22.5 <= angle < 67.5:
+        phase_emoji = "🌒"
+        phase_name = "Молодая луна"
+        phase_key = "waxing"
+    elif 67.5 <= angle < 112.5:
+        phase_emoji = "🌓"
+        phase_name = "Первая четверть"
+        phase_key = "waxing"
+    elif 112.5 <= angle < 157.5:
+        phase_emoji = "🌔"
+        phase_name = "Прибывающая луна"
+        phase_key = "waxing"
+    elif 157.5 <= angle < 202.5:
+        phase_emoji = "🌕"
+        phase_name = "Полнолуние"
+        phase_key = "full"
+    elif 202.5 <= angle < 247.5:
+        phase_emoji = "🌖"
+        phase_name = "Убывающая луна"
+        phase_key = "waning"
+    elif 247.5 <= angle < 292.5:
+        phase_emoji = "🌗"
+        phase_name = "Последняя четверть"
+        phase_key = "waning"
+    else:
+        phase_emoji = "🌘"
+        phase_name = "Старая луна"
+        phase_key = "waning"
+
+    # Знак Луны
+    moon_sign_num = int(moon_lon // 30)
+    signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+             'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    moon_signs_ru = ['Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева',
+                     'Весы', 'Скорпион', 'Стрелец', 'Козерог', 'Водолей', 'Рыбы']
+    moon_sign = moon_signs_ru[moon_sign_num]
+
+    # Лунный день
+    lunar_day = int(angle / 12) + 1
+    if lunar_day > 30:
+        lunar_day = 1
+
+    # Названия лунных дней
+    lunar_day_names = {
+        1: "День творения", 2: "День дара", 3: "День воина",
+        4: "День равновесия", 5: "День вкушения", 6: "День пророчества",
+        7: "День молитвы", 8: "День трансформации", 9: "День искушений",
+        10: "День источника", 11: "День энергетического меча",
+        12: "День чаши", 13: "День змеи", 14: "День трубы",
+        15: "День полноты", 16: "День равновесия", 17: "День танца",
+        18: "День зеркала", 19: "День паука", 20: "День орла",
+        21: "День коня", 22: "День слона", 23: "День очищения",
+        24: "День медведя", 25: "День черепахи", 26: "День жабы",
+        27: "День жезла", 28: "День лотоса", 29: "День завершения",
+        30: "День золотого лебедя",
+    }
+    lunar_day_name = lunar_day_names.get(lunar_day, "")
+
+    # Совет дня
+        # Советы для каждого лунного дня
+    lunar_advices = {
+        1: "День творения — планируйте, мечтайте, загадывайте желания.",
+        2: "День дара — принимайте дары судьбы, будьте щедры.",
+        3: "День воина — действуйте решительно, защищайте свои границы.",
+        4: "День равновесия — ищите баланс во всём, не перегружайтесь.",
+        5: "День вкушения — наслаждайтесь жизнью, радуйтесь простому.",
+        6: "День пророчества — прислушивайтесь к интуиции и знакам.",
+        7: "День молитвы — обратитесь к высшему, практикуйте благодарность.",
+        8: "День трансформации — отпускайте старое, готовьтесь к новому.",
+        9: "День искушений — будьте осторожны с соблазнами, не поддавайтесь.",
+        10: "День источника — наполняйтесь энергией, ищите вдохновение.",
+        11: "День энергетического меча — направьте силу на важное, отсеките лишнее.",
+        12: "День чаши — откройтесь любви, заботе, нежности.",
+        13: "День змеи — мудрость через тишину, наблюдайте.",
+        14: "День трубы — заявите о себе, ваш голос важен.",
+        15: "День полноты — завершайте начатое, подводите итоги.",
+        16: "День равновесия — восстановите гармонию, отдохните.",
+        17: "День танца — позвольте себе радость движения, лёгкость.",
+        18: "День зеркала — посмотрите на себя честно, примите себя.",
+        19: "День паука — плетите свою судьбу, будьте терпеливы.",
+        20: "День орла — поднимитесь над ситуацией, увидьте перспективу.",
+        21: "День коня — вперёд, без колебаний, риск оправдан.",
+        22: "День слона — мудрость, стойкость, не торопитесь.",
+        23: "День очищения — избавьтесь от лишнего, очистите пространство.",
+        24: "День медведя — сила в покое, берегите энергию.",
+        25: "День черепахи — медленно, но верно, не сдавайтесь.",
+        26: "День жабы — смирение, принимайте то, что есть.",
+        27: "День жезла — власть над собой, управляйте своей жизнью.",
+        28: "День лотоса — расцветайте, раскрывайте свой потенциал.",
+        29: "День завершения — отпустите всё лишнее, готовьтесь к новому циклу.",
+        30: "День золотого лебедя — совершенство, благодарность, свет.",
+    }
+    advice = lunar_advices.get(lunar_day, "Доверьтесь интуиции и наблюдайте за ритмами природы.")
+
+    return {
+        "phase_emoji": phase_emoji,
+        "phase_name": phase_name,
+        "phase_key": phase_key,
+        "moon_sign": moon_sign,
+        "lunar_day": lunar_day,
+        "lunar_day_name": lunar_day_name,
+        "advice": advice,
+    }
+
+
+
+@app.get("/widget")
+def widget_data():
+    """Текущая фаза Луны, знак, лунный день."""
+    moon_data = get_moon_phase()
+    return JSONResponse(content={
+        "moon_emoji": moon_data["phase_emoji"],
+        "moon_phase": moon_data["phase_name"],
+        "moon_sign": moon_data["moon_sign"],
+        "lunar_day": moon_data["lunar_day"],
+        "lunar_day_name": moon_data["lunar_day_name"],
+        "advice": moon_data["advice"],
+    })
 @app.get("/", response_class=HTMLResponse)
 def home():
     return HTML_PAGE
@@ -251,7 +671,9 @@ def natal_v1(
     }
 
 # ================== API ЛУНАРА ==================
-
+@app.get("/daily", response_class=HTMLResponse)
+def daily_page():
+    return open("daily.html", "r", encoding="utf-8").read()
 @app.get("/api/v1/lunar")
 def lunar_v1(
     year: int,

@@ -1,10 +1,10 @@
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liber Astrodum — Лунар</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128302;</text></svg>">
+    <title>Liber Astrodum — Натальная карта</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
     <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,7 +34,7 @@
             background: none; border: 1px solid #d4af37; color: #d4af37;
             padding: 8px 20px; border-radius: 20px; cursor: pointer;
             font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
-            transition: all 0.3s; display: inline-block;
+            transition: all 0.3s; display: inline-block; text-decoration: none;
         }
         .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
         .card {
@@ -72,7 +72,6 @@
             margin-top: 15px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
         }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-                /* ===== БЛОКИ ИНТЕРПРЕТАЦИИ ===== */
         .interpretation-block {
             position: relative;
             margin: 18px 0;
@@ -84,13 +83,11 @@
             box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
             transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
         }
-
         .interpretation-block:hover {
             border-color: rgba(212, 175, 55, 0.38);
             border-left-color: rgba(212, 175, 55, 0.85);
             background: linear-gradient(135deg, rgba(42, 42, 42, 0.82), rgba(12, 12, 12, 0.64));
         }
-
         .interpretation-block-title {
             margin-bottom: 13px;
             color: #d4af37;
@@ -101,46 +98,64 @@
             padding-bottom: 9px;
             border-bottom: 1px solid rgba(212, 175, 55, 0.20);
         }
-
         .interpretation-block-text {
             color: #e4e4e4;
             font-size: 1rem;
             line-height: 1.8;
             text-align: left;
         }
-
-        /* Первый блок — главный */
         .interpretation-block:first-child {
             border-left-color: #d4af37;
             background: linear-gradient(135deg, rgba(55, 45, 20, 0.32), rgba(15, 15, 15, 0.62));
         }
-
         .interpretation-block:first-child .interpretation-block-title {
             font-size: 1.25rem;
         }
-
-        /* Последний блок — итог */
         .interpretation-block:last-child {
             margin-top: 24px;
             border-left-color: rgba(212, 175, 55, 0.75);
         }
-
+        .error-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1c1c1c;
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+        }
+        .error-modal p {
+            color: #f0f0f0;
+            font-size: 1.15em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .error-modal button {
+            background: none;
+            border: 1px solid #b8860b;
+            color: #d4af37;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1em;
+        }
+        .error-modal button:hover { background: rgba(184,134,11,0.2); }
+        .overlay-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; display: none;
+        }
         @media (max-width: 600px) {
-            .interpretation-block {
-                margin: 14px 0;
-                padding: 16px 16px 18px 18px;
-            }
-            .interpretation-block-title {
-                font-size: 1rem;
-                letter-spacing: 0.04em;
-            }
-            .interpretation-block:first-child .interpretation-block-title {
-                font-size: 1.08rem;
-            }
-            .interpretation-block-text {
-                font-size: 0.95rem;
-                line-height: 1.7;
-            }
+            .interpretation-block { margin: 14px 0; padding: 16px 16px 18px 18px; }
+            .interpretation-block-title { font-size: 1rem; }
+            .interpretation-block-text { font-size: 0.95rem; line-height: 1.7; }
         }
     </style>
 </head>
@@ -168,7 +183,18 @@
         <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
     </div>
 
-        <script>
+    <div id="overlay">
+        <div class="sign-emoji" id="signEmoji"></div>
+        <div class="sign-name" id="signName"></div>
+    </div>
+
+    <div id="errorOverlay" class="overlay-bg" onclick="closeErrorModal()"></div>
+    <div id="errorModal" class="error-modal">
+        <p>Звёзды, как и астролог-мечтатель, любят покой. Позвольте ему отложить до завтра ваш запрос.</p>
+        <button onclick="closeErrorModal()">Принимаю</button>
+    </div>
+
+    <script>
         const signEmojis = {
             'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
             'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
@@ -219,6 +245,16 @@
             document.getElementById('overlay').appendChild(authorElement);
             document.getElementById('overlay').style.display = 'flex';
             setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 10000);
+        }
+
+        function showErrorModal() {
+            document.getElementById('errorOverlay').style.display = 'block';
+            document.getElementById('errorModal').style.display = 'block';
+        }
+
+        function closeErrorModal() {
+            document.getElementById('errorOverlay').style.display = 'none';
+            document.getElementById('errorModal').style.display = 'none';
         }
 
         let birthLat = 50.4188, birthLon = 25.7456;
@@ -283,7 +319,6 @@
             const natalMinute = document.getElementById('natalMinute').value || 0;
 
             const resultBlock = document.getElementById('result');
-                        // Скрываем форму
             document.querySelector('.card').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
@@ -297,7 +332,7 @@
             try {
                 const response = await fetch('/api/v1/natal?' + params.toString());
                 const data = await response.json();
-                                // Извлекаем данные из analysis.chart
+
                 data.planets = data.analysis?.chart?.planets || {};
                 data.houses = data.analysis?.chart?.houses || {};
                 data.aspects = data.analysis?.chart?.aspects || [];
@@ -310,12 +345,10 @@
                 let planetListHtml = '<h3 style="color:#d4af37;">Планеты в знаках</h3>';
                 planetListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
                 planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
-                if (data.planets) {
-                    for (const [name, info] of Object.entries(data.planets)) {
-                        const planet = planetNames[name] || name;
-                        const sign = signNames[info.sign] || info.sign;
-                        planetListHtml += `<tr><td>${planet}</td><td>${sign}</td><td>${info.degree}°</td></tr>`;
-                    }
+                for (const [name, info] of Object.entries(data.planets)) {
+                    const planet = planetNames[name] || name;
+                    const sign = signNames[info.sign] || info.sign;
+                    planetListHtml += `<tr><td>${planet}</td><td>${sign}</td><td>${info.degree}°</td></tr>`;
                 }
                 planetListHtml += '</table>';
 
@@ -357,7 +390,7 @@
                         markerStart: match.index
                     });
                 }
-                
+
                 let interpretationHtml = '';
                 if (interpretationSections.length > 0) {
                     const interpretationTitles = {
@@ -399,10 +432,10 @@
                     </div>
                 `;
             } catch (e) {
-                resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
+                console.error("NATAL ERROR:", e);
+                showErrorModal();
             }
         }
     </script>
 </body>
 </html>
-       

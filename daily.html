@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liber Astrodum — Прогноз на день</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Infant', serif;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.65)), url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .container { max-width: 800px; width: 100%; }
+        .app-title h1 {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 3em;
+            background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
+            text-align: center; margin-bottom: 20px;
+        }
+        .back-btn {
+            background: none; border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
+            transition: all 0.3s; display: inline-block; text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
+        .zodiac-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .zodiac-item {
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .zodiac-item img {
+            width: 100%;
+            max-width: 120px;
+            height: auto;
+            transition: transform 0.3s;
+        }
+        .zodiac-item:hover img {
+            transform: scale(1.1);
+        }
+        .zodiac-name {
+            color: #d4af37;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+        /* Свиток */
+        #scrollContainer {
+            display: none;
+            margin: 30px auto;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+        #scrollContainer img {
+            width: 100%;
+            height: auto;
+        }
+        #scrollText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #1a1a1a;
+            font-size: 1.4em;
+            line-height: 1.6;
+            max-width: 80%;
+            text-align: center;
+        }
+        @keyframes unroll {
+            0% { transform: scaleX(0); opacity: 0; }
+            100% { transform: scaleX(1); opacity: 1; }
+        }
+        .unroll-animation {
+            animation: unroll 1.5s ease-out;
+        }
+        @media (max-width: 600px) {
+            .zodiac-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+                .daily-title {
+            font-family: 'Cormorant SC', serif;
+            font-size: 2.5em;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+        .daily-subtitle {
+            font-family: 'Caveat', cursive;
+            font-size: 1.4em;
+            color: #ccc;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+                @media (max-width: 600px) {
+            #scrollContainer {
+                max-width: 100%;
+            }
+            #scrollText {
+                font-size: 1.1em;
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Назад</a>
+        <div class="daily-title">Прогноз на день</div>
+
+        <p style="text-align: center; color: #ccc; margin-bottom: 20px;">Выберите свой знак зодиака</p>
+
+        <div class="zodiac-grid" id="zodiacGrid">
+            <!-- Здесь будут 12 знаков -->
+        </div>
+
+        <div id="scrollContainer">
+            <img src="/static/scroll.png" alt="Свиток">
+            <div id="scrollText"></div>
+        </div>
+    </div>
+
+    <script>
+        const zodiacSigns = [
+            { name: 'Aries', ru: 'Овен', img: '/static/zodiac/aries.png' },
+            { name: 'Taurus', ru: 'Телец', img: '/static/zodiac/taurus.png' },
+            { name: 'Gemini', ru: 'Близнецы', img: '/static/zodiac/gemini.png' },
+            { name: 'Cancer', ru: 'Рак', img: '/static/zodiac/cancer.png' },
+            { name: 'Leo', ru: 'Лев', img: '/static/zodiac/leo.png' },
+            { name: 'Virgo', ru: 'Дева', img: '/static/zodiac/virgo.png' },
+            { name: 'Libra', ru: 'Весы', img: '/static/zodiac/libra.png' },
+            { name: 'Scorpio', ru: 'Скорпион', img: '/static/zodiac/scorpio.png' },
+            { name: 'Sagittarius', ru: 'Стрелец', img: '/static/zodiac/sagittarius.png' },
+            { name: 'Capricorn', ru: 'Козерог', img: '/static/zodiac/capricorn.png' },
+            { name: 'Aquarius', ru: 'Водолей', img: '/static/zodiac/aquarius.png' },
+            { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
+        ];
+
+        const grid = document.getElementById('zodiacGrid');
+
+        zodiacSigns.forEach(sign => {
+            const item = document.createElement('div');
+            item.className = 'zodiac-item';
+            item.onclick = () => getDaily(sign.name);
+            item.innerHTML = `
+                <img src="${sign.img}" alt="${sign.ru}">
+                <div class="zodiac-name">${sign.ru}</div>
+            `;
+            grid.appendChild(item);
+        });
+
+        async function getDaily(sign) {
+            const scrollContainer = document.getElementById('scrollContainer');
+            const scrollText = document.getElementById('scrollText');
+
+            scrollText.innerHTML = 'Загрузка...';
+            scrollContainer.style.display = 'block';
+            scrollContainer.classList.remove('unroll-animation');
+            void scrollContainer.offsetWidth;
+            scrollContainer.classList.add('unroll-animation');
+
+            try {
+                const response = await fetch(`/api/v1/daily?sign=${sign}`);
+                const data = await response.json();
+                scrollText.innerHTML = data.interpretation || 'Сегодня звёзды говорят тихо.';
+            } catch (e) {
+                scrollText.innerHTML = 'Сегодня звёзды говорят тихо.';
+            }
+        }
+    </script>
+</body>
+</html>
