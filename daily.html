@@ -120,18 +120,24 @@
                 max-width: 70%;
             }
         }
-                .alchemy-latin {
-            font-family: 'Cormorant SC', serif;
+         .alchemy-latin {
+            font-family: 'MedievalSharp', cursive;
             font-size: 1.1em;
-            color: #9dd6e0;
+            color: #d4af37;
             letter-spacing: 0.08em;
             margin-top: 8px;
+            text-decoration: none;
+        }
+        .alchemy-latin:hover {
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
         }
         .alchemy-translate {
             font-family: 'Caveat', cursive;
             font-size: 0.9em;
             color: #888;
             margin-top: 3px;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -147,8 +153,8 @@
             <!-- Здесь будут 12 знаков -->
         </div>
         <div style="text-align: center; margin-top: 30px;">
-            <a href="/daily-personal" style="opacity: 0.5; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
-                <img src="/static/stone.png" style="width: 100px; height: 100px; object-fit: contain;">
+            <a href="/daily-personal" style="opacity: 0.6; transition: all 0.3s; text-decoration: none;" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)'" onmouseout="this.style.opacity='0.6'; this.style.transform='scale(1)'">
+                <img src="/static/stone.png" style="width: 140px; height: 140px; object-fit: contain;">
                 <div class="alchemy-latin">Visita Interiora Terrae</div>
                 <div class="alchemy-translate">Посети недра земли</div>
             </a>
