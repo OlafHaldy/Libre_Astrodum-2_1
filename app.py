@@ -432,9 +432,6 @@ def daily_v1(sign: str = "Aquarius"):
     transit_positions = {}
     SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
              'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
-    transit_positions = {}
-    SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-             'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
     PLANET_IDS = {
         'Sun': swe.SUN, 'Moon': swe.MOON, 'Mercury': swe.MERCURY,
         'Venus': swe.VENUS, 'Mars': swe.MARS, 'Jupiter': swe.JUPITER,
@@ -447,7 +444,30 @@ def daily_v1(sign: str = "Aquarius"):
         'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
         'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
     }
+
+    PLANET_NAMES_RU = {
+        'Sun': 'Солнце', 'Moon': 'Луна', 'Mercury': 'Меркурий',
+        'Venus': 'Венера', 'Mars': 'Марс', 'Jupiter': 'Юпитер',
+        'Saturn': 'Сатурн'
+    }
+
     sign_ru = SIGN_NAMES_RU.get(sign, sign)
+
+    for name, pid in PLANET_IDS.items():
+        data, _ = swe.calc_ut(jd, pid)
+        lon = data[0]
+        sign_num = int(lon // 30)
+        degree = round(lon % 30, 2)
+        transit_positions[name] = {
+            "sign": SIGNS[sign_num],
+            "degree": degree,
+            "longitude": lon
+        }
+
+    transit_text = "\n".join([
+        f"{PLANET_NAMES_RU.get(name, name)}: {data['degree']}° {data['sign']}"
+        for name, data in transit_positions.items()
+    ])
 
     prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
 
@@ -469,13 +489,14 @@ def daily_v1(sign: str = "Aquarius"):
 5. Дай один неожиданный, но точный совет
 
 Не используй markdown. Не добавляй заголовков. Просто текст из 2-3 предложений."""
+
     try:
         interpretation = generate(prompt)
     except Exception as e:
         interpretation = "Сегодня звёзды говорят тихо. Прислушайся к тишине."
 
     return {
-        "sign": sign,
+        "sign": sign_ru,
         "date": now.strftime("%Y-%m-%d"),
         "interpretation": interpretation,
         "transits": transit_positions
