@@ -945,7 +945,7 @@ def key_v1(sign: str = "Aquarius"):
     sign_ru = SIGN_NAMES_RU.get(sign, sign)
     topic = random.choice(ALL_TOPICS)
 
-prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
+    prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
 
 Создай афоризм для знака {sign_ru}. Тема для размышления: {topic}.
 
@@ -979,6 +979,3 @@ prompt = f"""Ты — Астродо, хранитель Небесного Ар
         "topic": topic,
         "aphorism": aphorism
     }
-
-
-   
