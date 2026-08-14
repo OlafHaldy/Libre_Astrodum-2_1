@@ -7,6 +7,7 @@ import logging
 import requests
 from dotenv import load_dotenv
 from datetime import datetime
+from api.key_routes import router as key_router
 
 # ==========================
 # Загружаем переменные окружения
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 # ==========================
 app = FastAPI(title="Liber Astrodum 2.1")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
+app.include_router(key_router)
 # ================== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПОИСКА ГОРОДА ==================
 
 def geocode_city(city: str):
@@ -734,6 +735,9 @@ def lunar_page():
 @app.get("/natal", response_class=HTMLResponse)
 def natal_page():
     return open("natal.html", "r", encoding="utf-8").read()
+@app.get("/key", response_class=HTMLResponse)
+def key_page():
+    return open("key.html", "r", encoding="utf-8").read()
 
 # ================== API НАТАЛЬНОЙ КАРТЫ ==================
 
@@ -887,5 +891,87 @@ def lunar_v1(
         "natal_sun_sign": natal_sun_sign,
         "wheel": wheel_svg
     }
+@app.get("/api/v1/key")
+def key_v1(sign: str = "Aquarius"):
+    """Афоризм для знака зодиака со случайной темой."""
+    import random
+    from ai import generate
+
+    SIGN_NAMES_RU = {
+        'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+        'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+        'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+        'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+    }
+
+    ALL_TOPICS = [
+        'порядок и чистота в доме',
+        'уют и быт',
+        'ремонт и обустройство',
+        'семейный ужин и традиции',
+        'соседи и границы',
+        'дедлайн и срочные задачи',
+        'отношения с начальником',
+        'коллеги и коллектив',
+        'увольнение и перемены',
+        'повышение и амбиции',
+        'первое свидание',
+        'ссора и примирение',
+        'ревность и доверие',
+        'расставание и отпускание',
+        'долгая любовь и быт',
+        'одиночество и уединение',
+        'страдание и его смысл',
+        'судьба и случай',
+        'свобода и ответственность',
+        'смерть и память',
+        'траты и удовольствия',
+        'сбережения и безопасность',
+        'долги и обязательства',
+        'крупная покупка',
+        'щедрость и скупость',
+        'предательство и прощение',
+        'поддержка в трудный час',
+        'новая дружба',
+        'старые друзья',
+        'дружба и время',
+        'усталость и восстановление',
+        'бессонница и тревога',
+        'мотивация и воля',
+        'тело и дух',
+        'привычки и изменения'
+    ]
+
+    sign_ru = SIGN_NAMES_RU.get(sign, sign)
+    topic = random.choice(ALL_TOPICS)
+
+    prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
+
+Создай афоризм для знака {sign_ru} на тему: {topic}.
+
+Стиль:
+- Ровно 2-3 предложения
+- Иронично, но не зло
+- Философски, с глубиной
+- В характере знака {sign_ru}
+- Как Шопенгауэр, но для знака зодиака
+- Никаких «вас ждёт», «будьте осторожны»
+
+Пример для Водолея на тему «прощание»:
+«Если вы решили уйти — погодите, не спешите. Я придержу вам дверь и вызову лифт.»
+
+Не используй markdown. Не добавляй заголовков. Только текст афоризма."""
+
+    try:
+        aphorism = generate(prompt)
+    except Exception as e:
+        aphorism = "Сегодня звёзды говорят тихо. Прислушайся к тишине."
+
+    return {
+        "sign": sign_ru,
+        "topic": topic,
+        "aphorism": aphorism
+    }
+
 
    

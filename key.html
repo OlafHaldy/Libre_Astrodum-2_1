@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liber Astrodum — Ключ к знаку</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Infant', serif;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.65)), url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { max-width: 800px; width: 100%; }
+        .back-btn {
+            background: none; border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
+            text-decoration: none; display: inline-block;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+        .key-title {
+            font-family: 'Cormorant SC', serif;
+            font-size: 2.5em;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .key-subtitle {
+            font-family: 'Caveat', cursive;
+            font-size: 1.3em;
+            color: #ccc;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .zodiac-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .zodiac-item {
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .zodiac-item:hover {
+            transform: scale(1.1);
+        }
+        .zodiac-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+        .zodiac-name {
+            color: #d4af37;
+            font-size: 0.95em;
+            margin-top: 5px;
+        }
+        #parchmentContainer {
+            display: none;
+            margin: 30px auto;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+        #parchmentContainer img {
+            width: 100%;
+            height: auto;
+        }
+        #parchmentText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3d2b1f;
+            font-family: 'Caveat', cursive;
+            font-size: 1.3em;
+            line-height: 1.5;
+            max-width: 75%;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
+        }
+        @media (max-width: 600px) {
+            .zodiac-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .zodiac-item img { width: 60px; height: 60px; }
+            #parchmentText { font-size: 0.9em; max-width: 80%; }
+        }
+        @media (max-width: 600px) {
+    .zodiac-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .zodiac-item img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    #parchmentText {
+        font-size: 0.9em;
+        max-width: 80%;
+    }
+    
+    .key-title {
+        font-size: 2em;
+    }
+    
+    .key-subtitle {
+        font-size: 1.1em;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/natal" class="back-btn">← Назад</a>
+        <div class="key-title">Ключ к знаку</div>
+        <div class="key-subtitle">Выберите свой знак</div>
+
+        <div class="zodiac-grid" id="zodiacGrid"></div>
+
+        <div id="parchmentContainer">
+            <img src="/static/parchment.png" alt="Пергамент">
+            <div id="parchmentText"></div>
+        </div>
+    </div>
+
+    <script>
+        const zodiacSigns = [
+            { name: 'Aries', ru: 'Овен', img: '/static/zodiac/aries.png' },
+            { name: 'Taurus', ru: 'Телец', img: '/static/zodiac/taurus.png' },
+            { name: 'Gemini', ru: 'Близнецы', img: '/static/zodiac/gemini.png' },
+            { name: 'Cancer', ru: 'Рак', img: '/static/zodiac/cancer.png' },
+            { name: 'Leo', ru: 'Лев', img: '/static/zodiac/leo.png' },
+            { name: 'Virgo', ru: 'Дева', img: '/static/zodiac/virgo.png' },
+            { name: 'Libra', ru: 'Весы', img: '/static/zodiac/libra.png' },
+            { name: 'Scorpio', ru: 'Скорпион', img: '/static/zodiac/scorpio.png' },
+            { name: 'Sagittarius', ru: 'Стрелец', img: '/static/zodiac/sagittarius.png' },
+            { name: 'Capricorn', ru: 'Козерог', img: '/static/zodiac/capricorn.png' },
+            { name: 'Aquarius', ru: 'Водолей', img: '/static/zodiac/aquarius.png' },
+            { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
+        ];
+
+        const grid = document.getElementById('zodiacGrid');
+        zodiacSigns.forEach(sign => {
+            const item = document.createElement('div');
+            item.className = 'zodiac-item';
+            item.onclick = () => getAphorism(sign.name);
+            item.innerHTML = `
+                <img src="${sign.img}" alt="${sign.ru}">
+                <div class="zodiac-name">${sign.ru}</div>
+            `;
+            grid.appendChild(item);
+        });
+
+        async function getAphorism(sign) {
+            const container = document.getElementById('parchmentContainer');
+            const text = document.getElementById('parchmentText');
+            const grid = document.getElementById('zodiacGrid');
+            const subtitle = document.querySelector('.key-subtitle');
+            
+            // Скрываем сетку знаков и подзаголовок
+            grid.style.display = 'none';
+            subtitle.style.display = 'none';
+            
+            text.innerHTML = 'Загрузка...';
+            container.style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/v1/key?sign=${sign}`);
+                const data = await response.json();
+                text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+            } catch (e) {
+                text.innerHTML = 'Сегодня звёзды говорят тихо.';
+            }
+        }
+    </script>
+</body>
+</html>

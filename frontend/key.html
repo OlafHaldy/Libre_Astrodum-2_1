@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ключ к знаку — Liber Astrodum</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a12;
+            color: #c8b88a;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #12121f;
+            border: 1px solid #2a2a40;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        /* Декоративные элементы */
+        .container::before {
+            content: "✦";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            color: #c8b88a;
+            background: #12121f;
+            padding: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: normal;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            color: #e8dcc8;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6a6a8a;
+            font-size: 14px;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        /* Выбор знака */
+        .signs-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .sign-btn {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 12px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #8a8aaa;
+            font-size: 13px;
+        }
+
+        .sign-btn:hover {
+            background: #2a2a40;
+            border-color: #c8b88a;
+            transform: translateY(-2px);
+        }
+
+        .sign-btn.active {
+            background: #2a2a40;
+            border-color: #c8b88a;
+            color: #e8dcc8;
+            box-shadow: 0 0 20px rgba(200, 184, 138, 0.1);
+        }
+
+        .sign-btn .emoji {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Выбор категории */
+        .category-select {
+            margin-bottom: 25px;
+        }
+
+        .category-select label {
+            display: block;
+            color: #8a8aaa;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .cat-btn {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #8a8aaa;
+            font-size: 13px;
+        }
+
+        .cat-btn:hover {
+            background: #2a2a40;
+            border-color: #6a6a8a;
+        }
+
+        .cat-btn.active {
+            background: #2a2a40;
+            border-color: #c8b88a;
+            color: #e8dcc8;
+        }
+
+        /* Кнопка получения */
+        .get-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #2a2a40, #1a1a2e);
+            border: 1px solid #c8b88a;
+            border-radius: 12px;
+            color: #e8dcc8;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.4s;
+            margin-bottom: 30px;
+        }
+
+        .get-btn:hover {
+            background: linear-gradient(135deg, #3a3a5a, #2a2a40);
+            box-shadow: 0 0 30px rgba(200, 184, 138, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Свиток с ответом */
+        .scroll {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 30px;
+            min-height: 150px;
+            position: relative;
+            display: none;
+        }
+
+        .scroll.visible {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scroll .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #6a6a8a;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #2a2a40;
+            padding-bottom: 12px;
+        }
+
+        .scroll .sign-display {
+            font-size: 18px;
+            color: #c8b88a;
+        }
+
+        .scroll .topic-display {
+            font-style: italic;
+        }
+
+        .scroll .aphorism {
+            font-size: 20px;
+            line-height: 1.6;
+            color: #e8dcc8;
+            text-align: center;
+            padding: 10px 0;
+            font-style: italic;
+        }
+
+        .scroll .aphorism::before {
+            content: "«";
+            color: #6a6a8a;
+        }
+
+        .scroll .aphorism::after {
+            content: "»";
+            color: #6a6a8a;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6a6a8a;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: "...";
+            animation: dots 1.5s steps(4) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ""; }
+            25% { content: "."; }
+            50% { content: ".."; }
+            75% { content: "..."; }
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            .signs-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .sign-btn {
+                font-size: 11px;
+                padding: 8px 2px;
+            }
+            .sign-btn .emoji {
+                font-size: 20px;
+            }
+            .scroll .aphorism {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🗝️ Ключ к знаку</h1>
+    <p class="subtitle">— философский афоризм для каждого знака —</p>
+
+    <!-- Выбор знака -->
+    <div class="signs-grid" id="signGrid">
+        <!-- Заполняется JS -->
+    </div>
+
+    <!-- Выбор категории -->
+    <div class="category-select">
+        <label>📂 Категория</label>
+        <div class="category-buttons" id="categoryButtons">
+            <button class="cat-btn active" data-category="">Все</button>
+        </div>
+    </div>
+
+    <!-- Кнопка -->
+    <button class="get-btn" id="getBtn">✦ Получить ключ ✦</button>
+
+    <!-- Свиток -->
+    <div class="scroll" id="scroll">
+        <div class="header">
+            <span class="sign-display" id="signDisplay">♒ Водолей</span>
+            <span class="topic-display" id="topicDisplay">прощание</span>
+        </div>
+        <div class="aphorism" id="aphorismText">
+            Если вы решили уйти — погодите, не спешите. Я придержу вам дверь и вызову лифт.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Данные
+    const SIGNS = [
+        { id: 'Aries', emoji: '♈', name: 'Овен' },
+        { id: 'Taurus', emoji: '♉', name: 'Телец' },
+        { id: 'Gemini', emoji: '♊', name: 'Близнецы' },
+        { id: 'Cancer', emoji: '♋', name: 'Рак' },
+        { id: 'Leo', emoji: '♌', name: 'Лев' },
+        { id: 'Virgo', emoji: '♍', name: 'Дева' },
+        { id: 'Libra', emoji: '♎', name: 'Весы' },
+        { id: 'Scorpio', emoji: '♏', name: 'Скорпион' },
+        { id: 'Sagittarius', emoji: '♐', name: 'Стрелец' },
+        { id: 'Capricorn', emoji: '♑', name: 'Козерог' },
+        { id: 'Aquarius', emoji: '♒', name: 'Водолей' },
+        { id: 'Pisces', emoji: '♓', name: 'Рыбы' }
+    ];
+
+    let selectedSign = 'Aquarius';
+    let selectedCategory = '';
+
+    // Инициализация
+    function init() {
+        renderSigns();
+        loadCategories();
+        setupEventListeners();
+        // Автоматический первый запрос
+        getAphorism();
+    }
+
+    function renderSigns() {
+        const grid = document.getElementById('signGrid');
+        grid.innerHTML = SIGNS.map(sign => `
+            <button class="sign-btn ${sign.id === selectedSign ? 'active' : ''}" data-sign="${sign.id}">
+                <span class="emoji">${sign.emoji}</span>
+                ${sign.name}
+            </button>
+        `).join('');
+    }
+
+    async function loadCategories() {
+        try {
+            const res = await fetch('/api/v1/key/categories');
+            const data = await res.json();
+            const container = document.getElementById('categoryButtons');
+            
+            data.categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'cat-btn';
+                btn.dataset.category = cat.name;
+                btn.textContent = `${cat.icon} ${cat.name}`;
+                container.appendChild(btn);
+            });
+        } catch (e) {
+            console.error('Failed to load categories:', e);
+        }
+    }
+
+    function setupEventListeners() {
+        // Выбор знака
+        document.getElementById('signGrid').addEventListener('click', (e) => {
+            const btn = e.target.closest('.sign-btn');
+            if (!btn) return;
+            document.querySelectorAll('.sign-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedSign = btn.dataset.sign;
+        });
+
+        // Выбор категории
+        document.getElementById('categoryButtons').addEventListener('click', (e) => {
+            const btn = e.target.closest('.cat-btn');
+            if (!btn) return;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCategory = btn.dataset.category;
+        });
+
+        // Кнопка получения
+        document.getElementById('getBtn').addEventListener('click', getAphorism);
+    }
+
+    async function getAphorism() {
+        const scroll = document.getElementById('scroll');
+        const aphorismEl = document.getElementById('aphorismText');
+        const signDisplay = document.getElementById('signDisplay');
+        const topicDisplay = document.getElementById('topicDisplay');
+
+        // Показываем загрузку
+        scroll.classList.add('visible');
+        aphorismEl.textContent = 'Звёзды шепчут';
+        aphorismEl.style.opacity = '0.5';
+
+        try {
+            const params = new URLSearchParams({
+                sign: selectedSign
+            });
+            if (selectedCategory) {
+                params.append('category', selectedCategory);
+            }
+
+            const res = await fetch(`/api/v1/key?${params}`);
+            const data = await res.json();
+
+            if (data.error) {
+                aphorismEl.textContent = '❌ Звёзды молчат... Попробуйте позже.';
+                return;
+            }
+
+            // Обновляем данные
+            signDisplay.textContent = `${SIGNS.find(s => s.id === selectedSign)?.emoji || '✦'} ${data.sign}`;
+            topicDisplay.textContent = data.topic;
+            aphorismEl.textContent = data.aphorism;
+            aphorismEl.style.opacity = '1';
+
+        } catch (error) {
+            aphorismEl.textContent = '🌌 Связь с небесами потеряна. Попробуйте ещё раз.';
+            console.error('Error:', error);
+        }
+    }
+
+    // Запуск
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

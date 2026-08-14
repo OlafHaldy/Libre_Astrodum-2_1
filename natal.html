@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Liber Astrodum — Натальная карта</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -22,14 +22,6 @@
             overflow-x: hidden;
         }
         .container { max-width: 700px; width: 100%; }
-        .app-title h1 {
-            font-family: 'UnifrakturMaguntia', 'Uncial Antiqua', cursive;
-            font-size: 3em;
-            background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
-            text-align: center; margin-bottom: 10px;
-        }
         .back-btn {
             background: none; border: 1px solid #d4af37; color: #d4af37;
             padding: 8px 20px; border-radius: 20px; cursor: pointer;
@@ -42,9 +34,11 @@
             background-color: rgba(30, 20, 10, 0.6); background-blend-mode: overlay;
             border: 1px solid #5a5a5a; border-radius: 20px; padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            flex: 1;
+            min-width: 0;
         }
         label { display: block; margin-top: 18px; color: #256057; font-size: 1.2em; font-family: 'Caveat', cursive; }
-        input, select { width: 100%; padding: 12px; margin-top: 6px; background: #1c1c1c; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Cormorant Infant', serif; }
+        input { width: 100%; padding: 12px; margin-top: 6px; background: #1c1c1c; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Cormorant Infant', serif; }
         input:focus { outline: none; border-color: #b8860b; box-shadow: 0 0 10px rgba(184, 134, 11, 0.4); }
         .row { display: flex; gap: 12px; } .row > div { flex: 1; }
         button {
@@ -81,12 +75,6 @@
             border-left: 3px solid rgba(212, 175, 55, 0.55);
             border-radius: 10px;
             box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
-            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
-        }
-        .interpretation-block:hover {
-            border-color: rgba(212, 175, 55, 0.38);
-            border-left-color: rgba(212, 175, 55, 0.85);
-            background: linear-gradient(135deg, rgba(42, 42, 42, 0.82), rgba(12, 12, 12, 0.64));
         }
         .interpretation-block-title {
             margin-bottom: 13px;
@@ -104,20 +92,8 @@
             line-height: 1.8;
             text-align: left;
         }
-        .interpretation-block:first-child {
-            border-left-color: #d4af37;
-            background: linear-gradient(135deg, rgba(55, 45, 20, 0.32), rgba(15, 15, 15, 0.62));
-        }
-        .interpretation-block:first-child .interpretation-block-title {
-            font-size: 1.25rem;
-        }
-        .interpretation-block:last-child {
-            margin-top: 24px;
-            border-left-color: rgba(212, 175, 55, 0.75);
-        }
         .error-modal {
-            position: fixed;
-            top: 50%; left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: #1c1c1c;
             border: 2px solid #d4af37;
@@ -131,55 +107,168 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
         }
-        .error-modal p {
-            color: #f0f0f0;
-            font-size: 1.15em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
+        .error-modal p { color: #f0f0f0; font-size: 1.15em; line-height: 1.6; margin-bottom: 25px; }
         .error-modal button {
-            background: none;
-            border: 1px solid #b8860b;
-            color: #d4af37;
-            padding: 10px 25px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 1em;
+            background: none; border: 1px solid #b8860b; color: #d4af37;
+            padding: 10px 25px; border-radius: 20px; cursor: pointer;
+            font-family: 'Uncial Antiqua', cursive; font-size: 1em;
         }
-        .error-modal button:hover { background: rgba(184,134,11,0.2); }
         .overlay-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000; display: none;
         }
-        @media (max-width: 600px) {
-            .interpretation-block { margin: 14px 0; padding: 16px 16px 18px 18px; }
-            .interpretation-block-title { font-size: 1rem; }
-            .interpretation-block-text { font-size: 0.95rem; line-height: 1.7; }
+
+        /* ===== LAYOUT: РУКА + ФОРМА ===== */
+        .natal-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+            width: 100%;
         }
+
+        #mysteryPortal {
+            flex-shrink: 0;
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            padding-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #mysteryPortal:hover {
+            opacity: 1 !important;
+        }
+
+        #mysteryPortal img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
+            display: block;
+        }
+
+        #mysteryPortal .hand-label {
+            font-size: 10px;
+            color: #d4af37;
+            font-family: 'Cormorant Infant', serif;
+            letter-spacing: 2px;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .natal-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            #mysteryPortal {
+                width: auto;
+                padding-top: 0;
+                flex-direction: row;
+                gap: 10px;
+            }
+            #mysteryPortal img {
+                width: 50px;
+                height: 50px;
+            }
+            .interpretation-block { margin: 14px 0; padding: 16px; }
+            .interpretation-block-title { font-size: 1rem; }
+            .interpretation-block-text { font-size: 0.95rem; }
+        }
+        @media (max-width: 600px) {
+    .natal-layout {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    #mysteryPortal {
+        width: auto;
+        padding-top: 0;
+        flex-direction: row;
+        gap: 10px;
+        opacity: 1;
+    }
+    
+    #mysteryPortal img {
+        width: 45px;
+        height: 45px;
+    }
+    
+    #mysteryPortal .hand-label {
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+    
+    .card {
+        padding: 20px;
+        width: 100%;
+    }
+    
+    .row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .interpretation-block {
+        margin: 14px 0;
+        padding: 16px;
+    }
+    
+    .interpretation-block-title {
+        font-size: 1rem;
+    }
+    
+    .interpretation-block-text {
+        font-size: 0.95rem;
+    }
+    
+    #mysteryPortal {
+        width: 55px;
+        height: 55px;
+        bottom: 20px;
+        right: 20px;
+    }
+}
     </style>
 </head>
 <body>
     <div class="container">
         <a href="/" class="back-btn">← Назад</a>
-        <div class="card">
-            <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☉ Натальная карта</h3>
-            <div class="row">
-                <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
-                <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
-                <div><label>День</label><input type="number" id="natalDay" value="14"></div>
+
+        <!-- ===== LAYOUT: РУКА + ФОРМА ===== -->
+        <div class="natal-layout">
+            <!-- РУКА МИСТЕРИЙ — СЛЕВА -->
+            <div id="mysteryPortal">
+                <img src="/static/mystery_hand.png" alt="Рука мистерий">
+                <span class="hand-label">КЛЮЧ К ЗНАКУ</span>
             </div>
-            <div class="row">
-                <div><label>Час рождения</label><input type="number" id="natalHour" value="6"></div>
-                <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
+
+            <!-- ФОРМА — СПРАВА -->
+            <div class="card">
+                <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☉ Натальная карта</h3>
+                <div class="row">
+                    <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
+                    <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
+                    <div><label>День</label><input type="number" id="natalDay" value="14"></div>
+                </div>
+                <div class="row">
+                    <div><label>Час рождения</label><input type="number" id="natalHour" value="6"></div>
+                    <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
+                </div>
+                <div style="position: relative;">
+                    <label>Место рождения</label>
+                    <input type="text" id="birthCity" value="Дубно" placeholder="Начните вводить город...">
+                    <div id="suggestions" class="suggestions-dropdown"></div>
+                </div>
+                <button onclick="askNatal()">Построить натальную карту</button>
             </div>
-            <div style="position: relative;">
-                <label>Место рождения</label>
-                <input type="text" id="birthCity" value="Дубно" placeholder="Начните вводить город...">
-                <div id="suggestions" class="suggestions-dropdown"></div>
-            </div>
-            <button onclick="askNatal()">Построить натальную карту</button>
         </div>
+
         <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
     </div>
 
@@ -319,7 +408,7 @@
             const natalMinute = document.getElementById('natalMinute').value || 0;
 
             const resultBlock = document.getElementById('result');
-            document.querySelector('.card').style.display = 'none';
+            document.querySelector('.natal-layout').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
@@ -384,11 +473,7 @@
                 const interpretationSections = [];
                 let match;
                 while ((match = sectionRegex.exec(interpretationText)) !== null) {
-                    interpretationSections.push({
-                        key: match[1],
-                        start: sectionRegex.lastIndex,
-                        markerStart: match.index
-                    });
+                    interpretationSections.push({ key: match[1], start: sectionRegex.lastIndex, markerStart: match.index });
                 }
 
                 let interpretationHtml = '';
@@ -400,9 +485,7 @@
                     };
                     for (let i = 0; i < interpretationSections.length; i++) {
                         const section = interpretationSections[i];
-                        const endPos = i + 1 < interpretationSections.length
-                            ? interpretationSections[i + 1].markerStart
-                            : interpretationText.length;
+                        const endPos = i + 1 < interpretationSections.length ? interpretationSections[i + 1].markerStart : interpretationText.length;
                         const sectionText = interpretationText.slice(section.start, endPos).trim();
                         if (sectionText) {
                             const title = interpretationTitles[section.key] || section.key;
@@ -432,10 +515,14 @@
                     </div>
                 `;
             } catch (e) {
-                console.error("NATAL ERROR:", e);
                 showErrorModal();
             }
         }
+
+        // ===== РУКА МИСТЕРИЙ =====
+        document.getElementById('mysteryPortal').addEventListener('click', function() {
+            window.location.href = '/key';
+        });
     </script>
 </body>
 </html>

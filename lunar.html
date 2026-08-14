@@ -464,10 +464,17 @@
                         <a href="/" class="back-btn">← В главное меню</a>
                     </div>
                 `;
-            } catch (e) {
-                resultBlock.innerHTML = '<div class="verdict">Ошибка соединения со звёздами</div>';
-            }
+           } catch (e) {
+    showErrorModal();
+}
         }
     </script>
+
+    <div id="errorOverlay" class="overlay-bg" onclick="closeErrorModal()"></div>
+    <div id="errorModal" class="error-modal">
+        <p>Звёзды, как и астролог-мечтатель, любят покой. Позвольте ему отложить до завтра ваш запрос.</p>
+        <button onclick="closeErrorModal()">Принимаю</button>
+    </div>
+
 </body>
 </html>
