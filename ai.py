@@ -2,6 +2,9 @@ import os
 import time
 import logging
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -213,81 +216,122 @@ def generate(prompt) -> str:
         raise AIError("All AI providers unavailable, falling back to autonomous engine.")
 
 
-# ===== НОВЫЕ ФУНКЦИИ ДЛЯ КОРОТКИХ ОТВЕТОВ (ДЛЯ КЛЮЧА К ЗНАКУ) =====
+# ===== КОРОТКАЯ ГЕНЕРАЦИЯ ДЛЯ КЛЮЧА К ЗНАКУ =====
 
 def _call_groq_short(prompt):
-    """Groq с ограничением на короткий ответ."""
-    from groq import Groq
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    response = client.chat.completions.create(
-        model="llama-3.1-70b-versatile",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=30,
-        temperature=0.8
-    )
-    return response.choices[0].message.content
+    """Groq через тот же HTTP API, что используется основной генерацией."""
 
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise AIError("GROQ_API_KEY не задан")
 
-def _call_deepseek_short(prompt):
-    """DeepSeek с ограничением на короткий ответ."""
-    url = "https://api.deepseek.com/v1/chat/completions"
+    url = "https://api.groq.com/openai/v1/chat/completions"
+
     headers = {
-        "Authorization": f"Bearer {os.getenv('DEEPSEEK_API_KEY')}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
     }
-    data = {
-        "model": "deepseek-chat",
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 30,
-        "temperature": 0.8
+
+    payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "Ты пишешь афоризмы. "
+                    "Отвечай только одной короткой фразой. "
+                    "Никаких объяснений."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        "temperature": 0.8,
+        "max_tokens": 40,
     }
-    response = requests.post(url, headers=headers, json=data)
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
 
-
-def _call_gemini_short(prompt):
-    """Gemini с ограничением на короткий ответ."""
-    import google.generativeai as genai
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(
-        prompt,
-        generation_config={
-            "max_output_tokens": 30,
-            "temperature": 0.8
-        }
+    resp = requests.post(
+        url,
+        headers=headers,
+        json=payload,
+        timeout=TIMEOUT,
     )
-    return response.text
+
+    if resp.status_code in (400, 401, 403, 404, 413):
+        logger.error(
+            "Groq short error %s: %s",
+            resp.status_code,
+            resp.text[:300],
+        )
+        raise AIError(
+            f"Groq short unavailable ({resp.status_code})"
+        )
+
+    resp.raise_for_status()
+
+    try:
+        return (
+            resp.json()["choices"][0]["message"]["content"]
+            .strip()
+        )
+    except Exception as e:
+        raise AIError(
+            f"Groq short returned invalid response: {e}"
+        )
 
 
 def generate_short(prompt) -> str:
-    """Генерация короткого ответа (для афоризмов) — максимум 1 предложение."""
+    """
+    Генерация короткого текста для /api/v1/key.
+
+    В отличие от обычного generate():
+    - используется отдельный короткий system prompt;
+    - используется малый max_tokens;
+    - не зависит от пакета groq;
+    - не зависит от google-generativeai;
+    - не зависит от DeepSeek;
+    - использует тот же HTTP-механизм, что и основной AI.
+    """
+
     if isinstance(prompt, dict):
-        prompt_text = prompt.get("prompt_text") or prompt.get("content") or ""
+        prompt_text = (
+            prompt.get("prompt_text")
+            or prompt.get("content")
+            or ""
+        )
     else:
         prompt_text = str(prompt)
 
-    system = "Ты — Астродо. Отвечай только ОДНИМ коротким предложением, максимум 10 слов. Без пояснений."
-    full_prompt = f"{system}\n\n{prompt_text}"
+    system_prompt = (
+        "Ты — генератор афоризмов. "
+        "Твоя задача — создать ОДНУ короткую афористическую фразу. "
+        "Ответ должен содержать максимум 10 слов. "
+        "Только одна фраза. "
+        "Никаких объяснений, комментариев, вступлений, "
+        "пояснений, вариантов или дополнительного текста."
+    )
+
+    full_prompt = (
+        f"{system_prompt}\n\n"
+        f"{prompt_text}"
+    )
 
     try:
         logger.info("Trying Groq (short)...")
         return _call_groq_short(full_prompt)
-    except Exception as e:
-        logger.warning("Groq short failed: %s", e)
 
-    try:
-        logger.info("Trying DeepSeek (short)...")
-        return _call_deepseek_short(full_prompt)
     except Exception as e:
-        logger.warning("DeepSeek short failed: %s", e)
+        logger.warning(
+            "Groq short failed: %s",
+            e,
+        )
 
-    try:
-        logger.info("Trying Gemini (short)...")
-        return _call_gemini_short(full_prompt)
-    except Exception as e:
-        logger.warning("Gemini short failed: %s", e)
-        raise Exception("All AI providers unavailable for short generation.")
+        raise AIError(
+            "Short AI generation unavailable."
+        )
+
+
+
+
