@@ -214,21 +214,9 @@ def generate(prompt) -> str:
     except AIError as e2:
         logger.warning("Gemini failed: %s", e2)
         raise AIError("All AI providers unavailable, falling back to autonomous engine.")
-    def _call_groq_short(prompt):
-    """Groq с ограничением на короткий ответ."""
-    from groq import Groq
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    response = client.chat.completions.create(
-        model="llama-3.1-70b-versatile",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=30,
-        temperature=0.8
-    )
-    return response.choices[0].message.content
 
-# ===== НОВАЯ ФУНКЦИЯ ДЛЯ КОРОТКИХ ОТВЕТОВ =====
+
+# ===== НОВЫЕ ФУНКЦИИ ДЛЯ КОРОТКИХ ОТВЕТОВ (ДЛЯ КЛЮЧА К ЗНАКУ) =====
 
 def _call_groq_short(prompt):
     """Groq с ограничением на короткий ответ."""
