@@ -972,7 +972,8 @@ def key_v1(sign: str = "Aquarius"):
 Выведи ТОЛЬКО предложение. Ничего больше."""
 
     try:
-    aphorism = generate_short(prompt)
+
+         aphorism = generate_short(prompt)
         aphorism = aphorism.split('\n')[0].strip()
         if len(aphorism) > 60:
             aphorism = aphorism[:60]
@@ -980,10 +981,10 @@ def key_v1(sign: str = "Aquarius"):
                 aphorism = aphorism[:aphorism.rfind(' ')] + '...'
             else:
                 aphorism = aphorism[:57] + '...'
-    except Exception as e:
+        except Exception as e:
         aphorism = "Сегодня звёзды говорят тихо."
 
-    return {
+        return {
         "sign": sign_ru,
         "weekday": weekday_name,
         "day": day,
