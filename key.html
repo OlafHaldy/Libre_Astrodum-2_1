@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Liber Astrodum — Ключ к знаку</title>
-    <link rel="icon" href="data:image/svg+xml,...">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
     
     <!-- Существующие шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- ===== Le Murmure ===== -->
     <style>
@@ -87,54 +88,113 @@
             max-width: 600px;
             width: 100%;
             position: relative;
+            cursor: pointer;
         }
         #parchmentContainer img {
             width: 100%;
             height: auto;
         }
         #parchmentText {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #3d2b1f;
-    font-family: 'Le Murmure', 'Georgia', serif;
-    font-size: 2.2em;
-    font-weight: 400;
-    line-height: 1.6;
-    max-width: 75%;
-    text-align: center;
-    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
-}
-        @media (max-width: 600px) {
-            .zodiac-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-            .zodiac-item img { width: 60px; height: 60px; }
-            #parchmentText { font-size: 0.9em; max-width: 80%; }
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3d2b1f;
+            font-family: 'Spectral', 'Georgia', serif;
+            font-size: 1.3em;
+            font-weight: 400;
+            line-height: 1.6;
+            max-width: 75%;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
         }
+
+        /* ===== МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРГАМЕНТА ===== */
+        #parchmentModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #parchmentModal .modal-content {
+            position: relative;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+        }
+
+        #parchmentModal .modal-content img {
+            width: 100%;
+            height: auto;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        #parchmentModal .modal-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3d2b1f;
+            font-family: 'Spectral', 'Georgia', serif;
+            font-size: 2em;
+            line-height: 1.6;
+            max-width: 75%;
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
+        }
+
+        #parchmentModal .close-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+
         @media (max-width: 600px) {
-    .zodiac-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-    
-    .zodiac-item img {
-        width: 60px;
-        height: 60px;
-    }
-    
-    #parchmentText {
-        font-size: 0.9em;
-        max-width: 80%;
-    }
-    
-    .key-title {
-        font-size: 2em;
-    }
-    
-    .key-subtitle {
-        font-size: 1.1em;
-    }
-}
+            .zodiac-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .zodiac-item img {
+                width: 60px;
+                height: 60px;
+            }
+            #parchmentText {
+                font-size: 0.9em;
+                max-width: 80%;
+            }
+            .key-title {
+                font-size: 2em;
+            }
+            .key-subtitle {
+                font-size: 1.1em;
+            }
+            #parchmentModal .modal-text {
+                font-size: 1.4em;
+                max-width: 80%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -146,9 +206,18 @@
         <div class="zodiac-grid" id="zodiacGrid"></div>
 
         <div id="parchmentContainer">
-           <img src="/static/scrol1.png" alt="Пергамент">
+            <img src="/static/scrol1.png" alt="Пергамент">
             <div id="parchmentText"></div>
         </div>
+    </div>
+
+    <!-- ===== МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРГАМЕНТА ===== -->
+    <div id="parchmentModal">
+        <div class="modal-content">
+            <img src="/static/scrol1.png" alt="Пергамент">
+            <div id="modalText" class="modal-text"></div>
+        </div>
+        <div class="close-hint">✕ Нажмите в любом месте, чтобы закрыть</div>
     </div>
 
     <script>
@@ -185,10 +254,8 @@
             const grid = document.getElementById('zodiacGrid');
             const subtitle = document.querySelector('.key-subtitle');
             
-            // Скрываем сетку знаков и подзаголовок
             grid.style.display = 'none';
             subtitle.style.display = 'none';
-            
             text.innerHTML = 'Загрузка...';
             container.style.display = 'block';
 
@@ -200,6 +267,29 @@
                 text.innerHTML = 'Сегодня звёзды говорят тихо.';
             }
         }
+
+        // ===== МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРГАМЕНТА =====
+        const parchmentContainer = document.getElementById('parchmentContainer');
+        const modal = document.getElementById('parchmentModal');
+        const modalText = document.getElementById('modalText');
+
+        parchmentContainer.addEventListener('click', function() {
+            const text = document.getElementById('parchmentText').textContent;
+            if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
+                modalText.textContent = text;
+                modal.style.display = 'flex';
+            }
+        });
+
+        modal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                modal.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
