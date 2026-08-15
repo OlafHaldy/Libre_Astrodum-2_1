@@ -926,11 +926,9 @@ def key_v1(sign: str = "Aquarius"):
 
 Напиши ровно ОДНО предложение для знака {sign_ru}. Тема: {topic}.
 
-Правила (нарушать нельзя):
-- Не больше 12 слов
-- Без переноса строк
-- Без кавычек
-- Иронично, но с мудростью
+Правила:
+- Не больше 10 слов
+- Иронично, с мудростью
 - В характере знака
 
 Пример: «Водолей не прощается — он просто перестаёт ждать лифт.»
@@ -939,14 +937,17 @@ def key_v1(sign: str = "Aquarius"):
 
     try:
         aphorism = generate(prompt)
+        # Берём первую строку
         aphorism = aphorism.split('\n')[0].strip()
-        # Обрезаем до 80 символов
-        if len(aphorism) > 80:
-            aphorism = aphorism[:80]
+        
+        # === ЖЁСТКИЙ ОБРЕЗ ДО 60 СИМВОЛОВ ===
+        if len(aphorism) > 60:
+            aphorism = aphorism[:60]
             if ' ' in aphorism:
                 aphorism = aphorism[:aphorism.rfind(' ')] + '...'
             else:
-                aphorism = aphorism[:77] + '...'
+                aphorism = aphorism[:57] + '...'
+                
     except Exception as e:
         aphorism = "Сегодня звёзды говорят тихо."
 
