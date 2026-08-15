@@ -8,6 +8,7 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime
 from api.key_routes import router as key_router
+ from ai import generate_short
 
 # ==========================
 # Загружаем переменные окружения
@@ -898,6 +899,7 @@ def key_v1(sign: str = "Aquarius"):
     """Афоризм для знака зодиака по дню недели и числу."""
     import datetime
     from ai import generate
+   
 
     SIGN_NAMES_RU = {
         'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
@@ -971,7 +973,7 @@ def key_v1(sign: str = "Aquarius"):
 Выведи ТОЛЬКО предложение. Ничего больше."""
 
     try:
-        aphorism = generate(prompt)
+    aphorism = generate_short(prompt)
         aphorism = aphorism.split('\n')[0].strip()
         if len(aphorism) > 60:
             aphorism = aphorism[:60]
