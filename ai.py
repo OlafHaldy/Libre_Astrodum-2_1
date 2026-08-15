@@ -214,3 +214,103 @@ def generate(prompt) -> str:
     except AIError as e2:
         logger.warning("Gemini failed: %s", e2)
         raise AIError("All AI providers unavailable, falling back to autonomous engine.")
+    def _call_groq_short(prompt):
+    """Groq с ограничением на короткий ответ."""
+    from groq import Groq
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    response = client.chat.completions.create(
+        model="llama-3.1-70b-versatile",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=30,
+        temperature=0.8
+    )
+    return response.choices[0].message.content
+
+# ===== НОВАЯ ФУНКЦИЯ ДЛЯ КОРОТКИХ ОТВЕТОВ =====
+
+def _call_groq_short(prompt):
+    """Groq с ограничением на короткий ответ."""
+    from groq import Groq
+    import os
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    response = client.chat.completions.create(
+        model="llama-3.1-70b-versatile",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=30,
+        temperature=0.8
+    )
+    return response.choices[0].message.content
+
+
+def _call_deepseek_short(prompt):
+    """DeepSeek с ограничением на короткий ответ."""
+    import requests
+    import os
+    url = "https://api.deepseek.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('DEEPSEEK_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "deepseek-chat",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 30,
+        "temperature": 0.8
+    }
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()
+    return response.json()["choices"][0]["message"]["content"]
+
+
+def _call_gemini_short(prompt):
+    """Gemini с ограничением на короткий ответ."""
+    import google.generativeai as genai
+    import os
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(
+        prompt,
+        generation_config={
+            "max_output_tokens": 30,
+            "temperature": 0.8
+        }
+    )
+    return response.text
+
+
+def generate_short(prompt) -> str:
+    """Генерация короткого ответа (для афоризмов) — максимум 1 предложение."""
+    if isinstance(prompt, dict):
+        prompt_text = prompt.get("prompt_text") or prompt.get("content") or ""
+    else:
+        prompt_text = str(prompt)
+
+    # Добавляем системную инструкцию
+    system = "Ты — Астродо. Отвечай только ОДНИМ коротким предложением, максимум 10 слов. Без пояснений."
+    full_prompt = f"{system}\n\n{prompt_text}"
+
+    # 1. Пробуем Groq (short)
+    try:
+        logger.info("Trying Groq (short)...")
+        return _call_groq_short(full_prompt)
+    except Exception as e:
+        logger.warning("Groq short failed: %s", e)
+
+    # 2. Пробуем DeepSeek (short)
+    try:
+        logger.info("Trying DeepSeek (short)...")
+        return _call_deepseek_short(full_prompt)
+    except Exception as e:
+        logger.warning("DeepSeek short failed: %s", e)
+
+    # 3. Пробуем Gemini (short)
+    try:
+        logger.info("Trying Gemini (short)...")
+        return _call_gemini_short(full_prompt)
+    except Exception as e:
+        logger.warning("Gemini short failed: %s", e)
+        raise Exception("All AI providers unavailable for short generation.")
