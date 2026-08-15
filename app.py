@@ -8,7 +8,7 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime
 from ai import generate, generate_short
-from api.key_routes import router as key_router
+
 
 # ==========================
 # Загружаем переменные окружения
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 # ==========================
 app = FastAPI(title="Liber Astrodum 2.1")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.include_router(key_router)
+
 # ================== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПОИСКА ГОРОДА ==================
 
 def geocode_city(city: str):
