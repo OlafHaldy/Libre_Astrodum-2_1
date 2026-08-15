@@ -8,6 +8,7 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime
 from ai import generate, generate_short
+from api.key_routes import router as key_router
 
 # ==========================
 # Загружаем переменные окружения
