@@ -594,8 +594,13 @@ def daily_personal_v1(
     }
 # ================== ЛУННЫЙ КАЛЕНДАРЬ ==================
 
+# ================== ЛУННЫЙ КАЛЕНДАРЬ ==================
+
 def get_moon_phase():
     """Возвращает полную информацию о Луне для виджета."""
+    from datetime import datetime
+    import swisseph as swe
+
     now = datetime.utcnow()
     jd = swe.julday(now.year, now.month, now.day, now.hour + now.minute / 60.0)
     sun_lon = swe.calc_ut(jd, swe.SUN)[0][0]
@@ -604,52 +609,33 @@ def get_moon_phase():
 
     # Фаза Луны
     if angle < 22.5 or angle >= 337.5:
-        phase_emoji = "🌑"
-        phase_name = "Новолуние"
-        phase_key = "new"
+        phase_emoji, phase_name = "🌑", "Новолуние"
     elif 22.5 <= angle < 67.5:
-        phase_emoji = "🌒"
-        phase_name = "Молодая луна"
-        phase_key = "waxing"
+        phase_emoji, phase_name = "🌒", "Молодая луна"
     elif 67.5 <= angle < 112.5:
-        phase_emoji = "🌓"
-        phase_name = "Первая четверть"
-        phase_key = "waxing"
+        phase_emoji, phase_name = "🌓", "Первая четверть"
     elif 112.5 <= angle < 157.5:
-        phase_emoji = "🌔"
-        phase_name = "Прибывающая луна"
-        phase_key = "waxing"
+        phase_emoji, phase_name = "🌔", "Прибывающая луна"
     elif 157.5 <= angle < 202.5:
-        phase_emoji = "🌕"
-        phase_name = "Полнолуние"
-        phase_key = "full"
+        phase_emoji, phase_name = "🌕", "Полнолуние"
     elif 202.5 <= angle < 247.5:
-        phase_emoji = "🌖"
-        phase_name = "Убывающая луна"
-        phase_key = "waning"
+        phase_emoji, phase_name = "🌖", "Убывающая луна"
     elif 247.5 <= angle < 292.5:
-        phase_emoji = "🌗"
-        phase_name = "Последняя четверть"
-        phase_key = "waning"
+        phase_emoji, phase_name = "🌗", "Последняя четверть"
     else:
-        phase_emoji = "🌘"
-        phase_name = "Старая луна"
-        phase_key = "waning"
+        phase_emoji, phase_name = "🌘", "Старая луна"
 
     # Знак Луны
-    moon_sign_num = int(moon_lon // 30)
-    signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-             'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
-    moon_signs_ru = ['Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева',
-                     'Весы', 'Скорпион', 'Стрелец', 'Козерог', 'Водолей', 'Рыбы']
-    moon_sign = moon_signs_ru[moon_sign_num]
+    signs = ['Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева',
+             'Весы', 'Скорпион', 'Стрелец', 'Козерог', 'Водолей', 'Рыбы']
+    moon_sign = signs[int(moon_lon // 30)]
 
     # Лунный день
     lunar_day = int(angle / 12) + 1
     if lunar_day > 30:
         lunar_day = 1
 
-    # Названия лунных дней
+    # Названия дней
     lunar_day_names = {
         1: "День творения", 2: "День дара", 3: "День воина",
         4: "День равновесия", 5: "День вкушения", 6: "День пророчества",
@@ -665,8 +651,7 @@ def get_moon_phase():
     }
     lunar_day_name = lunar_day_names.get(lunar_day, "")
 
-    # Совет дня
-        # Советы для каждого лунного дня
+    # Советы
     lunar_advices = {
         1: "День творения — планируйте, мечтайте, загадывайте желания.",
         2: "День дара — принимайте дары судьбы, будьте щедры.",
@@ -704,7 +689,6 @@ def get_moon_phase():
     return {
         "phase_emoji": phase_emoji,
         "phase_name": phase_name,
-        "phase_key": phase_key,
         "moon_sign": moon_sign,
         "lunar_day": lunar_day,
         "lunar_day_name": lunar_day_name,
@@ -712,7 +696,7 @@ def get_moon_phase():
     }
 
 
-
+# ===== ЭНДПОИНТ ВИДЖЕТА =====
 @app.get("/widget")
 def widget_data():
     """Текущая фаза Луны, знак, лунный день."""
