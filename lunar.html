@@ -464,17 +464,16 @@
                         <a href="/" class="back-btn">← В главное меню</a>
                     </div>
                 `;
-           } catch (e) {
-    showErrorModal();
-}
+            } catch (e) {
+                resultBlock.innerHTML = `
+                    <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
+                        <p style="color: #f0f0f0; text-align: center;">🌙 Лунар временно недоступен. Попробуйте позже.</p>
+                        <br>
+                        <a href="/" class="back-btn">← В главное меню</a>
+                    </div>
+                `;
+            }
         }
     </script>
-
-    <div id="errorOverlay" class="overlay-bg" onclick="closeErrorModal()"></div>
-    <div id="errorModal" class="error-modal">
-        <p>Звёзды, как и астролог-мечтатель, любят покой. Позвольте ему отложить до завтра ваш запрос.</p>
-        <button onclick="closeErrorModal()">Принимаю</button>
-    </div>
-
 </body>
 </html>
