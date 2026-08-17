@@ -318,6 +318,15 @@ HTML_PAGE = r"""<!DOCTYPE html>
             .header { grid-template-columns: 1fr; }
             .main-modes { flex-direction: column; align-items: center; }
         }
+        .app-subtitle {
+    font-family: 'Caveat', cursive;
+    font-size: 0.9em;
+    color: #b8860b;
+    letter-spacing: 3px;
+    opacity: 0.7;
+    margin-top: -5px;
+    text-shadow: 0 0 10px rgba(184, 134, 11, 0.2);
+}
     </style>
 </head>
 <body>
@@ -335,7 +344,10 @@ HTML_PAGE = r"""<!DOCTYPE html>
                 </a>
             </div>
             <div class="header-center">
-                <div class="app-title"><h1>Liber Astrodum</h1></div>
+                <div class="app-title">
+    <h1>Liber Astrodum</h1>
+    <div class="app-subtitle">В поисках небесного кода</div>
+</div>
             </div>
             <div class="header-right">
                 <div class="side-widget-title">🌙 Лунный календарь</div>
@@ -349,17 +361,15 @@ HTML_PAGE = r"""<!DOCTYPE html>
         </div>
 
         <div class="main-modes">
-            <a href="/lunar" class="main-mode-card">
-                <img src="/static/icons/icon_lunar.png" alt="Лунар">
-                <div class="main-mode-title">Лунар</div>
-                <div class="main-mode-desc">Прогноз на месяц</div>
-            </a>
-            <a href="/natal" class="main-mode-card">
-                <img src="/static/icons/icon_natal.png" alt="Натальная карта">
-                <div class="main-mode-title">Натальная карта</div>
-                <div class="main-mode-desc">Карта рождения</div>
-            </a>
-        </div>
+    <a href="/lunar" class="main-mode-card">
+        <img src="/static/icons/icon_lunar.png" alt="Лунар">
+        <div class="main-mode-desc">Прогноз на месяц</div>
+    </a>
+    <a href="/natal" class="main-mode-card">
+        <img src="/static/icons/icon_natal.png" alt="Натальная карта">
+        <div class="main-mode-desc">Карта рождения</div>
+    </a>
+</div>
 
         <div class="dev-modes">
             <div class="dev-mode-card">

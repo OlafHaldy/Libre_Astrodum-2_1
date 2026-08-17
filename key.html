@@ -6,16 +6,16 @@
     <title>Liber Astrodum — Ключ к знаку</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
     
-    <!-- Существующие шрифты -->
+    <!-- Шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ===== Le Murmure ===== -->
+    <!-- Le Murmure -->
     <style>
         @font-face {
-            font-family: 'Le Murmure';
-            src: url('/static/le-murmure.ttf') format('truetype');
-            font-weight: 800;
+            font-family: 'Aphorism';
+            src: url('/static/Aphorism.ttf') format('truetype');
+            font-weight: 400;
             font-style: normal;
         }
     </style>
@@ -82,9 +82,11 @@
             font-size: 0.95em;
             margin-top: 5px;
         }
+        
+        /* ===== ПЕРГАМЕНТ ===== */
         #parchmentContainer {
             display: none;
-            margin: 30px auto;
+            margin: 30px auto 10px;
             max-width: 600px;
             width: 100%;
             position: relative;
@@ -94,22 +96,69 @@
             width: 100%;
             height: auto;
         }
-        #parchmentText {
+        
+        #parchmentContent {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: 75%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #parchmentText {
             color: #3d2b1f;
             font-family: 'Spectral', 'Georgia', serif;
             font-size: 1.3em;
-            font-weight: 400;
+            font-weight: 600;
             line-height: 1.6;
-            max-width: 75%;
-            text-align: center;
             text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
         }
+        
+        #parchmentSign {
+            margin-top: 8px;
+        }
+        
+        #parchmentSign img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            opacity: 0.6;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
 
-        /* ===== МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРГАМЕНТА ===== */
+        /* ===== КНОПКИ ПОДЕЛИТЬСЯ ===== */
+        #shareButtons {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        #shareButtons button {
+            background: none;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        #shareButtons button:hover {
+            background: rgba(212, 175, 55, 0.15);
+            transform: scale(1.02);
+        }
+
+        /* ===== МОДАЛЬНОЕ ОКНО ===== */
         #parchmentModal {
             display: none;
             position: fixed;
@@ -117,7 +166,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(95, 3, 3, 0.85);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 9999;
             justify-content: center;
             align-items: center;
@@ -133,35 +182,54 @@
 
         #parchmentModal .modal-content {
             position: relative;
-            max-width: 800px;
-            width: 100%;
+            max-width: 650px;
+            width: 90%;
             max-height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #parchmentModal .modal-content img {
             width: 100%;
             height: auto;
-            max-height: 90vh;
+            max-height: 85vh;
             object-fit: contain;
+            border-radius: 8px;
         }
 
-        #parchmentModal .modal-text {
+        #modalContent {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: 80%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #modalText {
             color: #3d2b1f;
             font-family: 'Spectral', 'Georgia', serif;
-            font-size: 2em;
-            line-height: 1.6;
-            max-width: 75%;
-            text-align: center;
+            font-size: 1.6em;
+            font-weight: 600;
+            line-height: 1.5;
             text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
         }
 
+        #modalSign img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            opacity: 0.5;
+        }
+
         #parchmentModal .close-hint {
-            position: absolute;
-            bottom: 40px;
+            position: fixed;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             color: #888;
@@ -169,8 +237,10 @@
             font-size: 14px;
             letter-spacing: 1px;
             opacity: 0.6;
+            z-index: 10000;
         }
 
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 600px) {
             .zodiac-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -182,7 +252,10 @@
             }
             #parchmentText {
                 font-size: 0.9em;
-                max-width: 80%;
+            }
+            #parchmentSign img {
+                width: 35px;
+                height: 35px;
             }
             .key-title {
                 font-size: 2em;
@@ -190,9 +263,20 @@
             .key-subtitle {
                 font-size: 1.1em;
             }
-            #parchmentModal .modal-text {
-                font-size: 1.4em;
-                max-width: 80%;
+            #modalText {
+                font-size: 1.2em;
+            }
+            #modalSign img {
+                width: 45px;
+                height: 45px;
+            }
+            #parchmentModal .modal-content {
+                max-width: 95%;
+                width: 95%;
+            }
+            #shareButtons button {
+                font-size: 12px;
+                padding: 6px 14px;
             }
         }
     </style>
@@ -207,15 +291,28 @@
 
         <div id="parchmentContainer">
             <img src="/static/scrol1.png" alt="Пергамент">
-            <div id="parchmentText"></div>
+            <div id="parchmentContent">
+                <div id="parchmentText"></div>
+                <div id="parchmentSign"></div>
+            </div>
+        </div>
+
+        <!-- КНОПКИ ПОДЕЛИТЬСЯ -->
+        <div id="shareButtons">
+            <button onclick="shareTelegram()">📨 Telegram</button>
+            <button onclick="shareVK()">📘 VK</button>
+            <button onclick="copyLink()">🔗 Копировать</button>
         </div>
     </div>
 
-    <!-- ===== МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРГАМЕНТА ===== -->
+    <!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
     <div id="parchmentModal">
         <div class="modal-content">
             <img src="/static/scrol1.png" alt="Пергамент">
-            <div id="modalText" class="modal-text"></div>
+            <div id="modalContent">
+                <div id="modalText"></div>
+                <div id="modalSign"></div>
+            </div>
         </div>
         <div class="close-hint">✕ Нажмите в любом месте, чтобы закрыть</div>
     </div>
@@ -236,6 +333,8 @@
             { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
         ];
 
+        let currentSign = '';
+
         const grid = document.getElementById('zodiacGrid');
         zodiacSigns.forEach(sign => {
             const item = document.createElement('div');
@@ -248,35 +347,111 @@
             grid.appendChild(item);
         });
 
+        // ===== ОСНОВНАЯ ФУНКЦИЯ =====
         async function getAphorism(sign) {
             const container = document.getElementById('parchmentContainer');
             const text = document.getElementById('parchmentText');
+            const signEl = document.getElementById('parchmentSign');
             const grid = document.getElementById('zodiacGrid');
             const subtitle = document.querySelector('.key-subtitle');
+            const share = document.getElementById('shareButtons');
+            
+            currentSign = sign;
             
             grid.style.display = 'none';
             subtitle.style.display = 'none';
+            share.style.display = 'none';
             text.innerHTML = 'Загрузка...';
+            signEl.innerHTML = '';
             container.style.display = 'block';
 
             try {
                 const response = await fetch(`/api/v1/key?sign=${sign}`);
                 const data = await response.json();
                 text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+                
+                const signIcon = document.createElement('img');
+                signIcon.src = `/static/zodiac/${sign}.png`;
+                signIcon.alt = sign;
+                signEl.appendChild(signIcon);
+                
+                // Показываем кнопки "Поделиться"
+                share.style.display = 'flex';
+                
             } catch (e) {
                 text.innerHTML = 'Сегодня звёзды говорят тихо.';
             }
         }
 
-        // ===== МОДАЛЬНОЕ ОКНО ДЛЯ ПЕРГАМЕНТА =====
+        // ===== ПОДЕЛИТЬСЯ =====
+        function getShareText() {
+            const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
+            const text = document.getElementById('parchmentText').textContent;
+            const signNamesRu = {
+                'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+                'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+                'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+                'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+            };
+            const signRu = signNamesRu[sign] || sign;
+            return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
+        }
+
+        function shareTelegram() {
+            const text = getShareText();
+            const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareVK() {
+            const text = getShareText();
+            const url = `https://vk.com/share.php?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function copyLink() {
+            const text = getShareText() + '\n\n' + window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Ключ к знаку — Liber Astrodum',
+                    text: text,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Афоризм скопирован! Поделитесь с друзьями.');
+                }).catch(() => {
+                    // Fallback
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('✅ Афоризм скопирован!');
+                });
+            }
+        }
+
+        // ===== МОДАЛЬНОЕ ОКНО =====
         const parchmentContainer = document.getElementById('parchmentContainer');
         const modal = document.getElementById('parchmentModal');
         const modalText = document.getElementById('modalText');
+        const modalSign = document.getElementById('modalSign');
 
         parchmentContainer.addEventListener('click', function() {
             const text = document.getElementById('parchmentText').textContent;
+            const signImg = document.querySelector('#parchmentSign img');
+            
             if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
                 modalText.textContent = text;
+                
+                modalSign.innerHTML = '';
+                if (signImg) {
+                    const clone = signImg.cloneNode(true);
+                    modalSign.appendChild(clone);
+                }
+                
                 modal.style.display = 'flex';
             }
         });
