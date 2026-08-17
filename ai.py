@@ -230,14 +230,15 @@ def _call_groq_short(prompt):
     }
     payload = {
         "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": prompt}],  # ← БЕЗ system
+        "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
-        "max_tokens": 3000,  # ← временно
+        "max_tokens": 3000,
     }
 
-    resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
         raise AIError(f"Groq short returned invalid response: {e}")
 
