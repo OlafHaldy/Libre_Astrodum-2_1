@@ -948,7 +948,7 @@ def key_v1(sign: str = "Aquarius"):
     today = datetime.datetime.now()
     topic = TOPICS_BY_DAY.get(today.day, 'мудрость и покой')
 
-prompt = f"""Ты — Астродо.
+    prompt = f"""Ты — Астродо.
 
 Напиши ОДНУ афористическую фразу для знака {sign_ru}
 на тему: {topic}.
@@ -987,7 +987,7 @@ prompt = f"""Ты — Астродо.
 
 Выдай ТОЛЬКО одну короткую фразу."""
 
-def clean_and_validate(text):
+    def clean_and_validate(text):
         """Приводит ответ модели к строгому формату афоризма."""
         if not text:
             raise ValueError("Empty aphorism")
@@ -1008,7 +1008,7 @@ def clean_and_validate(text):
             raise ValueError("Empty aphorism after normalization")
 
         words = text.split()
-        if len(words) > 14:
+        if len(words) > 10:
             raise ValueError(f"Aphorism too long: {len(words)} words")
 
         sentence_count = len(re.findall(r'[.!?]+', text))
@@ -1018,7 +1018,7 @@ def clean_and_validate(text):
         return text
 
     try:
-        raw = generate(prompt)
+        raw = generate_short(prompt)
         try:
             aphorism = clean_and_validate(raw)
         except ValueError as first_error:
@@ -1031,9 +1031,9 @@ def clean_and_validate(text):
 
 Нужна ОДНА законченная фраза.
 
-МАКСИМУМ 14 СЛОВ.
+МАКСИМУМ 10 СЛОВ.
 
-Не больше 14 слов.
+Не больше 10 слов.
 Не два предложения.
 Не объяснение.
 Не совет.
@@ -1041,6 +1041,7 @@ def clean_and_validate(text):
 Не заголовок.
 Не список.
 Не кавычки.
+Не начинай с пояснений.
 
 Только готовый афоризм одной строкой.
 
@@ -1049,6 +1050,7 @@ def clean_and_validate(text):
 
             raw_retry = generate_short(retry_prompt)
             aphorism = clean_and_validate(raw_retry)
+
     except Exception as e:
         logger.warning("Key aphorism generation failed: %s", e)
         aphorism = "Сегодня звёзды говорят тихо."
