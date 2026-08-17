@@ -234,8 +234,8 @@ def _call_groq_short(prompt):
     payload = {
         "model": "llama-3.3-70b-versatile",  # ← та же модель, что в основной
         "messages": [{"role": "user", "content": prompt}],  # ← БЕЗ system!
-        "temperature": 0.8,
-        "max_tokens": 60,  # ← только это отличается
+        "temperature": 0.7,
+        "max_tokens": 3000,  # ← только это отличается
     }
 
     resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)

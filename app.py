@@ -1011,7 +1011,7 @@ def key_v1(sign: str = "Aquarius"):
         return text
 
     try:
-        raw = generate_short(prompt)
+        raw = generate(prompt)
         try:
             aphorism = clean_and_validate(raw)
         except ValueError as first_error:
