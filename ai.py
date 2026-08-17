@@ -220,20 +220,17 @@ def generate(prompt) -> str:
 
 def _call_groq_short(prompt):
     """Groq через тот же HTTP API, что используется основной генерацией."""
-
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise AIError("GROQ_API_KEY не задан")
 
     url = "https://api.groq.com/openai/v1/chat/completions"
-
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-
     payload = {
-        "model": "llama-3.3-70b-versatile",  # ← ИСПРАВЛЕНО
+        "model": "llama-3.3-70b-versatile",
         "messages": [
             {
                 "role": "system",
@@ -243,63 +240,71 @@ def _call_groq_short(prompt):
                     "Никаких объяснений."
                 ),
             },
-            {
-                "role": "user",
-                "content": prompt,
-            },
+            {"role": "user", "content": prompt},
         ],
         "temperature": 0.8,
-        "max_tokens": 40,
+        "max_tokens": 60,
     }
 
-    resp = requests.post(
-        url,
-        headers=headers,
-        json=payload,
-        timeout=TIMEOUT,
-    )
+    resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
     if resp.status_code in (400, 401, 403, 404, 413):
-        logger.error(
-            "Groq short error %s: %s",
-            resp.status_code,
-            resp.text[:300],
-        )
-        raise AIError(
-            f"Groq short unavailable ({resp.status_code})"
-        )
+        logger.error("Groq short error %s: %s", resp.status_code, resp.text[:300])
+        raise AIError(f"Groq short unavailable ({resp.status_code})")
 
     resp.raise_for_status()
-
     try:
-        return (
-            resp.json()["choices"][0]["message"]["content"]
-            .strip()
-        )
+        return resp.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        raise AIError(
-            f"Groq short returned invalid response: {e}"
-        )
+        raise AIError(f"Groq short returned invalid response: {e}")
+
+
+def _call_deepseek_short(prompt):
+    """DeepSeek с ограничением на короткий ответ."""
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    if not api_key:
+        raise AIError("DEEPSEEK_API_KEY не задан")
+
+    url = "https://api.deepseek.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    data = {
+        "model": "deepseek-chat",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 60,
+        "temperature": 0.8,
+    }
+
+    resp = requests.post(url, headers=headers, json=data, timeout=TIMEOUT)
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+
+def _call_gemini_short(prompt):
+    """Gemini с ограничением на короткий ответ."""
+    import google.generativeai as genai
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise AIError("GEMINI_API_KEY не задан")
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    response = model.generate_content(
+        prompt,
+        generation_config={"max_output_tokens": 60, "temperature": 0.8},
+    )
+    return response.text.strip()
 
 
 def generate_short(prompt) -> str:
     """
     Генерация короткого текста для /api/v1/key.
-
-    В отличие от обычного generate():
-    - используется отдельный короткий system prompt;
-    - используется малый max_tokens;
-    - не зависит от пакета groq;
-    - не зависит от google-generativeai;
-    - не зависит от DeepSeek;
-    - использует тот же HTTP-механизм, что и основной AI.
+    С цепочкой fallback: Groq → DeepSeek → Gemini.
     """
-
     if isinstance(prompt, dict):
-        prompt_text = (
-            prompt.get("prompt_text")
-            or prompt.get("content")
-            or ""
-        )
+        prompt_text = prompt.get("prompt_text") or prompt.get("content") or ""
     else:
         prompt_text = str(prompt)
 
@@ -312,25 +317,29 @@ def generate_short(prompt) -> str:
         "пояснений, вариантов или дополнительного текста."
     )
 
-    full_prompt = (
-        f"{system_prompt}\n\n"
-        f"{prompt_text}"
-    )
+    full_prompt = f"{system_prompt}\n\n{prompt_text}"
 
+    # 1. Пробуем Groq
     try:
         logger.info("Trying Groq (short)...")
         return _call_groq_short(full_prompt)
-
     except Exception as e:
-        logger.warning(
-            "Groq short failed: %s",
-            e,
-        )
+        logger.warning("Groq short failed: %s", e)
 
-        raise AIError(
-            "Short AI generation unavailable."
-        )
+    # 2. Пробуем DeepSeek
+    try:
+        logger.info("Trying DeepSeek (short)...")
+        return _call_deepseek_short(full_prompt)
+    except Exception as e:
+        logger.warning("DeepSeek short failed: %s", e)
 
+    # 3. Пробуем Gemini
+    try:
+        logger.info("Trying Gemini (short)...")
+        return _call_gemini_short(full_prompt)
+    except Exception as e:
+        logger.warning("Gemini short failed: %s", e)
+        raise AIError("All AI providers unavailable for short generation.")
 
 
 
