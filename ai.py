@@ -233,7 +233,7 @@ def _call_groq_short(prompt):
     }
 
     payload = {
-        "model": "llama-3.1-70b-versatile",  # ← ИСПРАВЛЕНО
+        "model": "llama-3.3-70b-versatile",  # ← ИСПРАВЛЕНО
         "messages": [
             {
                 "role": "system",
