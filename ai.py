@@ -233,7 +233,7 @@ def _call_groq_short(prompt):
     }
 
     payload = {
-        "model": "llama-3.3-70b-versatile",
+        "model": "llama-3.1-70b-versatile",  # ← ИСПРАВЛЕНО
         "messages": [
             {
                 "role": "system",
@@ -258,7 +258,6 @@ def _call_groq_short(prompt):
         json=payload,
         timeout=TIMEOUT,
     )
-
     if resp.status_code in (400, 401, 403, 404, 413):
         logger.error(
             "Groq short error %s: %s",
