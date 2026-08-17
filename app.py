@@ -208,7 +208,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
 
         /* Стих */
         .poem-section { text-align: center; margin-bottom: 30px; }
-        .poem { color: #c092f9; font-style: italic; font-size: 1.15em; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Marck Script', cursive; }
+        .poem { color: #bb915e !important; font-style: italic; font-size: 1.15em; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.5); font-family: 'Marck Script', cursive; }
         .poem-author { color: #b8860b; font-size: 0.95em; font-family: 'Caveat', cursive; }
 
         /* Крупные иконки Лунар и Натал */
