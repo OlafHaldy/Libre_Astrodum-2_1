@@ -219,7 +219,7 @@ def generate(prompt) -> str:
 # ===== КОРОТКАЯ ГЕНЕРАЦИЯ ДЛЯ КЛЮЧА К ЗНАКУ =====
 
 def _call_groq_short(prompt):
-    """Groq через тот же HTTP API, что используется основной генерацией."""
+    """Groq с ограничением на короткий ответ (как основная, но с max_tokens=60)."""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise AIError("GROQ_API_KEY не задан")
@@ -229,29 +229,23 @@ def _call_groq_short(prompt):
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
+
+    # === ТОТ ЖЕ ФОРМАТ, ЧТО В _call_groq() ===
     payload = {
-        "model": "llama-3.1-8b-versatile",
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "Ты пишешь афоризмы. "
-                    "Отвечай только одной короткой фразой. "
-                    "Никаких объяснений."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
+        "model": "llama-3.3-70b-versatile",  # ← та же модель, что в основной
+        "messages": [{"role": "user", "content": prompt}],  # ← БЕЗ system!
         "temperature": 0.8,
-        "max_tokens": 60,
+        "max_tokens": 60,  # ← только это отличается
     }
 
     resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
+
     if resp.status_code in (400, 401, 403, 404, 413):
         logger.error("Groq short error %s: %s", resp.status_code, resp.text[:300])
         raise AIError(f"Groq short unavailable ({resp.status_code})")
 
     resp.raise_for_status()
+
     try:
         return resp.json()["choices"][0]["message"]["content"].strip()
     except Exception as e:
