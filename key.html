@@ -367,190 +367,188 @@
         <div class="close-hint">✕ Нажмите в любом месте, чтобы закрыть</div>
     </div>
 
-    <script>
-        const zodiacSigns = [
-            { name: 'Aries', ru: 'Овен', img: '/static/zodiac/aries.png' },
-            { name: 'Taurus', ru: 'Телец', img: '/static/zodiac/taurus.png' },
-            { name: 'Gemini', ru: 'Близнецы', img: '/static/zodiac/gemini.png' },
-            { name: 'Cancer', ru: 'Рак', img: '/static/zodiac/cancer.png' },
-            { name: 'Leo', ru: 'Лев', img: '/static/zodiac/leo.png' },
-            { name: 'Virgo', ru: 'Дева', img: '/static/zodiac/virgo.png' },
-            { name: 'Libra', ru: 'Весы', img: '/static/zodiac/libra.png' },
-            { name: 'Scorpio', ru: 'Скорпион', img: '/static/zodiac/scorpio.png' },
-            { name: 'Sagittarius', ru: 'Стрелец', img: '/static/zodiac/sagittarius.png' },
-            { name: 'Capricorn', ru: 'Козерог', img: '/static/zodiac/capricorn.png' },
-            { name: 'Aquarius', ru: 'Водолей', img: '/static/zodiac/aquarius.png' },
-            { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
-        ];
+<script>
+    const zodiacSigns = [
+        { name: 'Aries', ru: 'Овен', img: '/static/zodiac/aries.png' },
+        { name: 'Taurus', ru: 'Телец', img: '/static/zodiac/taurus.png' },
+        { name: 'Gemini', ru: 'Близнецы', img: '/static/zodiac/gemini.png' },
+        { name: 'Cancer', ru: 'Рак', img: '/static/zodiac/cancer.png' },
+        { name: 'Leo', ru: 'Лев', img: '/static/zodiac/leo.png' },
+        { name: 'Virgo', ru: 'Дева', img: '/static/zodiac/virgo.png' },
+        { name: 'Libra', ru: 'Весы', img: '/static/zodiac/libra.png' },
+        { name: 'Scorpio', ru: 'Скорпион', img: '/static/zodiac/scorpio.png' },
+        { name: 'Sagittarius', ru: 'Стрелец', img: '/static/zodiac/sagittarius.png' },
+        { name: 'Capricorn', ru: 'Козерог', img: '/static/zodiac/capricorn.png' },
+        { name: 'Aquarius', ru: 'Водолей', img: '/static/zodiac/aquarius.png' },
+        { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
+    ];
 
-        let currentSign = '';
+    let currentSign = '';
 
-        const grid = document.getElementById('zodiacGrid');
-        zodiacSigns.forEach(sign => {
-            const item = document.createElement('div');
-            item.className = 'zodiac-item';
-            item.onclick = () => getAphorism(sign.name);
-            item.innerHTML = `
-                <img src="${sign.img}" alt="${sign.ru}">
-                <div class="zodiac-name">${sign.ru}</div>
-            `;
-            grid.appendChild(item);
-        });
-
-        // ===== ОСНОВНАЯ ФУНКЦИЯ =====
-async function getAphorism(sign) {
-    const container = document.getElementById('parchmentContainer');
-    const text = document.getElementById('parchmentText');
-    const signEl = document.getElementById('parchmentSign');
     const grid = document.getElementById('zodiacGrid');
-    const subtitle = document.querySelector('.key-subtitle');
-    const share = document.getElementById('shareButtons');
-    
-    currentSign = sign;
-    
-    grid.style.display = 'none';
-    subtitle.style.display = 'none';
-    share.style.display = 'none';
-    text.innerHTML = 'Загрузка...';
-    signEl.innerHTML = '';
-    container.style.display = 'block';
+    zodiacSigns.forEach(sign => {
+        const item = document.createElement('div');
+        item.className = 'zodiac-item';
+        item.onclick = () => getAphorism(sign.name);
+        item.innerHTML = `
+            <img src="${sign.img}" alt="${sign.ru}">
+            <div class="zodiac-name">${sign.ru}</div>
+        `;
+        grid.appendChild(item);
+    });
 
-    try {
-        const response = await fetch(`/api/v1/key?sign=${sign}`);
-        const data = await response.json();
-        text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+    // ===== ОСНОВНАЯ ФУНКЦИЯ =====
+    async function getAphorism(sign) {
+        const container = document.getElementById('parchmentContainer');
+        const text = document.getElementById('parchmentText');
+        const signEl = document.getElementById('parchmentSign');
+        const grid = document.getElementById('zodiacGrid');
+        const subtitle = document.querySelector('.key-subtitle');
+        const shareWrapper = document.getElementById('shareWrapper');
         
-        // Берём путь из массива, а не собираем заново
-        const signData = zodiacSigns.find(s => s.name === sign);
-        if (signData) {
-            const signIcon = document.createElement('img');
-            signIcon.src = signData.img;
-            signIcon.alt = signData.ru;
-            signEl.appendChild(signIcon);
-        }
+        currentSign = sign;
         
-        share.style.display = 'flex';
-        
-    } catch (e) {
-        text.innerHTML = 'Сегодня звёзды говорят тихо.';
-    }
-}
+        grid.style.display = 'none';
+        subtitle.style.display = 'none';
+        if (shareWrapper) shareWrapper.style.display = 'none';
+        text.innerHTML = 'Загрузка...';
+        signEl.innerHTML = '';
+        container.style.display = 'block';
 
-// ===== ПОДЕЛИТЬСЯ (компактное меню) =====
-
-function toggleShareMenu() {
-    const menu = document.getElementById('shareMenu');
-    if (menu) {
-        menu.classList.toggle('show');
-    }
-}
-
-// Закрытие меню при клике вне него
-document.addEventListener('click', function(e) {
-    const wrapper = document.getElementById('shareWrapper');
-    const menu = document.getElementById('shareMenu');
-    if (wrapper && menu && !wrapper.contains(e.target)) {
-        menu.classList.remove('show');
-    }
-});
-
-function getShareText() {
-    const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
-    const text = document.getElementById('parchmentText').textContent;
-    const signNamesRu = {
-        'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
-        'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
-        'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
-        'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
-    };
-    const signRu = signNamesRu[sign] || sign;
-    return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
-}
-
-function shareTelegram() {
-    const text = getShareText();
-    const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-    closeShareMenu();
-}
-
-function shareFacebook() {
-    const text = getShareText();
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-    closeShareMenu();
-}
-
-function shareTwitter() {
-    const text = getShareText();
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
-    window.open(url, '_blank');
-    closeShareMenu();
-}
-
-function copyLink() {
-    const text = getShareText() + '\n\n' + window.location.href;
-    if (navigator.share) {
-        navigator.share({
-            title: 'Ключ к знаку — Liber Astrodum',
-            text: text,
-            url: window.location.href
-        });
-    } else {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('✅ Афоризм скопирован!');
-        }).catch(() => {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('✅ Афоризм скопирован!');
-        });
-    }
-    closeShareMenu();
-}
-
-function closeShareMenu() {
-    const menu = document.getElementById('shareMenu');
-    if (menu) {
-        menu.classList.remove('show');
-    }
-}
-
-        // ===== МОДАЛЬНОЕ ОКНО =====
-        const parchmentContainer = document.getElementById('parchmentContainer');
-        const modal = document.getElementById('parchmentModal');
-        const modalText = document.getElementById('modalText');
-        const modalSign = document.getElementById('modalSign');
-
-        parchmentContainer.addEventListener('click', function() {
-            const text = document.getElementById('parchmentText').textContent;
-            const signImg = document.querySelector('#parchmentSign img');
+        try {
+            const response = await fetch(`/api/v1/key?sign=${sign}`);
+            const data = await response.json();
+            text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
             
-            if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
-                modalText.textContent = text;
-                
-                modalSign.innerHTML = '';
-                if (signImg) {
-                    const clone = signImg.cloneNode(true);
-                    modalSign.appendChild(clone);
-                }
-                
-                modal.style.display = 'flex';
+            const signData = zodiacSigns.find(s => s.name === sign);
+            if (signData) {
+                const signIcon = document.createElement('img');
+                signIcon.src = signData.img;
+                signIcon.alt = signData.ru;
+                signEl.appendChild(signIcon);
             }
-        });
+            
+            if (shareWrapper) shareWrapper.style.display = 'inline-block';
+            
+        } catch (e) {
+            text.innerHTML = 'Сегодня звёзды говорят тихо.';
+        }
+    }
 
-        modal.addEventListener('click', function() {
+    // ===== ПОДЕЛИТЬСЯ (компактное меню) =====
+
+    function toggleShareMenu() {
+        const menu = document.getElementById('shareMenu');
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('shareWrapper');
+        const menu = document.getElementById('shareMenu');
+        if (wrapper && menu && !wrapper.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    function getShareText() {
+        const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
+        const text = document.getElementById('parchmentText').textContent;
+        const signNamesRu = {
+            'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+            'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+            'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+            'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+        };
+        const signRu = signNamesRu[sign] || sign;
+        return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
+    }
+
+    function shareTelegram() {
+        const text = getShareText();
+        const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+        closeShareMenu();
+    }
+
+    function shareFacebook() {
+        const text = getShareText();
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+        closeShareMenu();
+    }
+
+    function shareTwitter() {
+        const text = getShareText();
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+        window.open(url, '_blank');
+        closeShareMenu();
+    }
+
+    function copyLink() {
+        const text = getShareText() + '\n\n' + window.location.href;
+        if (navigator.share) {
+            navigator.share({
+                title: 'Ключ к знаку — Liber Astrodum',
+                text: text,
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Афоризм скопирован!');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('✅ Афоризм скопирован!');
+            });
+        }
+        closeShareMenu();
+    }
+
+    function closeShareMenu() {
+        const menu = document.getElementById('shareMenu');
+        if (menu) {
+            menu.classList.remove('show');
+        }
+    }
+
+    // ===== МОДАЛЬНОЕ ОКНО =====
+    const parchmentContainer = document.getElementById('parchmentContainer');
+    const modal = document.getElementById('parchmentModal');
+    const modalText = document.getElementById('modalText');
+    const modalSign = document.getElementById('modalSign');
+
+    parchmentContainer.addEventListener('click', function() {
+        const text = document.getElementById('parchmentText').textContent;
+        const signImg = document.querySelector('#parchmentSign img');
+        
+        if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
+            modalText.textContent = text;
+            
+            modalSign.innerHTML = '';
+            if (signImg) {
+                const clone = signImg.cloneNode(true);
+                modalSign.appendChild(clone);
+            }
+            
+            modal.style.display = 'flex';
+        }
+    });
+
+    modal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
             modal.style.display = 'none';
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                modal.style.display = 'none';
-            }
-        });
-    </script>
+        }
+    });
+</script>
 </body>
 </html>
