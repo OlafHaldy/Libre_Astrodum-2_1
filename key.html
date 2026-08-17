@@ -344,12 +344,10 @@
     </div>
 </div>
 
-<!-- Кнопка "Поделиться" -->
-        <div id="shareWrapper">
-    <button id="shareToggle" onclick="toggleShareMenu()">
-        🔗 Поделиться
-    </button>
-         <div id="shareMenu" style="display: none;">
+<!-- Кнопка "Поделиться" (компактная) -->
+<div id="shareWrapper" style="display: none; text-align: center; margin-top: 15px;">
+    <button id="shareToggle" onclick="toggleShareMenu()">🔗 Поделиться</button>
+    <div id="shareMenu">
         <button onclick="shareTelegram()">📨 Telegram</button>
         <button onclick="shareFacebook()">📘 Facebook</button>
         <button onclick="shareTwitter()">🐦 Twitter</button>
