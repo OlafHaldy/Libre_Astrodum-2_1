@@ -57,7 +57,7 @@ def _normalize_interpretation(text: str) -> str:
     return text.strip()
 
 
-def _call_groq(prompt_text, model="llama-3.1-8b-instant", temperature=0.7, max_tokens=3000):
+def _call_groq(prompt_text, model="llama-3.3-70b-versatile", temperature=0.7, max_tokens=3000):
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise AIError("GROQ_API_KEY не задан")
@@ -107,8 +107,9 @@ def _call_gemini(prompt_text, temperature=0.7, max_tokens=3000):
     if not api_key:
         raise AIError("GEMINI_API_KEY не задан")
 
-    model = "gemini-1.5-flash"
+    model = "gemini-2.5-flash"  # ← актуальная модель
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    # ... (остальной код без изменений)
     payload = {
         "contents": [{"parts": [{"text": prompt_text}]}],
         "generationConfig": {
@@ -219,7 +220,6 @@ def generate(prompt) -> str:
 # ===== КОРОТКАЯ ГЕНЕРАЦИЯ ДЛЯ КЛЮЧА К ЗНАКУ =====
 
 def _call_groq_short(prompt):
-    """Groq с ограничением на короткий ответ."""
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise AIError("GROQ_API_KEY не задан")
@@ -230,7 +230,7 @@ def _call_groq_short(prompt):
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "llama-3.1-8b-instant",  # ← та же модель, что в _call_groq()
+        "model": "llama-3.3-70b-versatile",  # ← исправлено
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 60,
