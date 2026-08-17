@@ -217,7 +217,6 @@ def generate(prompt) -> str:
 
 
 # ===== КОРОТКАЯ ГЕНЕРАЦИЯ ДЛЯ КЛЮЧА К ЗНАКУ =====
-
 def _call_groq_short(prompt):
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
@@ -229,11 +228,18 @@ def _call_groq_short(prompt):
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "llama-3.3-70b-versatile",
+        "model": "llama-3.1-8b-instant",  # ← ИСПРАВЛЕНО!
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
-        "max_tokens": 3000,
+        "max_tokens": 60,
     }
+
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        raise AIError(f"Groq short returned invalid response: {e}")
 
     try:
         resp = requests.post(url, headers=headers, json=payload, timeout=TIMEOUT)
