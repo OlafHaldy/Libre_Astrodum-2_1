@@ -136,33 +136,72 @@
     opacity: 0.8;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
+/* ===== КНОПКА ПОДЕЛИТЬСЯ ===== */
+#shareWrapper {
+    text-align: center;
+    margin-top: 15px;
+    position: relative;
+    display: inline-block;
+}
 
-        /* ===== КНОПКИ ПОДЕЛИТЬСЯ ===== */
-        #shareButtons {
-            display: none;
-            text-align: center;
-            margin-top: 15px;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        #shareButtons button {
-            background: none;
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            padding: 8px 18px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-family: 'Cormorant Infant', serif;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        #shareButtons button:hover {
-            background: rgba(212, 175, 55, 0.15);
-            transform: scale(1.02);
-        }
+#shareToggle {
+    background: none;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    color: #d4af37;
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Cormorant Infant', serif;
+    font-size: 13px;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+}
+
+#shareToggle:hover {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: #d4af37;
+}
+
+#shareMenu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    background: rgba(20, 20, 30, 0.95);
+    border: 1px solid #2a2a40;
+    border-radius: 12px;
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#shareMenu.show {
+    display: flex;
+}
+
+#shareMenu button {
+    background: none;
+    border: none;
+    color: #e4e4e4;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Cormorant Infant', serif;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+#shareMenu button:hover {
+    background: rgba(212, 175, 55, 0.15);
+    color: #d4af37;
+}
 
         /* ===== МОДАЛЬНОЕ ОКНО ===== */
         #parchmentModal {
@@ -305,14 +344,18 @@
     </div>
 </div>
 
-        <!-- КНОПКИ ПОДЕЛИТЬСЯ -->
-        <div id="shareButtons">
-            <button onclick="shareTelegram()">📨 Telegram</button>
-            <button onclick="shareFacebook()">📘 Facebook</button>
-            <button onclick="shareTwitter()">🐦 Twitter</button>
-            <button onclick="copyLink()">🔗 Копировать</button>
-        </div>
+<!-- Кнопка "Поделиться" -->
+        <div id="shareWrapper">
+    <button id="shareToggle" onclick="toggleShareMenu()">
+        🔗 Поделиться
+    </button>
+         <div id="shareMenu" style="display: none;">
+        <button onclick="shareTelegram()">📨 Telegram</button>
+        <button onclick="shareFacebook()">📘 Facebook</button>
+        <button onclick="shareTwitter()">🐦 Twitter</button>
+        <button onclick="copyLink()">🔗 Копировать</button>
     </div>
+</div>
 
     <!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
     <div id="parchmentModal">
@@ -395,61 +438,88 @@ async function getAphorism(sign) {
     }
 }
 
-        // ===== ПОДЕЛИТЬСЯ =====
-        function getShareText() {
-            const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
-            const text = document.getElementById('parchmentText').textContent;
-            const signNamesRu = {
-                'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
-                'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
-                'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
-                'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
-            };
-            const signRu = signNamesRu[sign] || sign;
-            return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
-        }
+// ===== ПОДЕЛИТЬСЯ (компактное меню) =====
 
-        function shareTelegram() {
-            const text = getShareText();
-            const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        }
-
-        function shareFacebook() {
-            const text = getShareText();
-            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+function toggleShareMenu() {
+    const menu = document.getElementById('shareMenu');
+    if (menu) {
+        menu.classList.toggle('show');
+    }
 }
 
-        function shareTwitter() {
-            const text = getShareText();
-            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
-    window.open(url, '_blank');
+// Закрытие меню при клике вне него
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('shareWrapper');
+    const menu = document.getElementById('shareMenu');
+    if (wrapper && menu && !wrapper.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+
+function getShareText() {
+    const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
+    const text = document.getElementById('parchmentText').textContent;
+    const signNamesRu = {
+        'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+        'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+        'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+        'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+    };
+    const signRu = signNamesRu[sign] || sign;
+    return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
 }
 
-        function copyLink() {
-            const text = getShareText() + '\n\n' + window.location.href;
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Ключ к знаку — Liber Astrodum',
-                    text: text,
-                    url: window.location.href
-                });
-            } else {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('✅ Афоризм скопирован! Поделитесь с друзьями.');
-                }).catch(() => {
-                    // Fallback
-                    const textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    alert('✅ Афоризм скопирован!');
-                });
-            }
-        }
+function shareTelegram() {
+    const text = getShareText();
+    const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    closeShareMenu();
+}
+
+function shareFacebook() {
+    const text = getShareText();
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    closeShareMenu();
+}
+
+function shareTwitter() {
+    const text = getShareText();
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+    window.open(url, '_blank');
+    closeShareMenu();
+}
+
+function copyLink() {
+    const text = getShareText() + '\n\n' + window.location.href;
+    if (navigator.share) {
+        navigator.share({
+            title: 'Ключ к знаку — Liber Astrodum',
+            text: text,
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('✅ Афоризм скопирован!');
+        }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('✅ Афоризм скопирован!');
+        });
+    }
+    closeShareMenu();
+}
+
+function closeShareMenu() {
+    const menu = document.getElementById('shareMenu');
+    if (menu) {
+        menu.classList.remove('show');
+    }
+}
 
         // ===== МОДАЛЬНОЕ ОКНО =====
         const parchmentContainer = document.getElementById('parchmentContainer');
