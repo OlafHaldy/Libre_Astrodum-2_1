@@ -891,7 +891,6 @@ import datetime
 @app.get("/api/v1/key")
 def key_v1(sign: str = "Aquarius"):
     """Короткий афоризм для знака зодиака на тему дня."""
-
     import datetime
     import re
     from ai import generate_short
@@ -946,14 +945,10 @@ def key_v1(sign: str = "Aquarius"):
     }
 
     sign_ru = SIGN_NAMES_RU.get(sign, sign)
-
     today = datetime.datetime.now()
-    topic = TOPICS_BY_DAY.get(
-        today.day,
-        'мудрость и покой'
-    )
+    topic = TOPICS_BY_DAY.get(today.day, 'мудрость и покой')
 
-prompt = f"""Ты — Астродо, хранитель живых афоризмов.
+    prompt = f"""Ты — Астродо, хранитель живых афоризмов.
 
 Напиши ОДНУ фразу для знака {sign_ru} на тему: {topic}.
 
@@ -974,98 +969,54 @@ prompt = f"""Ты — Астродо, хранитель живых афориз
 
 СТРОГИЕ ОГРАНИЧЕНИЯ:
 - Одно предложение
-- Не больше 14 слов (чуть больше для разговорной интонации)
+- Не больше 14 слов
 - Без кавычек
 - Без пояснений
 - Без вступлений
 - Без перечислений
-- Без слов «возможно» (если только это не часть иронии)
 
 ПРИМЕР того, как ДОЛЖНО звучать:
 «Если Водолей страдает, то это не обязательно агония, возможно он собирает материал для будущих шуток.»
 
 Выдай ТОЛЬКО одну короткую фразу."""
 
-def clean_and_validate(text):
-        """
-        Приводит ответ модели к строгому формату афоризма
-        и проверяет его длину.
-        """
-
+    def clean_and_validate(text):
+        """Приводит ответ модели к строгому формату афоризма."""
         if not text:
             raise ValueError("Empty aphorism")
 
-        # Убираем лишние кавычки.
-        text = (
-            text
-            .replace('"', '')
-            .replace('«', '')
-            .replace('»', '')
-            .replace('„', '')
-            .replace('“', '')
-            .strip()
-        )
-
-        # Берём только первую строку.
+        text = text.replace('"', '').replace('«', '').replace('»', '').replace('„', '').replace('“', '').strip()
         text = text.splitlines()[0].strip()
 
         if not text:
             raise ValueError("Empty aphorism after cleanup")
 
-        # Если модель всё-таки выдала несколько предложений,
-        # оставляем только первое.
-        match = re.match(
-            r'^(.+?[.!?])(?:\s|$)',
-            text
-        )
-
+        match = re.match(r'^(.+?[.!?])(?:\s|$)', text)
         if match:
             text = match.group(1).strip()
 
-        # Убираем возможный маркер списка.
-        text = re.sub(
-            r'^(?:[-*•]\s*|\d+[.)]\s*)',
-            '',
-            text
-        ).strip()
+        text = re.sub(r'^(?:[-*•]\s*|\d+[.)]\s*)', '', text).strip()
 
         if not text:
             raise ValueError("Empty aphorism after normalization")
 
-        # Считаем слова.
         words = text.split()
+        if len(words) > 14:
+            raise ValueError(f"Aphorism too long: {len(words)} words")
 
-        if len(words) > 10:
-            raise ValueError(
-                f"Aphorism too long: {len(words)} words"
-            )
-
-        # Не допускаем несколько предложений.
-        sentence_count = len(
-            re.findall(r'[.!?]+', text)
-        )
-
+        sentence_count = len(re.findall(r'[.!?]+', text))
         if sentence_count > 1:
-            raise ValueError(
-                "Aphorism contains multiple sentences"
-            )
+            raise ValueError("Aphorism contains multiple sentences")
 
         return text
 
     try:
-        # Первая попытка.
         raw = generate_short(prompt)
-
         try:
             aphorism = clean_and_validate(raw)
-
         except ValueError as first_error:
-            logger.warning(
-                "First key aphorism rejected: %s",
-                first_error
-            )
+            logger.warning("First key aphorism rejected: %s", first_error)
 
-            # Вторая попытка — уже максимально жёсткая.
             retry_prompt = f"""СОЗДАЙ АФОРИЗМ.
 
 Знак: {sign_ru}
@@ -1073,9 +1024,9 @@ def clean_and_validate(text):
 
 Нужна ОДНА законченная фраза.
 
-МАКСИМУМ 10 СЛОВ.
+МАКСИМУМ 14 СЛОВ.
 
-Не больше 10 слов.
+Не больше 14 слов.
 Не два предложения.
 Не объяснение.
 Не совет.
@@ -1083,7 +1034,6 @@ def clean_and_validate(text):
 Не заголовок.
 Не список.
 Не кавычки.
-Не начинай с пояснений.
 
 Только готовый афоризм одной строкой.
 
@@ -1092,14 +1042,8 @@ def clean_and_validate(text):
 
             raw_retry = generate_short(retry_prompt)
             aphorism = clean_and_validate(raw_retry)
-
     except Exception as e:
-        logger.warning(
-            "Key aphorism generation failed: %s",
-            e
-        )
-
-        # Безопасный fallback.
+        logger.warning("Key aphorism generation failed: %s", e)
         aphorism = "Сегодня звёзды говорят тихо."
 
     return {
