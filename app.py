@@ -890,47 +890,29 @@ import datetime
 
 @app.get("/api/v1/key")
 def key_v1(sign: str = "Aquarius"):
-    """Короткий афоризм для знака зодиака на тему дня."""
     import datetime
-    import re
-    from ai import generate  # ← ИЗМЕНЕНО: generate_short → generate
+    from ai import generate
 
-    # ... (остальной код без изменений) ...
+    SIGN_NAMES_RU = {
+        'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+        'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+        'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+        'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+    }
+
+    sign_ru = SIGN_NAMES_RU.get(sign, sign)
+    today = datetime.datetime.now()
+    topic = "мудрость и покой"
+
+    # === ПРОСТЕЙШИЙ ПРОМПТ ===
+    prompt = f"Напиши одну короткую фразу для знака {sign_ru} на тему {topic}. Максимум 10 слов. Только фраза."
 
     try:
-        raw = generate(prompt)  # ← ИЗМЕНЕНО: generate_short → generate
-        try:
-            aphorism = clean_and_validate(raw)
-        except ValueError as first_error:
-            logger.warning("First key aphorism rejected: %s", first_error)
-
-            retry_prompt = f"""СОЗДАЙ АФОРИЗМ.
-
-Знак: {sign_ru}
-Ситуация: {topic}
-
-Нужна ОДНА законченная фраза.
-
-МАКСИМУМ 10 СЛОВ.
-
-Не больше 10 слов.
-Не два предложения.
-Не объяснение.
-Не совет.
-Не комментарий.
-Не заголовок.
-Не список.
-Не кавычки.
-Не начинай с пояснений.
-
-Только готовый афоризм одной строкой.
-
-Пример:
-Водолей не прощается — он просто перестаёт ждать лифт."""
-
-            raw_retry = generate(retry_prompt)  # ← ИЗМЕНЕНО: generate_short → generate
-            aphorism = clean_and_validate(raw_retry)
-
+        raw = generate(prompt)
+        # === ПРОСТЕЙШАЯ ЧИСТКА ===
+        aphorism = raw.strip()[:200]
+        if not aphorism:
+            aphorism = "Сегодня звёзды говорят тихо."
     except Exception as e:
         logger.warning("Key aphorism generation failed: %s", e)
         aphorism = "Сегодня звёзды говорят тихо."
