@@ -300,7 +300,8 @@
         <!-- КНОПКИ ПОДЕЛИТЬСЯ -->
         <div id="shareButtons">
             <button onclick="shareTelegram()">📨 Telegram</button>
-            <button onclick="shareVK()">📘 VK</button>
+            <button onclick="shareFacebook()">📘 Facebook</button>
+            <button onclick="shareTwitter()">🐦 Twitter</button>
             <button onclick="copyLink()">🔗 Копировать</button>
         </div>
     </div>
@@ -348,40 +349,43 @@
         });
 
         // ===== ОСНОВНАЯ ФУНКЦИЯ =====
-        async function getAphorism(sign) {
-            const container = document.getElementById('parchmentContainer');
-            const text = document.getElementById('parchmentText');
-            const signEl = document.getElementById('parchmentSign');
-            const grid = document.getElementById('zodiacGrid');
-            const subtitle = document.querySelector('.key-subtitle');
-            const share = document.getElementById('shareButtons');
-            
-            currentSign = sign;
-            
-            grid.style.display = 'none';
-            subtitle.style.display = 'none';
-            share.style.display = 'none';
-            text.innerHTML = 'Загрузка...';
-            signEl.innerHTML = '';
-            container.style.display = 'block';
+async function getAphorism(sign) {
+    const container = document.getElementById('parchmentContainer');
+    const text = document.getElementById('parchmentText');
+    const signEl = document.getElementById('parchmentSign');
+    const grid = document.getElementById('zodiacGrid');
+    const subtitle = document.querySelector('.key-subtitle');
+    const share = document.getElementById('shareButtons');
+    
+    currentSign = sign;
+    
+    grid.style.display = 'none';
+    subtitle.style.display = 'none';
+    share.style.display = 'none';
+    text.innerHTML = 'Загрузка...';
+    signEl.innerHTML = '';
+    container.style.display = 'block';
 
-            try {
-                const response = await fetch(`/api/v1/key?sign=${sign}`);
-                const data = await response.json();
-                text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
-                
-                const signIcon = document.createElement('img');
-                signIcon.src = `/static/zodiac/${sign}.png`;
-                signIcon.alt = sign;
-                signEl.appendChild(signIcon);
-                
-                // Показываем кнопки "Поделиться"
-                share.style.display = 'flex';
-                
-            } catch (e) {
-                text.innerHTML = 'Сегодня звёзды говорят тихо.';
-            }
+    try {
+        const response = await fetch(`/api/v1/key?sign=${sign}`);
+        const data = await response.json();
+        text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+        
+        // Берём путь из массива, а не собираем заново
+        const signData = zodiacSigns.find(s => s.name === sign);
+        if (signData) {
+            const signIcon = document.createElement('img');
+            signIcon.src = signData.img;
+            signIcon.alt = signData.ru;
+            signEl.appendChild(signIcon);
         }
+        
+        share.style.display = 'flex';
+        
+    } catch (e) {
+        text.innerHTML = 'Сегодня звёзды говорят тихо.';
+    }
+}
 
         // ===== ПОДЕЛИТЬСЯ =====
         function getShareText() {
@@ -403,11 +407,17 @@
             window.open(url, '_blank');
         }
 
-        function shareVK() {
+        function shareFacebook() {
             const text = getShareText();
-            const url = `https://vk.com/share.php?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        }
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+}
+
+        function shareTwitter() {
+            const text = getShareText();
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+    window.open(url, '_blank');
+}
 
         function copyLink() {
             const text = getShareText() + '\n\n' + window.location.href;
