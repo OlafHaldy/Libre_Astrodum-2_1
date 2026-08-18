@@ -287,3 +287,7 @@ if chart_type == "solar":
         sections.append(f"Солярное Солнце в {sun_house} доме натала")
     if angular_planets:
         sections.append(f"Планеты в угловых домах соляра: {', '.join(angular_planets)}")
+        # Где-то в конце, после остальных блоков:
+    if "receptions" in context and context["receptions"]:
+    sections.append("\nВзаимные рецепции:")
+    sections.append(context["receptions"])
