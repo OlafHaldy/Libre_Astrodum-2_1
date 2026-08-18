@@ -73,12 +73,14 @@ def run_pipeline(chart: Chart) -> AnalysisContext:
     )
 
 
+
 def run_full_pipeline(chart: Chart) -> dict:
     """
     Полный цикл: Chart → AnalysisContext → PromptContext.
     Возвращает всё, что нужно для Prompt Builder.
     """
     from core.prompt_context import build_prompt_context
+    from core.transit_aspects import calculate_transit_aspects, format_transit_aspects_for_prompt
 
     # 1. Основной анализ
     analysis = run_pipeline(chart)
@@ -102,6 +104,19 @@ def run_full_pipeline(chart: Chart) -> dict:
     prompt_ctx.receptions = receptions
     prompt_ctx.receptions_text = receptions_text
 
+    # ===== ТРАНЗИТНЫЕ АСПЕКТЫ =====
+    # Для Соляра и Лунара сравниваем транзитную карту с натальной
+    if hasattr(chart, 'natal_chart') and chart.natal_chart:
+        transit_planets = chart.planets
+        natal_planets = chart.natal_chart.planets
+
+        transit_aspects = calculate_transit_aspects(transit_planets, natal_planets)
+        transit_aspects_text = format_transit_aspects_for_prompt(transit_aspects)
+
+        prompt_ctx.transit_aspects = transit_aspects
+        prompt_ctx.transit_aspects_text = transit_aspects_text
+
+    # 5. Возвращаем результат
     return {
         "analysis": analysis.to_dict(),
         "prompt_context": prompt_ctx.to_dict(),

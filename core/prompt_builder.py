@@ -12,7 +12,7 @@ Prompt Builder v3.1.
 """
 
 
-def build_prompt(prompt_context, chart_type="lunar") -> str:
+def build_prompt(prompt_context, chart_type="lunar"):
     """
     Строит текст промпта из PromptContext.
     Выбирает ветку в зависимости от типа карты.
@@ -87,13 +87,16 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
         if ctx.dominant_houses:
             dominants_text += f"- Дома: {', '.join(str(h) for h in ctx.dominant_houses)}\n"
 
-    # Дополнительные данные (рецепции, акцидентальные достоинства)
+    # ===== ДОПОЛНИТЕЛЬНЫЕ ДАННЫЕ =====
     extra_text = ""
     if hasattr(ctx, 'receptions_text') and ctx.receptions_text:
         extra_text += f"\nВзаимные рецепции:\n{ctx.receptions_text}\n"
     
     if hasattr(ctx, 'accidental_dignities_text') and ctx.accidental_dignities_text:
         extra_text += f"\nАкцидентальные достоинства:\n{ctx.accidental_dignities_text}\n"
+
+    if hasattr(ctx, 'transit_aspects_text') and ctx.transit_aspects_text:
+        extra_text += f"\nТранзитные аспекты к наталу:\n{ctx.transit_aspects_text}\n"
 
     full_context = main_theme_text + key_factors_text + strengths_text + challenges_text + contradictions_text + dominants_text + extra_text
 
@@ -103,6 +106,7 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
         return _build_solar_prompt(full_context)
     else:
         return _build_lunar_prompt(full_context)
+    
 
 
 def _build_natal_prompt(context_text):
@@ -229,6 +233,7 @@ def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str
     # Добавляем рецепции и акцидентальные достоинства
     ctx.receptions_text = prompt_context_dict.get("receptions", "")
     ctx.accidental_dignities_text = prompt_context_dict.get("accidental_dignities", "")
+    ctx.transit_aspects_text = prompt_context_dict.get("transit_aspects_text", "")
 
     return build_prompt(ctx, chart_type=chart_type)
 
