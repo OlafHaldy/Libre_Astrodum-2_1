@@ -371,11 +371,12 @@ HTML_PAGE = r"""<!DOCTYPE html>
     </a>
 </div>
 
-        <div class="dev-modes">
-            <div class="dev-mode-card">
-                <div class="dev-mode-title">☀ Соляр</div>
-                <div class="dev-mode-desc">В разработке</div>
-            </div>
+    <a href="/solar" class="main-mode-card">
+        <img src="/static/icons/icon_solar.png" alt="Соляр">
+        
+        <div class="main-mode-desc">Прогноз на год</div>
+    </a>
+</div>
             <div class="dev-mode-card">
                 <div class="dev-mode-title">⏳ Прогрессии</div>
                 <div class="dev-mode-desc">В разработке</div>
