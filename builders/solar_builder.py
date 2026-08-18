@@ -1,8 +1,7 @@
-# builders/solar_builder.py
-
 import swisseph as swe
 from datetime import datetime, timedelta
 from builders.natal_builder import build_natal_chart
+from core.rulerships import get_ruler_by_sign
 
 
 def find_solar_return(natal_chart, target_year):
@@ -12,7 +11,6 @@ def find_solar_return(natal_chart, target_year):
     """
     natal_sun_lon = natal_chart.planets['Sun']['longitude']
 
-    # Грубый поиск с шагом 1 день
     start_date = datetime(target_year, 1, 1, 0, 0)
     end_date = datetime(target_year + 1, 1, 1, 0, 0)
 
@@ -59,21 +57,14 @@ def find_solar_return(natal_chart, target_year):
     if best_jd_final is None:
         raise ValueError(f"Solar return not found for year {target_year}")
 
-    year, month, day, hour, minute = swe.revjul(best_jd_final)
-    return int(year), int(month), int(day), int(hour), int(minute)
+    # Исправлено: revjul возвращает 4 значения, а не 5
+    year, month, day, hour = swe.revjul(best_jd_final)
+    return int(year), int(month), int(day), int(hour), 0
 
 
 def build_solar_chart(natal_data, target_year, lat, lon):
     """
     Строит солярную карту с полной накладкой на натал.
-
-    Возвращает словарь:
-        - solar_chart: карта соляра (объект Chart)
-        - solar_return_date: дата солярного возвращения
-        - solar_asc_ruler: управитель солярного ASC
-        - solar_asc_house: дом натала, в который попадает солярный ASC
-        - solar_sun_house: дом натала, в который попадает солярное Солнце
-        - overlay: накладка солярных планет на натальные дома
     """
     # 1. Строим натал
     natal_chart = build_natal_chart(
@@ -97,13 +88,11 @@ def build_solar_chart(natal_data, target_year, lat, lon):
     )
 
     # 4. Накладка соляра на натал
-    #    Смотрим, в какие натальные дома попадают солярные планеты
     overlay = {}
     for planet_name, planet_data in solar_chart.planets.items():
         planet_lon = planet_data['longitude']
-        # Находим натальный дом этой долготы
         for house_num, house_data in natal_chart.houses.items():
-            if house_num in [1,2,3,4,5,6,7,8,9,10,11,12]:
+            if isinstance(house_num, int) and 1 <= house_num <= 12:
                 cusp = house_data['longitude']
                 next_cusp = natal_chart.houses.get(house_num + 1, {}).get('longitude', cusp + 30)
                 if cusp <= planet_lon < next_cusp:
@@ -119,7 +108,7 @@ def build_solar_chart(natal_data, target_year, lat, lon):
     if solar_asc:
         asc_lon = solar_chart.houses.get(1, {}).get('longitude', 0)
         for house_num, house_data in natal_chart.houses.items():
-            if house_num in [1,2,3,4,5,6,7,8,9,10,11,12]:
+            if isinstance(house_num, int) and 1 <= house_num <= 12:
                 cusp = house_data['longitude']
                 next_cusp = natal_chart.houses.get(house_num + 1, {}).get('longitude', cusp + 30)
                 if cusp <= asc_lon < next_cusp:
@@ -130,7 +119,7 @@ def build_solar_chart(natal_data, target_year, lat, lon):
     solar_sun_house = None
     sun_lon = solar_chart.planets['Sun']['longitude']
     for house_num, house_data in natal_chart.houses.items():
-        if house_num in [1,2,3,4,5,6,7,8,9,10,11,12]:
+        if isinstance(house_num, int) and 1 <= house_num <= 12:
             cusp = house_data['longitude']
             next_cusp = natal_chart.houses.get(house_num + 1, {}).get('longitude', cusp + 30)
             if cusp <= sun_lon < next_cusp:
@@ -148,14 +137,3 @@ def build_solar_chart(natal_data, target_year, lat, lon):
     solar_chart.natal_chart = natal_chart
 
     return solar_chart
-
-
-def get_ruler_by_sign(sign):
-    """Возвращает управителя знака (классическая астрология)."""
-    rulers = {
-        'Aries': 'Mars', 'Taurus': 'Venus', 'Gemini': 'Mercury',
-        'Cancer': 'Moon', 'Leo': 'Sun', 'Virgo': 'Mercury',
-        'Libra': 'Venus', 'Scorpio': 'Mars', 'Sagittarius': 'Jupiter',
-        'Capricorn': 'Saturn', 'Aquarius': 'Saturn', 'Pisces': 'Jupiter'
-    }
-    return rulers.get(sign)
