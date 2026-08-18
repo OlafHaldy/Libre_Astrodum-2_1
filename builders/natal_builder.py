@@ -40,18 +40,20 @@ def build_natal_chart(year, month, day, hour, minute, lat, lon):
 
     # 2. Позиции планет
     positions = {}
+
     for name, pid in PLANET_IDS.items():
         data, _ = swe.calc_ut(jd_natal, pid)
-        lon = data[0]
-        sign_num = int(lon // 30)
-        degree = round(lon % 30, 2)
+        planet_lon = data[0]
+        sign_num = int(planet_lon // 30)
+        degree = round(planet_lon % 30, 2)
+
         positions[name] = {
             "sign": SIGNS[sign_num],
             "degree": degree,
-            "longitude": lon,
-            "speed": 0,
+            "longitude": planet_lon,
+            "speed": data[3],
             "house": None,
-            "retrograde": False,
+            "retrograde": data[3] < 0,
         }
 
     # 3. Дома
@@ -80,22 +82,50 @@ def build_natal_chart(year, month, day, hour, minute, lat, lon):
     # 5. Аспекты
     aspects = []
     planet_names = list(positions.keys())
+
+    EXACT_ANGLES = {
+        "conjunction": 0,
+        "sextile": 60,
+        "square": 90,
+        "trine": 120,
+        "opposition": 180,
+    }
+
     for i in range(len(planet_names)):
         for j in range(i + 1, len(planet_names)):
             p1, p2 = planet_names[i], planet_names[j]
-            angle = abs(positions[p1]["longitude"] - positions[p2]["longitude"])
+
+            angle = abs(
+                positions[p1]["longitude"] -
+                positions[p2]["longitude"]
+            )
+
             if angle > 180:
                 angle = 360 - angle
+
             asp_type = None
-            if angle <= 8: asp_type = "conjunction"
-            elif abs(angle - 60) <= 6: asp_type = "sextile"
-            elif abs(angle - 90) <= 7: asp_type = "square"
-            elif abs(angle - 120) <= 7: asp_type = "trine"
-            elif abs(angle - 180) <= 7: asp_type = "opposition"
+
+            if angle <= 8:
+                asp_type = "conjunction"
+            elif abs(angle - 60) <= 6:
+                asp_type = "sextile"
+            elif abs(angle - 90) <= 7:
+                asp_type = "square"
+            elif abs(angle - 120) <= 7:
+                asp_type = "trine"
+            elif abs(angle - 180) <= 7:
+                asp_type = "opposition"
+
             if asp_type:
+                exact_angle = EXACT_ANGLES[asp_type]
+                orb = abs(angle - exact_angle)
+
                 aspects.append({
-                    "planet1": p1, "planet2": p2,
-                    "type": asp_type, "angle": round(angle, 2)
+                    "planet1": p1,
+                    "planet2": p2,
+                    "type": asp_type,
+                    "angle": round(angle, 2),
+                    "orb": round(orb, 2),
                 })
 
     # 6. Управители домов
