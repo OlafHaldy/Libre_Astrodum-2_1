@@ -57,7 +57,7 @@ def find_solar_return(natal_chart, target_year):
     if best_jd_final is None:
         raise ValueError(f"Solar return not found for year {target_year}")
 
-    # Исправлено: revjul возвращает 4 значения, а не 5
+    # ИСПРАВЛЕНО: revjul возвращает 4 значения
     year, month, day, hour = swe.revjul(best_jd_final)
     return int(year), int(month), int(day), int(hour), 0
 
