@@ -161,6 +161,18 @@
         };
         const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
 
+        // ===== ЗАГОЛОВКИ ДЛЯ СЕКЦИЙ =====
+        const interpretationTitles = {
+            MAIN: 'Главная тема',
+            STRENGTHS: 'Сильные стороны',
+            WEAKNESSES: 'Слабые места',
+            PSYCHOLOGY: 'Психологический слой',
+            TENSION: 'Внутреннее напряжение',
+            HERMETIC: 'Герметический смысл',
+            TRANSFORMATION: 'Путь преобразования',
+            CONCLUSION: 'Итог'
+        };
+
         function showOverlay(signKey) {
             const emoji = signEmojis[signKey] || '❓';
             const name = signNamesRu[signKey] || signKey;
@@ -314,10 +326,39 @@
                 }
                 planetListHtml += '</table>';
 
-                // Интерпретация
+                // Интерпретация с парсингом секций
                 let interpretationHtml = '';
-                if (data.interpretation) {
-                    interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${data.interpretation.replace(/\n/g, '<br>')}</div></div>`;
+                const interpretationText = data.interpretation || '';
+                const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
+                const interpretationSections = [];
+                let match;
+                while ((match = sectionRegex.exec(interpretationText)) !== null) {
+                    interpretationSections.push({
+                        key: match[1],
+                        start: sectionRegex.lastIndex,
+                        markerStart: match.index
+                    });
+                }
+
+                if (interpretationSections.length > 0) {
+                    for (let i = 0; i < interpretationSections.length; i++) {
+                        const section = interpretationSections[i];
+                        const endPos = i + 1 < interpretationSections.length
+                            ? interpretationSections[i + 1].markerStart
+                            : interpretationText.length;
+                        const sectionText = interpretationText.slice(section.start, endPos).trim();
+                        if (sectionText) {
+                            const title = interpretationTitles[section.key] || section.key;
+                            interpretationHtml += `
+                                <div class="interpretation-block">
+                                    <div class="interpretation-block-title">✦ ${title}</div>
+                                    <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${interpretationText.replace(/\n/g, '<br>')}</div></div>`;
                 }
 
                 resultBlock.innerHTML = `
@@ -325,6 +366,7 @@
                         <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☀ Соляр — Результат</h3>
                         ${wheelHtml}
                         ${planetListHtml}
+                        <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
                         ${interpretationHtml}
                         <br>
                         <a href="/" class="back-btn">← В главное меню</a>
