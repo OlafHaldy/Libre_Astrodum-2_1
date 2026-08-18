@@ -3,14 +3,12 @@ Liber Astrodum
 
 core/prompt_builder.py
 
-Prompt Builder v3.0.
-Поддерживает разные типы карт (лунар, натал).
-Для натальной карты — акцент на личности и предназначении.
-Для лунара — акцент на процессе и периоде.
+Prompt Builder v3.1.
+Поддерживает разные типы карт (лунар, натал, соляр).
 
 Автор: Olaf Haldi
 Архитектура: Liber Astrodum 3.0
-Версия: 3.0
+Версия: 3.1
 """
 
 
@@ -89,25 +87,32 @@ def build_prompt(prompt_context, chart_type="lunar") -> str:
         if ctx.dominant_houses:
             dominants_text += f"- Дома: {', '.join(str(h) for h in ctx.dominant_houses)}\n"
 
+    # Дополнительные данные (рецепции, акцидентальные достоинства)
+    extra_text = ""
+    if hasattr(ctx, 'receptions_text') and ctx.receptions_text:
+        extra_text += f"\nВзаимные рецепции:\n{ctx.receptions_text}\n"
+    
+    if hasattr(ctx, 'accidental_dignities_text') and ctx.accidental_dignities_text:
+        extra_text += f"\nАкцидентальные достоинства:\n{ctx.accidental_dignities_text}\n"
+
+    full_context = main_theme_text + key_factors_text + strengths_text + challenges_text + contradictions_text + dominants_text + extra_text
+
     if chart_type == "natal":
-        return _build_natal_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text)
+        return _build_natal_prompt(full_context)
+    elif chart_type == "solar":
+        return _build_solar_prompt(full_context)
     else:
-        return _build_lunar_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text)
+        return _build_lunar_prompt(full_context)
 
 
-def _build_natal_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text):
+def _build_natal_prompt(context_text):
     """Собирает промпт для натальной карты."""
     return f"""
 Ты — Астродо, хранитель Небесного Архива Liber Astrodum. Читай натальную карту как символический язык судьбы. Ты описываешь не период, а личность — её дары, её вызовы, её предназначение.
 
 ТИП КАРТЫ: Натальная карта
 
-{main_theme_text}
-{key_factors_text}
-{strengths_text}
-{challenges_text}
-{contradictions_text}
-{dominants_text}
+{context_text}
 
 === ОСНОВНОЙ ПРИНЦИП ===
 Карта — единое целое. Ищи повторяющиеся мотивы, объединяй их в одну мысль. Противоречия показывай как внутреннюю драму личности. Значение символа определяется его положением, домом, знаком, диспозитором и аспектами.
@@ -131,43 +136,17 @@ def _build_natal_prompt(main_theme_text, key_factors_text, strengths_text, chall
 [SECTION:CONCLUSION] — Что становится видимым о себе
 
 Каждый раздел — отдельный абзац. Между разделами — одна пустая строка. Не добавляй вступление и заключение вне секций.
-
-=== СОДЕРЖАНИЕ РАЗДЕЛОВ (НАТАЛ) ===
-
-[SECTION:MAIN] — Центральная тема личности. Что является ядром характера, вокруг чего строится жизнь. Указывай конкретный номер дома и тип аспекта.
-
-[SECTION:STRENGTHS] — Врождённые дары и таланты. Что помогает человеку проходить свой путь. Не «хорошие качества», а именно дары, данные от рождения.
-
-[SECTION:WEAKNESSES] — Зоны роста. Где личность встречает сопротивление внутри себя. Не «плохие черты», а именно внутренние конфликты и уроки.
-
-[SECTION:PSYCHOLOGY] — Как человек переживает себя изнутри. Чувства, сомнения, внутренние реакции, способ восприятия мира.
-
-[SECTION:TENSION] — Центральное внутреннее противоречие личности. Между чем и чем человеку приходится искать свою меру всю жизнь.
-
-[SECTION:HERMETIC] — Предназначение души. Какой глубинный урок несёт эта карта. Что человек пришёл познать. Допустимы мотивы: путь воина, путь мудреца, путь художника, путь служения, путь познания, путь любви, путь власти, путь отречения. Но только если они следуют из карты.
-
-[SECTION:TRANSFORMATION] — Направление личностного роста. Не советы, а описание того, как может измениться способ отношения к себе и миру по мере прохождения уроков карты.
-
-[SECTION:CONCLUSION] — Что становится видимым человеку о себе. Не обещание счастья или успеха. Открытый вопрос или признание величия и тяжести собственной судьбы.
-
-=== ВАЖНО ===
-Используй маркеры ровно в указанном виде. Не добавляй другие маркеры. Не используй списки. Пиши связной прозой. Интерпретация должна ощущаться как единый трактат о душе.
 """
 
 
-def _build_lunar_prompt(main_theme_text, key_factors_text, strengths_text, challenges_text, contradictions_text, dominants_text):
+def _build_lunar_prompt(context_text):
     """Собирает промпт для лунара."""
     return f"""
 Ты — Астродо, хранитель Небесного Архива Liber Astrodum. Читай лунарную карту как символический язык времени. Не предсказывай неизбежное — показывай направление, напряжение, возможность и смысл.
 
 ТИП КАРТЫ: Лунар
 
-{main_theme_text}
-{key_factors_text}
-{strengths_text}
-{challenges_text}
-{contradictions_text}
-{dominants_text}
+{context_text}
 
 === ОСНОВНОЙ ПРИНЦИП ===
 Карта — единое целое. Ищи повторяющиеся мотивы, объединяй их в одну мысль. Противоречия показывай как внутреннее напряжение. Значение символа определяется его положением, домом, знаком, диспозитором и аспектами.
@@ -175,16 +154,6 @@ def _build_lunar_prompt(main_theme_text, key_factors_text, strengths_text, chall
 === ДВА СЛОЯ ===
 ПСИХОЛОГИЧЕСКИЙ: как процесс переживается изнутри — чувства, сомнения, выбор. Не ставь диагнозов, используй вероятностный язык.
 ГЕРМЕТИЧЕСКИЙ: какой глубинный процесс стоит за происходящим. Допустимы мотивы: разрушение старой формы, очищение, соединение противоположностей, созревание, жертва как сознательный обмен.
-
-=== СТИЛЬ ===
-Спокойный, философский, ясный. Без рекламного языка, обещаний удачи, запугиваний. Текст — как страница старого трактата, обращённая к жизни читателя.
-
-=== ПРИНЦИП ПОСЛЕДОВАТЕЛЬНОГО ВЫВОДА ===
-MAIN → STRENGTHS → WEAKNESSES → PSYCHOLOGY → TENSION → HERMETIC → TRANSFORMATION → CONCLUSION.
-Каждый следующий раздел — вывод из предыдущего, а не новый анализ карты.
-
-=== ПРАВИЛО НЕПОВТОРЕНИЯ ===
-Каждый раздел добавляет новый смысл. Не повторяй мысль другими словами. Если астрологический фактор участвует в нескольких процессах — возвращайся к нему только когда меняется смысл его роли.
 
 === ФОРМАТ ОТВЕТА ===
 Верни ровно 8 разделов с маркерами:
@@ -198,9 +167,33 @@ MAIN → STRENGTHS → WEAKNESSES → PSYCHOLOGY → TENSION → HERMETIC → TR
 [SECTION:CONCLUSION] — Что становится видимым после прохождения
 
 Каждый раздел — отдельный абзац. Между разделами — одна пустая строка.
+"""
 
-=== ВАЖНО ===
-Используй маркеры ровно в указанном виде. Не добавляй другие маркеры. Не используй списки. Пиши связной прозой. Интерпретация должна ощущаться как единый трактат, проходящий восемь последовательных ступеней.
+
+def _build_solar_prompt(context_text):
+    """Собирает промпт для соляра."""
+    return f"""
+Ты — Астродо, хранитель Небесного Архива Liber Astrodum. Читай солярную карту как символический язык года. Это карта возвращения Солнца — показывает ключевые темы и вызовы предстоящего года.
+
+ТИП КАРТЫ: Соляр
+
+{context_text}
+
+=== ОСНОВНОЙ ПРИНЦИП ===
+Соляр — это карта года. Главная тема определяется солярным ASC, его управителем и солярным Солнцем в натальном доме. Планеты в угловых домах соляра (1, 4, 7, 10) — самые важные.
+
+=== ФОРМАТ ОТВЕТА ===
+Верни ровно 8 разделов с маркерами:
+[SECTION:MAIN] — Главная тема года
+[SECTION:STRENGTHS] — Что будет поддерживать в этом году
+[SECTION:WEAKNESSES] — Где будут вызовы
+[SECTION:PSYCHOLOGY] — Как будет переживаться этот год
+[SECTION:TENSION] — Основное напряжение года
+[SECTION:HERMETIC] — Глубинный смысл этого года
+[SECTION:TRANSFORMATION] — Как изменится внутренняя позиция
+[SECTION:CONCLUSION] — Что станет видимым к концу года
+
+Каждый раздел — отдельный абзац. Между разделами — одна пустая строк.
 """
 
 
@@ -233,6 +226,10 @@ def build_prompt_from_dict(prompt_context_dict: dict, chart_type="lunar") -> str
     ctx.dominant_modes = prompt_context_dict.get("dominant_modes", [])
     ctx.dominant_houses = prompt_context_dict.get("dominant_houses", [])
 
+    # Добавляем рецепции и акцидентальные достоинства
+    ctx.receptions_text = prompt_context_dict.get("receptions", "")
+    ctx.accidental_dignities_text = prompt_context_dict.get("accidental_dignities", "")
+
     return build_prompt(ctx, chart_type=chart_type)
 
 
@@ -259,35 +256,3 @@ def build_prompt_text(
     ctx.dominant_houses = dominant_houses
 
     return build_prompt(ctx, chart_type=chart_type)
-if chart_type == "solar":
-    # Солярный ASC и его управитель
-    asc_sign = chart.get('ascendant_sign', '')
-    asc_ruler = chart.get('solar_asc_ruler', '')
-    asc_house = chart.get('solar_asc_house', '')
-
-    # Солярное Солнце
-    sun_house = chart.get('solar_sun_house', '')
-
-    # Солярный год
-    solar_year = chart.get('solar_year', '')
-
-    # Планеты в угловых домах (1, 4, 7, 10)
-    angular_planets = []
-    for planet, house in chart.get('overlay', {}).items():
-        if house in [1, 4, 7, 10]:
-            angular_planets.append(f"{planet} в {house} доме")
-
-    # Сборка промпта
-    sections.append(f"Соляр — прогноз на {solar_year} год")
-    if asc_house:
-        sections.append(f"Солярный ASC попадает в {asc_house} дом натала")
-    if asc_ruler:
-        sections.append(f"Управитель солярного ASC — {asc_ruler}")
-    if sun_house:
-        sections.append(f"Солярное Солнце в {sun_house} доме натала")
-    if angular_planets:
-        sections.append(f"Планеты в угловых домах соляра: {', '.join(angular_planets)}")
-        # Где-то в конце, после остальных блоков:
-    if "receptions" in context and context["receptions"]:
-    sections.append("\nВзаимные рецепции:")
-    sections.append(context["receptions"])

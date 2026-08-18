@@ -87,6 +87,9 @@ def city_search(q: str = Query(..., min_length=2)):
             "lon": float(place["lon"]),
         })
     return results
+@app.get("/solar", response_class=HTMLResponse)
+def solar_page():
+    return open("solar.html", "r", encoding="utf-8").read()
 
 HTML_PAGE = r"""<!DOCTYPE html>
 <html lang="ru">
@@ -1039,6 +1042,81 @@ def solar_v1(
         "date": chart.datetime,
         "solar_year": target_year,
         "solar_return_date": chart.solar_return_date,
+        "solar_sun_sign": sun_sign,
+        "solar_asc_ruler": getattr(chart, 'solar_asc_ruler', None),
+        "solar_asc_house": getattr(chart, 'solar_asc_house', None),
+        "solar_sun_house": getattr(chart, 'solar_sun_house', None),
+        "overlay": getattr(chart, 'overlay', {}),
+        "interpretation": interpretation,
+        "analysis": result["analysis"],
+        "planets": chart.planets,
+        "houses": chart.houses,
+        "aspects": chart.aspects,
+        "wheel": wheel_svg
+    }
+@app.get("/api/v1/solar")
+def solar_v1(
+    natal_year: int,
+    natal_month: int,
+    natal_day: int,
+    natal_hour: int = 12,
+    natal_minute: int = 0,
+    birth_lat: float = 50.45,
+    birth_lon: float = 30.52,
+    lat: float = 50.45,
+    lon: float = 30.52,
+    target_year: int = 2026,
+):
+    """
+    Соляр — карта возвращения Солнца с накладкой на натал.
+    """
+    from builders.solar_builder import build_solar_chart
+    from core.pipeline import run_full_pipeline
+    from core.prompt_builder import build_prompt_from_dict
+    from ai import generate
+    from graphics.wheel_renderer import draw_wheel
+
+    natal_data = {
+        'year': natal_year,
+        'month': natal_month,
+        'day': natal_day,
+        'hour': natal_hour,
+        'minute': natal_minute,
+        'lat': birth_lat,
+        'lon': birth_lon
+    }
+
+    chart = build_solar_chart(natal_data, target_year, lat, lon)
+    wheel_svg = draw_wheel(chart)
+
+    result = run_full_pipeline(chart)
+    
+    # Добавляем солярные метаданные в промпт-контекст
+    result["prompt_context"].update({
+        "chart_type": "solar",
+        "solar_year": target_year,
+        "solar_return_date": getattr(chart, 'solar_return_date', None),
+        "solar_asc_ruler": getattr(chart, 'solar_asc_ruler', None),
+        "solar_asc_house": getattr(chart, 'solar_asc_house', None),
+        "solar_sun_house": getattr(chart, 'solar_sun_house', None),
+        "overlay": getattr(chart, 'overlay', {}),
+        "ascendant_sign": chart.houses.get(1, {}).get('sign', None),
+    })
+
+    prompt = build_prompt_from_dict(result["prompt_context"], "solar")
+
+    try:
+        interpretation = generate(prompt)
+    except Exception as e:
+        logger.error(f"LLM failed for Solar: {e}")
+        interpretation = "Интерпретация временно недоступна."
+
+    sun_sign = chart.planets['Sun']['sign']
+
+    return {
+        "date": chart.datetime,
+        "solar_year": target_year,
+        "solar_return_date": getattr(chart, 'solar_return_date', None),
         "solar_sun_sign": sun_sign,
         "solar_asc_ruler": getattr(chart, 'solar_asc_ruler', None),
         "solar_asc_house": getattr(chart, 'solar_asc_house', None),
