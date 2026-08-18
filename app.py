@@ -1225,22 +1225,20 @@ def key_v1(sign: str = "Aquarius"):
 
 Выдай ТОЛЬКО одну готовую фразу."""
 
-    try:
-        raw = generate(prompt)
-        aphorism = raw.strip()[:200]
+try:
+    raw = generate(prompt)
 
-        if not aphorism:
-            aphorism = "Сегодня звёзды говорят тихо."
+    logger.info("ASTRODO RAW RESPONSE: %r", raw)
 
-    except Exception as e:
-        logger.warning("Key aphorism generation failed: %s", e)
+    aphorism = raw.strip()[:200]
+
+    if not aphorism:
+        logger.warning("ASTRODO RETURNED EMPTY RESPONSE")
         aphorism = "Сегодня звёзды говорят тихо."
 
-    return {
-        "sign": sign_ru,
-        "topic": topic,
-        "aphorism": aphorism
-    }
+except Exception as e:
+    logger.exception("KEY APHORISM GENERATION FAILED")
+    aphorism = "Сегодня звёзды говорят тихо."
 
 @app.get("/api/v1/solar")
 def solar_v1(
