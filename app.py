@@ -917,7 +917,7 @@ def key_v1(sign: str = "Aquarius"):
     }
 
     sign_ru = SIGN_NAMES_RU.get(sign, sign)
-    
+    today = datetime.date.today()
     topic = TOPICS_BY_DAY.get(today.day, 'мудрость и покой')
 
     prompt = f"""Ты — Астродо, создатель афоризмов для Liber Astrodum.
