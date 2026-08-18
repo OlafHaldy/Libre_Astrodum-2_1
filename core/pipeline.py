@@ -25,6 +25,9 @@ from fact_engine.fact_builder import build_facts
 from priority_engine.priority_builder import build_priorities
 from core.dominants import build_dominant_report
 from core.reasoning import build_reasoning_report
+from core.accidental_dignities import build_accidental_dignities
+
+
 
 
 class AnalysisContext:
@@ -92,3 +95,6 @@ def run_full_pipeline(chart: Chart) -> dict:
         "analysis": analysis.to_dict(),
         "prompt_context": prompt_ctx.to_dict(),
     }
+# В run_full_pipeline(), после расчёта домов:
+accidental_dignities = build_accidental_dignities(planets, houses)
+result["accidental_dignities"] = accidental_dignities
