@@ -1,7 +1,7 @@
 """
 Liber Astrodum — Professional Lunar Builder
 Строит лунарную карту шаг за шагом, с полной диагностикой.
-Версия: 6.0 (Universal)
+Версия: 7.0 (с накладкой на натал)
 """
 
 from datetime import datetime, timezone
@@ -10,10 +10,11 @@ import swisseph as swe
 from core.chart import Chart
 from core.location import Location
 from core.metadata import ChartMetadata
-from core.rulerships import SIGN_RULER
+from core.rulerships import SIGN_RULER, get_ruler_by_sign
 from core.dignities_engine import build_essential_dignities
 from core.dispositor import build_dispositor_graph
 from core.planet_house_engine import assign_planet_houses
+from builders.natal_builder import build_natal_chart
 
 SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
          'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
@@ -44,12 +45,23 @@ def _find_return(jd_start, natal_moon_longitude):
     return jd
 
 
-def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2, natal_day=14):
+def build_lunar_chart(
+    natal_moon_longitude,
+    year, month,
+    lat, lon,
+    natal_month=2,
+    natal_day=14,
+    natal_year=None,
+    natal_hour=12,
+    natal_minute=0,
+    birth_lat=50.45,
+    birth_lon=30.52
+):
     """
     Профессиональный построитель лунарной карты.
-    Универсальный алгоритм поиска возврата Луны.
+    Универсальный алгоритм поиска возврата Луны + накладка на натал.
     """
-    print("=== [PROFESSIONAL LUNAR BUILDER v6.0] ===")
+    print("=== [PROFESSIONAL LUNAR BUILDER v7.0] ===")
     print(f"[1] Input natal Moon longitude: {natal_moon_longitude:.4f}°")
     print(f"[2] Target month: {year}-{month:02d}")
     print(f"[3] Location (meeting place): lat={lat:.4f}, lon={lon:.4f}")
@@ -59,7 +71,6 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
     # ============================================================
     import datetime as dt
 
-    # Ищем возврат от 1-го числа запрошенного месяца
     jd_start = swe.julday(year, month, 1, 12.0)
     print(f"[4] Starting search from JD {jd_start:.4f} ({year}-{month:02d}-01 12:00 UT)")
 
@@ -67,19 +78,13 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
     y_ret, m_ret, d_ret, _ = swe.revjul(jd_candidate)
     print(f"[5] First candidate: {int(y_ret)}-{int(m_ret):02d}-{int(d_ret):02d}")
 
-    # Универсальное правило:
-    # Если возврат происходит до 15-го числа запрошенного месяца — он покрывает этот месяц.
-    # Если после 15-го — он покрывает уже следующий месяц, нужно брать предыдущий возврат.
     if m_ret == month and d_ret <= 15:
-        # Возврат в первой половине месяца — покрывает этот месяц
         jd_lunar = jd_candidate
         print(f"[5] Return covers target month (day <= 15). Using JD={jd_lunar:.4f}")
     elif m_ret < month or (m_ret == month and d_ret <= 15):
-        # Возврат раньше запрошенного месяца, но близко — проверяем, покрывает ли
         jd_lunar = jd_candidate
         print(f"[5] Return before target month. Using JD={jd_lunar:.4f}")
     else:
-        # Возврат слишком поздно — отступаем на 27.3 дня назад
         jd_prev = jd_candidate - 27.3
         print(f"[5] Return too late (after 15th). Searching previous from JD={jd_prev:.4f}")
         jd_lunar = _find_return(jd_prev, natal_moon_longitude)
@@ -153,7 +158,6 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
     print("\n[11] Planets in houses:")
     for p in ["Moon", "Saturn", "Sun"]:
         print(f"    {p}: {positions[p]['sign']} → House {positions[p]['house']}")
-    print("=== [END PROFESSIONAL BUILD] ===")
 
     # ============================================================
     # Шаг 6: Аспекты, управители, достоинства
@@ -167,11 +171,16 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
             if angle > 180:
                 angle = 360 - angle
             asp_type = None
-            if angle <= 8: asp_type = "conjunction"
-            elif abs(angle - 60) <= 6: asp_type = "sextile"
-            elif abs(angle - 90) <= 7: asp_type = "square"
-            elif abs(angle - 120) <= 7: asp_type = "trine"
-            elif abs(angle - 180) <= 7: asp_type = "opposition"
+            if angle <= 8:
+                asp_type = "conjunction"
+            elif abs(angle - 60) <= 6:
+                asp_type = "sextile"
+            elif abs(angle - 90) <= 7:
+                asp_type = "square"
+            elif abs(angle - 120) <= 7:
+                asp_type = "trine"
+            elif abs(angle - 180) <= 7:
+                asp_type = "opposition"
             if asp_type:
                 aspects.append({
                     "planet1": p1, "planet2": p2,
@@ -193,7 +202,73 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
     essential_dignities = build_essential_dignities(positions)
     dispositor_graph = build_dispositor_graph(positions)
 
-    return Chart(
+    # ============================================================
+    # Шаг 7: Накладка на натал (НОВОЕ)
+    # ============================================================
+    overlay = {}
+    lunar_asc_ruler = None
+    lunar_asc_house = None
+    lunar_moon_house = None
+    angular_planets = []
+
+    if natal_year and natal_month and natal_day:
+        natal_chart = build_natal_chart(
+            natal_year, natal_month, natal_day,
+            natal_hour, natal_minute,
+            birth_lat, birth_lon
+        )
+
+        # Накладка лунарных планет на натальные дома
+        for planet_name, planet_data in positions.items():
+            planet_lon = planet_data['longitude']
+            for house_num, house_data in natal_chart.houses.items():
+                if isinstance(house_num, int) and 1 <= house_num <= 12:
+                    cusp = house_data['longitude']
+                    next_cusp = natal_chart.houses.get(house_num + 1, {}).get('longitude', cusp + 30)
+                    if cusp <= planet_lon < next_cusp:
+                        overlay[planet_name] = house_num
+                        break
+
+        # Управитель лунарного ASC
+        lunar_asc_sign = houses.get('Ascendant', {}).get('sign', None)
+        lunar_asc_ruler = get_ruler_by_sign(lunar_asc_sign) if lunar_asc_sign else None
+
+        # Дом натала для лунарного ASC
+        asc_lon = houses.get('Ascendant', {}).get('longitude', 0)
+        for house_num, house_data in natal_chart.houses.items():
+            if isinstance(house_num, int) and 1 <= house_num <= 12:
+                cusp = house_data['longitude']
+                next_cusp = natal_chart.houses.get(house_num + 1, {}).get('longitude', cusp + 30)
+                if cusp <= asc_lon < next_cusp:
+                    lunar_asc_house = house_num
+                    break
+
+        # Дом натала для лунарной Луны
+        moon_lon = positions.get('Moon', {}).get('longitude', 0)
+        for house_num, house_data in natal_chart.houses.items():
+            if isinstance(house_num, int) and 1 <= house_num <= 12:
+                cusp = house_data['longitude']
+                next_cusp = natal_chart.houses.get(house_num + 1, {}).get('longitude', cusp + 30)
+                if cusp <= moon_lon < next_cusp:
+                    lunar_moon_house = house_num
+                    break
+
+        # Планеты в угловых домах натала
+        for planet, house in overlay.items():
+            if house in [1, 4, 7, 10]:
+                angular_planets.append(f"{planet} в {house} доме")
+
+        print("\n[12] Lunar overlay on natal:")
+        print(f"    Lunar ASC ruler: {lunar_asc_ruler}")
+        print(f"    Lunar ASC in natal house: {lunar_asc_house}")
+        print(f"    Lunar Moon in natal house: {lunar_moon_house}")
+        print(f"    Angular planets: {', '.join(angular_planets) if angular_planets else 'none'}")
+        print("=== [END PROFESSIONAL BUILD] ===")
+
+    # ============================================================
+    # Шаг 8: Создание Chart
+    # ============================================================
+    chart = Chart(
         chart_type="lunar",
         datetime_str=datetime_str,
         location=Location(lat=lat, lon=lon),
@@ -204,7 +279,16 @@ def build_lunar_chart(natal_moon_longitude, year, month, lat, lon, natal_month=2
         essential_dignities=essential_dignities,
         dispositor_graph=dispositor_graph,
         metadata=ChartMetadata(
-            engine_version="6.0",
+            engine_version="7.0",
             created_at=datetime.now(timezone.utc).isoformat(),
         ),
     )
+
+    # Добавляем данные накладки в Chart
+    chart.lunar_asc_ruler = lunar_asc_ruler
+    chart.lunar_asc_house = lunar_asc_house
+    chart.lunar_moon_house = lunar_moon_house
+    chart.overlay = overlay
+    chart.angular_planets = angular_planets
+
+    return chart

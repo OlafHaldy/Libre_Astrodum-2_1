@@ -19,7 +19,7 @@ core/rulerships.py
     Liber Astrodum 2.0
 
 Версия:
-    2.0
+    2.1
 """
 
 # ==========================================================
@@ -52,7 +52,7 @@ for sign, ruler in SIGN_RULER.items():
         DOMICILE[ruler] = []
     DOMICILE[ruler].append(sign)
 
-# Изгнание: {планета: [знаки]} (оппозит обители)
+# Противоположные знаки
 OPPOSITE_SIGN = {
     "Aries": "Libra", "Taurus": "Scorpio", "Gemini": "Sagittarius",
     "Cancer": "Capricorn", "Leo": "Aquarius", "Virgo": "Pisces",
@@ -60,6 +60,51 @@ OPPOSITE_SIGN = {
     "Capricorn": "Cancer", "Aquarius": "Leo", "Pisces": "Virgo",
 }
 
+# Изгнание: {планета: [знаки]} (оппозит обители)
 DETRIMENT = {}
 for planet, signs in DOMICILE.items():
     DETRIMENT[planet] = [OPPOSITE_SIGN[s] for s in signs]
+
+# ==========================================================
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ==========================================================
+
+def get_ruler_by_sign(sign: str) -> str:
+    """
+    Возвращает классического управителя знака.
+
+    Пример:
+        get_ruler_by_sign("Aries") -> "Mars"
+        get_ruler_by_sign("Aquarius") -> "Saturn"
+    """
+    return SIGN_RULER.get(sign)
+
+
+def get_domicile(planet: str) -> list:
+    """
+    Возвращает список знаков, которыми управляет планета (обитель).
+
+    Пример:
+        get_domicile("Mercury") -> ["Gemini", "Virgo"]
+    """
+    return DOMICILE.get(planet, [])
+
+
+def get_detriment(planet: str) -> list:
+    """
+    Возвращает список знаков, в которых планета в изгнании.
+
+    Пример:
+        get_detriment("Mercury") -> ["Sagittarius", "Pisces"]
+    """
+    return DETRIMENT.get(planet, [])
+
+
+def is_domicile(planet: str, sign: str) -> bool:
+    """Проверяет, находится ли планета в обители."""
+    return sign in DOMICILE.get(planet, [])
+
+
+def is_detriment(planet: str, sign: str) -> bool:
+    """Проверяет, находится ли планета в изгнании."""
+    return sign in DETRIMENT.get(planet, [])
