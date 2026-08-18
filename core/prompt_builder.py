@@ -259,3 +259,31 @@ def build_prompt_text(
     ctx.dominant_houses = dominant_houses
 
     return build_prompt(ctx, chart_type=chart_type)
+if chart_type == "solar":
+    # Солярный ASC и его управитель
+    asc_sign = chart.get('ascendant_sign', '')
+    asc_ruler = chart.get('solar_asc_ruler', '')
+    asc_house = chart.get('solar_asc_house', '')
+
+    # Солярное Солнце
+    sun_house = chart.get('solar_sun_house', '')
+
+    # Солярный год
+    solar_year = chart.get('solar_year', '')
+
+    # Планеты в угловых домах (1, 4, 7, 10)
+    angular_planets = []
+    for planet, house in chart.get('overlay', {}).items():
+        if house in [1, 4, 7, 10]:
+            angular_planets.append(f"{planet} в {house} доме")
+
+    # Сборка промпта
+    sections.append(f"Соляр — прогноз на {solar_year} год")
+    if asc_house:
+        sections.append(f"Солярный ASC попадает в {asc_house} дом натала")
+    if asc_ruler:
+        sections.append(f"Управитель солярного ASC — {asc_ruler}")
+    if sun_house:
+        sections.append(f"Солярное Солнце в {sun_house} доме натала")
+    if angular_planets:
+        sections.append(f"Планеты в угловых домах соляра: {', '.join(angular_planets)}")
