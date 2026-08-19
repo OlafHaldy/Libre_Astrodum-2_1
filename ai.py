@@ -57,7 +57,7 @@ def _normalize_interpretation(text: str) -> str:
     return text.strip()
 
 
-def _call_groq(prompt_text, model="openai/gpt-oss-20b", temperature=0.7, max_tokens=3000):
+def _call_groq(prompt_text, model="openai/gpt-oss-120b", temperature=0.7, max_tokens=3000):
     # ... остальное без изменений
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
@@ -231,7 +231,7 @@ def _call_groq_short(prompt):
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "openai/gpt-oss-20b",  # ← новая модель
+        "model": "openai/gpt-oss-120b",  # ← новая модель
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 60,
