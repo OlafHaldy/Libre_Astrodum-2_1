@@ -3,12 +3,12 @@ Liber Astrodum
 
 core/prompt_builder.py
 
-Prompt Builder Engine v6.0 — "Книга Звёздного Дара".
+Prompt Builder Engine v6.1 — "Книга Звёздного Дара".
 
-Строит интерпретацию по 12 домам с афоризмами.
+Полная интерпретация по 12 домам с афоризмами.
 
 Версия:
-    6.0
+    6.1
 """
 
 from typing import Any
@@ -132,11 +132,16 @@ def _build_composition_summary(composition) -> str:
     supports = _get(composition, "supports", ()) or ()
     resolutions = _get(composition, "resolutions", ()) or ()
     
+    all_houses = set(range(1, 13))
+    key_houses = set(houses) if houses else set()
+    other_houses = all_houses - key_houses
+    
     lines = [
         f"Тема: {core_theme}",
         f"Процесс: {process}",
         f"КЛЮЧЕВЫЕ ПЛАНЕТЫ: {', '.join(map(str, planets))}",
-        f"КЛЮЧЕВЫЕ ДОМА: {', '.join(map(str, houses))}",
+        f"КЛЮЧЕВЫЕ ДОМА (подробно): {', '.join(map(str, sorted(key_houses)))}",
+        f"ОСТАЛЬНЫЕ ДОМА (кратко): {', '.join(map(str, sorted(other_houses)))}",
     ]
     
     if tensions:
@@ -180,7 +185,7 @@ def _build_evidence_context(evidence_plan) -> str:
 
 
 # ==========================================================
-# ПРАВИЛА — СТРОГИЕ
+# ПРАВИЛА
 # ==========================================================
 
 def _build_global_rules() -> str:
@@ -215,12 +220,10 @@ def _build_chart_rules(chart_type: str) -> str:
 
 
 # ==========================================================
-# OUTPUT — КНИГА ЗВЁЗДНОГО ДАРА
+# OUTPUT — КНИГА ЗВЁЗДНОГО ДАРА (12 ДОМОВ)
 # ==========================================================
 
 def _build_output_rules(composition) -> str:
-    houses = _get(composition, "houses", ()) or ()
-    
     lines = [
         "ФОРМАТ ОТВЕТА — КНИГА ЗВЁЗДНОГО ДАРА:",
         "",
@@ -229,15 +232,14 @@ def _build_output_rules(composition) -> str:
         "",
     ]
     
-    # Только ключевые дома
-    for house in houses:
-        if house in HOUSE_NAMES_RU:
-            name = HOUSE_NAMES_RU[house]
-            aphorism = HOUSE_APHORISMS[house]
-            lines.append(f"[SECTION:{house}_HOUSE] {name}")
-            lines.append(f'Афоризм: "{aphorism}"')
-            lines.append("Затем 2-3 предложения интерпретации.")
-            lines.append("")
+    # ВСЕ 12 домов
+    for house in range(1, 13):
+        name = HOUSE_NAMES_RU[house]
+        aphorism = HOUSE_APHORISMS[house]
+        lines.append(f"[SECTION:{house}_HOUSE] {name}")
+        lines.append(f'Афоризм: "{aphorism}"')
+        lines.append("Затем интерпретация этого дома.")
+        lines.append("")
     
     lines.extend([
         "[SECTION:EPILOGUE]",
@@ -262,8 +264,10 @@ def build_pipeline_prompt(
     parts = [
         "Ты — Астродо, хранитель Небесного Архива Liber Astrodum.",
         "",
-        "Напиши «Книгу Звёздного Дара» — астрологическую интерпретацию по домам.",
-        "Каждая глава — отдельная сфера жизни.",
+        "Напиши «Книгу Звёздного Дара» — ПОЛНУЮ астрологическую интерпретацию.",
+        "ВСЕ 12 ДОМОВ — каждый дом отдельная глава.",
+        "Ключевые дома (из списка) — 3-4 предложения.",
+        "Остальные дома — 1-2 предложения.",
         "Начинай каждую главу с афоризма-ключа.",
         "Пиши философски, но конкретно.",
         "",
