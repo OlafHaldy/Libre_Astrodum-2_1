@@ -748,6 +748,7 @@ def natal_v1(
     lon: float = 30.52,
 ):
     """Натальная карта через полный конвейер."""
+    import re
     import swisseph as swe
     from builders.natal_builder import build_natal_chart
     from ai import generate
@@ -769,6 +770,8 @@ def natal_v1(
 
     try:
         interpretation = generate(strongest_prompt)
+        interpretation = re.sub(r'\[SECTION:\w+\]\s*', '', interpretation)
+        interpretation = interpretation.strip()
     except Exception as e:
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."

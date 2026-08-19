@@ -3,20 +3,10 @@ Liber Astrodum
 
 core/prompt_builder.py
 
-Prompt Builder Engine v5.0 — COMPACT.
-
-Преобразует:
-
-    CompositionPlan
-        +
-    EvidencePlan
-        +
-    Chart metadata
-
-в компактный структурированный prompt для LLM.
+Prompt Builder Engine v5.1 — COMPACT + CONCRETE.
 
 Версия:
-    5.0
+    5.1
 """
 
 from typing import Any
@@ -29,7 +19,7 @@ import json
 
 DEFAULT_CHART_TYPE = "natal"
 MIN_PROMPT_CONFIDENCE = 0.35
-MAX_EVIDENCE_PER_SECTION = 5  # Максимум доказательств на секцию
+MAX_EVIDENCE_PER_SECTION = 5
 
 
 # ==========================================================
@@ -76,7 +66,7 @@ def _normalize_chart_type(chart_type: str | None) -> str:
 
 
 # ==========================================================
-# CHART METADATA — КОМПАКТНЫЙ
+# CHART METADATA
 # ==========================================================
 
 def _build_chart_metadata(chart, chart_type: str) -> str:
@@ -98,7 +88,7 @@ def _build_chart_metadata(chart, chart_type: str) -> str:
 
 
 # ==========================================================
-# COMPOSITION SUMMARY — КОМПАКТНЫЙ
+# COMPOSITION SUMMARY — С КОНКРЕТИКОЙ
 # ==========================================================
 
 def _build_composition_summary(composition) -> str:
@@ -114,7 +104,7 @@ def _build_composition_summary(composition) -> str:
     lines = [
         f"Тема: {core_theme}",
         f"Процесс: {process}",
-        f"Планеты: {', '.join(map(str, planets))}",
+        f"КЛЮЧЕВЫЕ ПЛАНЕТЫ (в порядке важности): {', '.join(map(str, planets))}",
         f"Дома: {', '.join(map(str, houses))}",
     ]
     
@@ -129,21 +119,21 @@ def _build_composition_summary(composition) -> str:
 
 
 # ==========================================================
-# EVIDENCE — МАКСИМАЛЬНО КОМПАКТНЫЙ JSON
+# EVIDENCE — ТЕКСТОВЫЙ ФОРМАТ
 # ==========================================================
 
 def _build_evidence_context(evidence_plan) -> str:
     """
-    Компактный JSON с доказательствами.
-    Только текст и вес.
+    Доказательства в текстовом формате для LLM.
+    Без весов — только суть для литературного осмысления.
     """
     
     if evidence_plan is None:
-        return "{}"
+        return "Нет доказательств"
     
     sections = _as_list(_get(evidence_plan, "sections", ()))
     
-    result = {}
+    lines = []
     
     for section in sections:
         section_type = _get(section, "section_type", "")
@@ -152,41 +142,40 @@ def _build_evidence_context(evidence_plan) -> str:
         items = []
         for item in evidence[:MAX_EVIDENCE_PER_SECTION]:
             natural = _get(item, "natural_language", "")
-            relevance = _safe_float(_get(item, "relevance", 0.0))
-            
             if natural:
-                items.append({
-                    "t": natural,  # text
-                    "w": round(relevance, 2),  # weight
-                })
+                items.append(natural)
         
         if items:
-            result[section_type] = items
+            lines.append(f"{section_type}:")
+            for item in items:
+                lines.append(f"  - {item}")
     
-    return json.dumps(result, ensure_ascii=False, indent=2)
+    return "\n".join(lines) if lines else "Нет доказательств"
 
 
 # ==========================================================
-# GLOBAL RULES — СОКРАЩЁННЫЕ
+# GLOBAL RULES — КОНКРЕТНЫЕ
 # ==========================================================
 
 def _build_global_rules() -> str:
     return """Правила:
-1. Не проводи новый анализ. Используй только переданные данные.
-2. Не выдумывай факты, события, даты.
-3. Объединяй доказательства в единый мотив.
-4. Tension не разрешай до секции Resolution.
-5. Conclusion не вводит новых факторов.
-6. Формулируй вероятностно: "может проявляться", "указывает на".
-7. Не используй: "гарантированно", "неизбежно", "точно произойдёт"."""
+1. Называй планеты КОНКРЕТНО: Сатурн, Меркурий, Луна, Водолей.
+2. НЕ используй абстракции: "сущность", "центр", "сила" без имени планеты.
+3. Ключевые планеты из списка важнее второстепенных.
+4. Описывай реальные аспекты (оппозиция, тригон, соединение).
+5. Не выдумывай факты, события, даты.
+6. Не заканчивай каждый абзац одинаково.
+7. Избегай: "указывая на", "проявляется как", "может проявляться".
+8. Не используй: "гарантированно", "неизбежно", "точно произойдёт"."""
 
 
 def _build_style_rules() -> str:
     return """Стиль:
 - Язык: русский.
-- Тон: спокойный, философский, ясный.
+- Тон: спокойный, философский, конкретный.
 - Без мистификации и категоричных предсказаний.
-- Каждый раздел — один цельный абзац."""
+- Каждый раздел — один цельный абзац.
+- Используй формат: [SECTION:НАЗВАНИЕ] перед каждым абзацем."""
 
 
 # ==========================================================
@@ -224,7 +213,7 @@ def _build_output_rules(composition) -> str:
 
 
 # ==========================================================
-# MAIN PIPELINE PROMPT — КОМПАКТНЫЙ
+# MAIN PIPELINE PROMPT
 # ==========================================================
 
 def build_pipeline_prompt(
@@ -234,8 +223,7 @@ def build_pipeline_prompt(
     chart_type: str = DEFAULT_CHART_TYPE,
 ) -> str:
     """
-    Компактный промпт для LLM.
-    Целевой размер: 3000-5000 символов.
+    Компактный промпт для LLM с конкретикой.
     """
     
     chart_type = _normalize_chart_type(chart_type)
@@ -243,11 +231,17 @@ def build_pipeline_prompt(
     parts = [
         "Ты — Астродо, хранитель Небесного Архива Liber Astrodum.",
         "",
+        "Напиши глубокую литературную астрологическую интерпретацию.",
+        "Называй планеты и знаки КОНКРЕТНО.",
+        "Выделяй ключевые планеты из списка.",
+        "Описывай реальные аспекты между планетами.",
+        "Пиши как современный герметический трактат.",
+        "",
         _build_chart_metadata(chart, chart_type),
         "",
         _build_composition_summary(composition),
         "",
-        "ДОКАЗАТЕЛЬСТВА:",
+        "ОПОРНЫЕ ФАКТЫ:",
         _build_evidence_context(evidence_plan),
         "",
         _build_chart_rules(chart_type),
@@ -328,7 +322,6 @@ def build_prompt(
             chart_type=chart_type,
         )
     
-    # Legacy fallback
     if prompt_context is None:
         return ""
     
