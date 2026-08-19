@@ -118,6 +118,51 @@
             background: rgba(0,0,0,0.6); z-index: 1000; display: none;
         }
 
+        /* ===== НОВОЕ: КНОПКИ ТЕМ ===== */
+        .themes-block {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+        }
+        .themes-title {
+            color: #d4af37;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .theme-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .theme-btn {
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 14px;
+            margin: 0;
+            width: auto;
+            text-transform: none;
+            transition: all 0.3s;
+        }
+        .theme-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: translateY(-1px);
+        }
+        .theme-btn.active {
+            background: rgba(212, 175, 55, 0.3);
+            font-weight: 600;
+        }
+        #themeResult {
+            margin-top: 15px;
+        }
+
         /* ===== LAYOUT: РУКА + ФОРМА ===== */
         .natal-layout {
             display: flex;
@@ -170,70 +215,39 @@
                 padding-top: 0;
                 flex-direction: row;
                 gap: 10px;
+                opacity: 1;
             }
             #mysteryPortal img {
-                width: 50px;
-                height: 50px;
+                width: 45px;
+                height: 45px;
             }
-            .interpretation-block { margin: 14px 0; padding: 16px; }
-            .interpretation-block-title { font-size: 1rem; }
-            .interpretation-block-text { font-size: 0.95rem; }
+            #mysteryPortal .hand-label {
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+            .card {
+                padding: 20px;
+                width: 100%;
+            }
+            .row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .interpretation-block {
+                margin: 14px 0;
+                padding: 16px;
+            }
+            .interpretation-block-title {
+                font-size: 1rem;
+            }
+            .interpretation-block-text {
+                font-size: 0.95rem;
+            }
+            .theme-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
         }
-        @media (max-width: 600px) {
-    .natal-layout {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    #mysteryPortal {
-        width: auto;
-        padding-top: 0;
-        flex-direction: row;
-        gap: 10px;
-        opacity: 1;
-    }
-    
-    #mysteryPortal img {
-        width: 45px;
-        height: 45px;
-    }
-    
-    #mysteryPortal .hand-label {
-        font-size: 12px;
-        letter-spacing: 1px;
-    }
-    
-    .card {
-        padding: 20px;
-        width: 100%;
-    }
-    
-    .row {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .interpretation-block {
-        margin: 14px 0;
-        padding: 16px;
-    }
-    
-    .interpretation-block-title {
-        font-size: 1rem;
-    }
-    
-    .interpretation-block-text {
-        font-size: 0.95rem;
-    }
-    
-    #mysteryPortal {
-        width: 55px;
-        height: 55px;
-        bottom: 20px;
-        right: 20px;
-    }
-}
     </style>
 </head>
 <body>
@@ -284,6 +298,11 @@
     </div>
 
     <script>
+        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+        let natalPrompts = {};
+        let natalThemes = {};
+        let activeThemeKey = null;
+
         const signEmojis = {
             'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
             'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
@@ -382,6 +401,53 @@
             }
         });
 
+        // ===== НОВОЕ: ГЕНЕРАЦИЯ ПО ТЕМЕ =====
+        async function generateTheme(themeKey) {
+            const prompt = natalPrompts[themeKey];
+            
+            if (!prompt) {
+                alert('Промпт не найден');
+                return;
+            }
+            
+            // Подсветка активной кнопки
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const themeResult = document.getElementById('themeResult');
+            const themeName = natalThemes[themeKey]?.core_theme || themeKey;
+            
+            themeResult.innerHTML = `<div class="loading">Звёзды раскрывают: ${themeName}...</div>`;
+            
+            try {
+                const response = await fetch('/api/generate-from-prompt', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: prompt}),
+                });
+                
+                const data = await response.json();
+                
+                if (data.text) {
+                    themeResult.innerHTML = `
+                        <div class="interpretation-block">
+                            <div class="interpretation-block-title">✦ ${themeName}</div>
+                            <div class="interpretation-block-text">${data.text.replace(/\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                } else if (data.error) {
+                    themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${data.error}</p>`;
+                } else {
+                    themeResult.innerHTML = '<p style="color:#d4af37;">Ошибка генерации</p>';
+                }
+            } catch (e) {
+                themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${e.message}</p>`;
+            }
+        }
+
+        // ===== ПОСТРОЕНИЕ КАРТЫ =====
         async function askNatal() {
             const planetNames = {
                 Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
@@ -421,6 +487,11 @@
             try {
                 const response = await fetch('/api/v1/natal?' + params.toString());
                 const data = await response.json();
+
+                // Сохраняем промпты и темы
+                natalPrompts = data.prompts || {};
+                natalThemes = data.themes || {};
+                activeThemeKey = data.strongest_theme || null;
 
                 data.planets = data.analysis?.chart?.planets || {};
                 data.houses = data.analysis?.chart?.houses || {};
@@ -501,6 +572,37 @@
                     interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${interpretationText.replace(/\n/g, '<br>')}</div></div>`;
                 }
 
+                // ===== НОВОЕ: КНОПКИ ТЕМ =====
+                let themesHtml = '';
+                if (natalThemes && Object.keys(natalThemes).length > 0) {
+                    themesHtml = `
+                        <div class="themes-block">
+                            <div class="themes-title">✦ Альтернативные темы интерпретации</div>
+                            <div class="theme-buttons">
+                    `;
+                    
+                    for (const [themeKey, themeInfo] of Object.entries(natalThemes)) {
+                        const themeName = themeInfo.core_theme || themeKey;
+                        const strength = themeInfo.strength || 0;
+                        const isActive = themeKey === activeThemeKey;
+                        
+                        themesHtml += `
+                            <button 
+                                class="theme-btn ${isActive ? 'active' : ''}"
+                                onclick="generateTheme('${themeKey}')"
+                            >
+                                ${themeName} (${strength.toFixed(1)})
+                            </button>
+                        `;
+                    }
+                    
+                    themesHtml += `
+                            </div>
+                            <div id="themeResult"></div>
+                        </div>
+                    `;
+                }
+
                 resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
                         <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☉ Натальная карта — Результат</h3>
@@ -510,6 +612,7 @@
                         ${aspectListHtml}
                         <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
                         ${interpretationHtml}
+                        ${themesHtml}
                         <br>
                         <a href="/" class="back-btn">← В главное меню</a>
                     </div>

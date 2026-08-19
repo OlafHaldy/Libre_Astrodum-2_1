@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -750,19 +750,25 @@ def natal_v1(
     """Натальная карта через полный конвейер."""
     import swisseph as swe
     from builders.natal_builder import build_natal_chart
-    from core.pipeline import run_full_pipeline
-    from core.prompt_builder import build_prompt_from_dict
     from ai import generate
     from graphics.wheel_renderer import draw_wheel
+    from engine import analyze_full  # НОВЫЙ ИМПОРТ
 
     chart = build_natal_chart(natal_year, natal_month, natal_day, natal_hour, natal_minute, lat, lon)
     wheel_svg = draw_wheel(chart)
 
-    result = run_full_pipeline(chart)
-    prompt = build_prompt_from_dict(result["prompt_context"], "natal")
+    # НОВЫЙ ПОЛНЫЙ АНАЛИЗ
+    result = analyze_full(chart)
+
+    # Получаем промпты для всех тем
+    prompts = result["prompts"]
+
+    # Берём самую сильную тему (первую в словаре)
+    strongest_theme = list(prompts.keys())[0] if prompts else None
+    strongest_prompt = prompts[strongest_theme] if strongest_theme else ""
 
     try:
-        interpretation = generate(prompt)
+        interpretation = generate(strongest_prompt)
     except Exception as e:
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."
@@ -772,14 +778,47 @@ def natal_v1(
     return {
         "date": chart.datetime,
         "interpretation": interpretation,
-        "analysis": result["analysis"],
+        "analysis": result["analysis"] if "analysis" in result else {},  # Оставляем для совместимости
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
         "natal_sun_sign": sun_sign,
-        "wheel": wheel_svg
+        "wheel": wheel_svg,
+        # НОВЫЕ ПОЛЯ
+        "themes": {
+            theme_key: {
+                "core_theme": comp.core_theme,
+                "strength": comp.strength,
+                "confidence": comp.confidence,
+                "planets": list(comp.planets),
+                "houses": list(comp.houses),
+            }
+            for theme_key, comp in {
+                c.theme_key: c for c in result["compositions"]
+            }.items()
+        },
+        "prompts": prompts,  # Все промпты для фронтенда
+        "evidence_count": len(result["evidence"]),
+        "strongest_theme": strongest_theme,
     }
-
+# ================== ГЕНЕРАЦИЯ ПО ПРОМПТУ ==================
+@app.post("/api/generate-from-prompt")
+def generate_from_prompt():
+    """Генерация текста по переданному промпту."""
+    from ai import generate
+    
+    data = request.json
+    prompt = data.get("prompt", "")
+    
+    if not prompt:
+        return JSONResponse(content={"error": "No prompt"}, status_code=400)
+    
+    try:
+        text = generate(prompt)
+        return {"text": text}
+    except Exception as e:
+        logger.error(f"Generation failed: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 # ================== API ЛУНАРА ==================
 @app.get("/daily", response_class=HTMLResponse)
 def daily_page():
