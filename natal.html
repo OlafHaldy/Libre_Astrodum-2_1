@@ -421,34 +421,38 @@
             
             themeResult.innerHTML = `<div class="loading">Звёзды раскрывают: ${themeName}...</div>`;
             
-            try {
-                const response = await fetch('/api/generate-from-prompt', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({prompt: prompt}),
-            });
+try {
+    const response = await fetch('/api/generate-from-prompt', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: prompt}),
+    });
 
-const data = await response.json();
-                
-                const data = await response.json();
-                
-                if (data.text) {
-                    themeResult.innerHTML = `
-                        <div class="interpretation-block">
-                            <div class="interpretation-block-title">✦ ${themeName}</div>
-                            <div class="interpretation-block-text">${data.text.replace(/\n/g, '<br>')}</div>
-                        </div>
-                    `;
-                } else if (data.error) {
-                    themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${data.error}</p>`;
-                } else {
-                    themeResult.innerHTML = '<p style="color:#d4af37;">Ошибка генерации</p>';
-                }
-            } catch (e) {
-                themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${e.message}</p>`;
-            }
-        }
+    // Проверяем, что ответ успешный
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error('Ошибка сервера');
+    }
 
+    // Один раз парсим JSON
+   
+    
+    if (data.text) {
+        themeResult.innerHTML = `
+            <div class="interpretation-block">
+                <div class="interpretation-block-title">✦ ${themeName}</div>
+                <div class="interpretation-block-text">${data.text.replace(/\n/g, '<br>')}</div>
+            </div>
+        `;
+    } else if (data.error) {
+        themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${data.error}</p>`;
+    } else {
+        themeResult.innerHTML = '<p style="color:#d4af37;">Ошибка генерации</p>';
+    }
+} catch (e) {
+    themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${e.message}</p>`;
+}
         // ===== ПОСТРОЕНИЕ КАРТЫ =====
         async function askNatal() {
             const planetNames = {
@@ -630,4 +634,4 @@ const data = await response.json();
         });
     </script>
 </body>
-</html>
+</html> 
