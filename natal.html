@@ -1,637 +1,225 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liber Astrodum — Натальная карта</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Infant:wght@400;600&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cormorant Infant', serif;
             min-height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.65)), url('/static/bg.jpg') no-repeat center center fixed;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/static/bg.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #f0f0f0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-            overflow-x: hidden;
         }
         .container { max-width: 700px; width: 100%; }
-        .back-btn {
-            background: none; border: 1px solid #d4af37; color: #d4af37;
-            padding: 8px 20px; border-radius: 20px; cursor: pointer;
-            font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
-            transition: all 0.3s; display: inline-block; text-decoration: none;
-        }
-        .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
         .card {
-            background-image: url('/static/card_bg.jpg'); background-size: cover;
-            background-color: rgba(30, 20, 10, 0.6); background-blend-mode: overlay;
-            border: 1px solid #5a5a5a; border-radius: 20px; padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px);
-            flex: 1;
-            min-width: 0;
+            background: rgba(30, 20, 10, 0.8);
+            border: 1px solid #5a5a5a;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
-        label { display: block; margin-top: 18px; color: #256057; font-size: 1.2em; font-family: 'Caveat', cursive; }
-        input { width: 100%; padding: 12px; margin-top: 6px; background: #1c1c1c; border: 1px solid #444; border-radius: 10px; color: #fff; font-size: 16px; font-family: 'Cormorant Infant', serif; }
-        input:focus { outline: none; border-color: #b8860b; box-shadow: 0 0 10px rgba(184, 134, 11, 0.4); }
-        .row { display: flex; gap: 12px; } .row > div { flex: 1; }
+        label { display: block; margin-top: 15px; color: #d4af37; font-size: 1.1em; }
+        input {
+            width: 100%; padding: 10px; margin-top: 5px;
+            background: #1c1c1c; border: 1px solid #444;
+            border-radius: 8px; color: #fff; font-size: 16px;
+        }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
         button {
-            background: linear-gradient(135deg, #b8860b, #d4af37); color: #1a1a1a;
-            border: none; padding: 14px 30px; font-size: 18px; font-weight: bold;
-            border-radius: 12px; cursor: pointer; margin-top: 25px; width: 100%;
-            font-family: 'Cormorant Infant', serif; text-transform: uppercase;
+            background: linear-gradient(135deg, #b8860b, #d4af37);
+            color: #1a1a1a; border: none; padding: 14px 30px;
+            font-size: 18px; border-radius: 10px; cursor: pointer;
+            margin-top: 20px; width: 100%; font-weight: bold;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184, 134, 11, 0.5); }
-        .loading { text-align: center; color: #d4af37; margin-top: 25px; font-style: italic; }
-        .suggestions-dropdown {
-            position: absolute; background: #1c1c1c; border: 1px solid #444; border-radius: 10px;
-            width: 100%; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 4px; display: none;
-        }
-        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; }
-        .suggestion-item:hover { background: #2a2a2a; }
-        #overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(9, 10, 15, 0.95); display: none; justify-content: center;
-            align-items: center; z-index: 1000; flex-direction: column;
-        }
-        #overlay .sign-emoji { font-size: 100px; animation: float 2s ease-in-out infinite; }
-        #overlay .sign-name {
-            font-family: 'Uncial Antiqua', cursive; font-size: 2em; color: #d4af37;
-            margin-top: 15px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-        }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        button:hover { transform: translateY(-2px); }
+        .loading { text-align: center; color: #d4af37; margin-top: 20px; font-style: italic; }
         .interpretation-block {
-            position: relative;
-            margin: 18px 0;
-            padding: 20px 22px 22px 24px;
-            background: linear-gradient(135deg, rgba(35, 35, 35, 0.78), rgba(10, 10, 10, 0.58));
-            border: 1px solid rgba(212, 175, 55, 0.20);
-            border-left: 3px solid rgba(212, 175, 55, 0.55);
+            margin: 15px 0; padding: 20px;
+            background: rgba(35, 35, 35, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-left: 3px solid #d4af37;
             border-radius: 10px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
         }
         .interpretation-block-title {
-            margin-bottom: 13px;
-            color: #d4af37;
-            font-size: 1.15rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding-bottom: 9px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+            color: #d4af37; font-size: 1.1rem;
+            margin-bottom: 10px; text-transform: uppercase;
         }
         .interpretation-block-text {
-            color: #e4e4e4;
-            font-size: 1rem;
-            line-height: 1.8;
-            text-align: left;
-        }
-        .error-modal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1c1c1c;
-            border: 2px solid #d4af37;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            max-width: 380px;
-            width: 90%;
-            z-index: 1001;
-            display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-        }
-        .error-modal p { color: #f0f0f0; font-size: 1.15em; line-height: 1.6; margin-bottom: 25px; }
-        .error-modal button {
-            background: none; border: 1px solid #b8860b; color: #d4af37;
-            padding: 10px 25px; border-radius: 20px; cursor: pointer;
-            font-family: 'Uncial Antiqua', cursive; font-size: 1em;
-        }
-        .overlay-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1000; display: none;
-        }
-
-        /* ===== НОВОЕ: КНОПКИ ТЕМ ===== */
-        .themes-block {
-            margin-top: 25px;
-            padding: 15px;
-            background: rgba(30, 30, 30, 0.6);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 12px;
-        }
-        .themes-title {
-            color: #d4af37;
-            font-size: 1.1rem;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        .theme-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            color: #e4e4e4; line-height: 1.7;
         }
         .theme-btn {
-            background: rgba(212, 175, 55, 0.08);
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            padding: 8px 16px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 16px; border-radius: 20px;
+            cursor: pointer; margin: 5px; font-size: 14px;
+        }
+        .theme-btn:hover { background: rgba(212, 175, 55, 0.25); }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #444; }
+        th { color: #d4af37; }
+        .back-btn {
+            display: inline-block; margin-bottom: 15px;
+            color: #d4af37; text-decoration: none;
+            border: 1px solid #d4af37; padding: 8px 20px;
             border-radius: 20px;
-            cursor: pointer;
-            font-family: 'Cormorant Infant', serif;
-            font-size: 14px;
-            margin: 0;
-            width: auto;
-            text-transform: none;
-            transition: all 0.3s;
-        }
-        .theme-btn:hover {
-            background: rgba(212, 175, 55, 0.2);
-            transform: translateY(-1px);
-        }
-        .theme-btn.active {
-            background: rgba(212, 175, 55, 0.3);
-            font-weight: 600;
-        }
-        #themeResult {
-            margin-top: 15px;
-        }
-
-        /* ===== LAYOUT: РУКА + ФОРМА ===== */
-        .natal-layout {
-            display: flex;
-            align-items: flex-start;
-            gap: 25px;
-            width: 100%;
-        }
-
-        #mysteryPortal {
-            flex-shrink: 0;
-            width: 80px;
-            text-align: center;
-            cursor: pointer;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-            padding-top: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #mysteryPortal:hover {
-            opacity: 1 !important;
-        }
-
-        #mysteryPortal img {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
-            display: block;
-        }
-
-        #mysteryPortal .hand-label {
-            font-size: 10px;
-            color: #d4af37;
-            font-family: 'Cormorant Infant', serif;
-            letter-spacing: 2px;
-            margin-top: 6px;
-        }
-
-        @media (max-width: 600px) {
-            .natal-layout {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
-            #mysteryPortal {
-                width: auto;
-                padding-top: 0;
-                flex-direction: row;
-                gap: 10px;
-                opacity: 1;
-            }
-            #mysteryPortal img {
-                width: 45px;
-                height: 45px;
-            }
-            #mysteryPortal .hand-label {
-                font-size: 12px;
-                letter-spacing: 1px;
-            }
-            .card {
-                padding: 20px;
-                width: 100%;
-            }
-            .row {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .interpretation-block {
-                margin: 14px 0;
-                padding: 16px;
-            }
-            .interpretation-block-title {
-                font-size: 1rem;
-            }
-            .interpretation-block-text {
-                font-size: 0.95rem;
-            }
-            .theme-btn {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="/" class="back-btn">← Назад</a>
-
-        <!-- ===== LAYOUT: РУКА + ФОРМА ===== -->
-        <div class="natal-layout">
-            <!-- РУКА МИСТЕРИЙ — СЛЕВА -->
-            <div id="mysteryPortal">
-                <img src="/static/mystery_hand.png" alt="Рука мистерий">
-                <span class="hand-label">Clavis Signi</span>
+        
+        <div class="card">
+            <h2 style="color: #d4af37; text-align: center; margin-bottom: 20px;">☉ Натальная карта</h2>
+            
+            <div class="row">
+                <div><label>Год</label><input type="number" id="natalYear" value="1991"></div>
+                <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
+                <div><label>День</label><input type="number" id="natalDay" value="14"></div>
             </div>
-
-            <!-- ФОРМА — СПРАВА -->
-            <div class="card">
-                <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; text-align: center; margin-bottom: 20px;">☉ Натальная карта</h3>
-                <div class="row">
-                    <div><label>Год рождения</label><input type="number" id="natalYear" value="1991"></div>
-                    <div><label>Месяц</label><input type="number" id="natalMonth" value="2"></div>
-                    <div><label>День</label><input type="number" id="natalDay" value="14"></div>
-                </div>
-                <div class="row">
-                    <div><label>Час рождения</label><input type="number" id="natalHour" value="6"></div>
-                    <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
-                </div>
-                <div style="position: relative;">
-                    <label>Место рождения</label>
-                    <input type="text" id="birthCity" value="Дубно" placeholder="Начните вводить город...">
-                    <div id="suggestions" class="suggestions-dropdown"></div>
-                </div>
-                <button onclick="askNatal()">Построить натальную карту</button>
+            <div class="row">
+                <div><label>Час</label><input type="number" id="natalHour" value="6"></div>
+                <div><label>Минуты</label><input type="number" id="natalMinute" value="55"></div>
             </div>
+            <div>
+                <label>Широта</label><input type="number" id="lat" value="50.45" step="0.01">
+            </div>
+            <div>
+                <label>Долгота</label><input type="number" id="lon" value="30.52" step="0.01">
+            </div>
+            
+            <button onclick="askNatal()">Построить карту</button>
         </div>
-
-        <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
-    </div>
-
-    <div id="overlay">
-        <div class="sign-emoji" id="signEmoji"></div>
-        <div class="sign-name" id="signName"></div>
-    </div>
-
-    <div id="errorOverlay" class="overlay-bg" onclick="closeErrorModal()"></div>
-    <div id="errorModal" class="error-modal">
-        <p>Звёзды, как и астролог-мечтатель, любят покой. Позвольте ему отложить до завтра ваш запрос.</p>
-        <button onclick="closeErrorModal()">Принимаю</button>
+        
+        <div id="result" style="display: none; margin-top: 20px;"></div>
     </div>
 
     <script>
-        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
         let natalPrompts = {};
         let natalThemes = {};
-        let activeThemeKey = null;
 
-        const signEmojis = {
-            'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
-            'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
-            'Libra': '♎', 'Scorpio': '♏', 'Sagittarius': '♐',
-            'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
-        };
-        const signNamesRu = {
-            'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
-            'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
-            'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
-            'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
-        };
-        const signMottos = {
-            'Aries': '«Я — первый луч рассвета, пробуждающий мир к действию.»',
-            'Taurus': '«Я — плодородная земля, что превращает семя в древо жизни.»',
-            'Gemini': '«Я — мост между мирами, где слово обретает плоть.»',
-            'Cancer': '«Я — колыбель души, хранящая память всех начал.»',
-            'Leo': '«Я — свет, что зажигает другие светильники, не теряя себя.»',
-            'Virgo': '«Я — служитель порядка, превращающий хаос в исцеление.»',
-            'Libra': '«Я — точка равновесия, где встречаются свет и тень.»',
-            'Scorpio': '«Я — пламя, сжигающее старое, чтобы из пепла восстало новое.»',
-            'Sagittarius': '«Я — стрела, пущенная в бесконечность, ищущая истину.»',
-            'Capricorn': '«Я — вершина, к которой ведут десять тысяч шагов.»',
-            'Aquarius': '«Я — вода жизни, изливающаяся на жаждущее человечество.»',
-            'Pisces': '«Я — океан, где растворяются все границы и рождается вера.»'
-        };
-        const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
-
-        function showOverlay(signKey) {
-            const emoji = signEmojis[signKey] || '❓';
-            const name = signNamesRu[signKey] || signKey;
-            const motto = signMottos[signKey] || '';
-            document.getElementById('signEmoji').innerHTML = emoji;
-            document.getElementById('signName').textContent = name;
-            const oldMotto = document.getElementById('signMotto');
-            const oldAuthor = document.getElementById('signMottoAuthor');
-            if (oldMotto) oldMotto.remove();
-            if (oldAuthor) oldAuthor.remove();
-            const mottoElement = document.createElement('div');
-            mottoElement.id = 'signMotto';
-            mottoElement.style.cssText = 'color: #d4af37; font-style: italic; font-size: 1.2em; margin-top: 15px; text-align: center; max-width: 450px; line-height: 1.5; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);';
-            mottoElement.textContent = motto;
-            document.getElementById('overlay').appendChild(mottoElement);
-            const authorElement = document.createElement('div');
-            authorElement.id = 'signMottoAuthor';
-            authorElement.style.cssText = 'color: #b8860b; font-size: 0.9em; margin-top: 8px; text-align: center; font-style: normal;';
-            authorElement.textContent = signMottoAuthor;
-            document.getElementById('overlay').appendChild(authorElement);
-            document.getElementById('overlay').style.display = 'flex';
-            setTimeout(() => { document.getElementById('overlay').style.display = 'none'; }, 10000);
-        }
-
-        function showErrorModal() {
-            document.getElementById('errorOverlay').style.display = 'block';
-            document.getElementById('errorModal').style.display = 'block';
-        }
-
-        function closeErrorModal() {
-            document.getElementById('errorOverlay').style.display = 'none';
-            document.getElementById('errorModal').style.display = 'none';
-        }
-
-        let birthLat = 50.4188, birthLon = 25.7456;
-
-        const birthCityInput = document.getElementById('birthCity');
-        const suggestionsBox = document.getElementById('suggestions');
-        birthCityInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            if (query.length < 2) { suggestionsBox.style.display = 'none'; return; }
-            fetch(`/api/city-search?q=${encodeURIComponent(query)}`)
-                .then(r => r.json())
-                .then(data => {
-                    suggestionsBox.innerHTML = '';
-                    if (!data.length) {
-                        suggestionsBox.innerHTML = '<div class="suggestion-item">Ничего не найдено</div>';
-                        suggestionsBox.style.display = 'block';
-                        return;
-                    }
-                    data.forEach(place => {
-                        const div = document.createElement('div');
-                        div.className = 'suggestion-item';
-                        div.textContent = place.display_name;
-                        div.addEventListener('click', function() {
-                            birthLat = place.lat; birthLon = place.lon;
-                            birthCityInput.value = place.display_name;
-                            suggestionsBox.style.display = 'none';
-                        });
-                        suggestionsBox.appendChild(div);
-                    });
-                    suggestionsBox.style.display = 'block';
-                });
-        });
-        document.addEventListener('click', function(e) {
-            if (!birthCityInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
-
-        // ===== НОВОЕ: ГЕНЕРАЦИЯ ПО ТЕМЕ =====
-        async function generateTheme(themeKey) {
-            const prompt = natalPrompts[themeKey];
-            
-            if (!prompt) {
-                alert('Промпт не найден');
-                return;
-            }
-            
-            // Подсветка активной кнопки
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            const themeResult = document.getElementById('themeResult');
-            const themeName = natalThemes[themeKey]?.core_theme || themeKey;
-            
-            themeResult.innerHTML = `<div class="loading">Звёзды раскрывают: ${themeName}...</div>`;
-            
-try {
-    const response = await fetch('/api/generate-from-prompt', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({prompt: prompt}),
-    });
-
-    // Проверяем, что ответ успешный
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server error:', errorText);
-        throw new Error('Ошибка сервера');
-    }
-
-    // Один раз парсим JSON
-   
-    
-    if (data.text) {
-        themeResult.innerHTML = `
-            <div class="interpretation-block">
-                <div class="interpretation-block-title">✦ ${themeName}</div>
-                <div class="interpretation-block-text">${data.text.replace(/\n/g, '<br>')}</div>
-            </div>
-        `;
-    } else if (data.error) {
-        themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${data.error}</p>`;
-    } else {
-        themeResult.innerHTML = '<p style="color:#d4af37;">Ошибка генерации</p>';
-    }
-} catch (e) {
-    themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${e.message}</p>`;
-}
-        // ===== ПОСТРОЕНИЕ КАРТЫ =====
         async function askNatal() {
-            const planetNames = {
-                Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
-                Venus: 'Венера', Mars: 'Марс', Jupiter: 'Юпитер', Saturn: 'Сатурн'
-            };
-            const signNames = {
-                Aries: 'Овен', Taurus: 'Телец', Gemini: 'Близнецы', Cancer: 'Рак',
-                Leo: 'Лев', Virgo: 'Дева', Libra: 'Весы', Scorpio: 'Скорпион',
-                Sagittarius: 'Стрелец', Capricorn: 'Козерог', Aquarius: 'Водолей', Pisces: 'Рыбы'
-            };
-            const aspectNames = {
-                conjunction: 'соединение', opposition: 'оппозиция', square: 'квадрат',
-                trine: 'тригон', sextile: 'секстиль', quincunx: 'квинконс'
-            };
-            const aspectSymbols = {
-                conjunction: '☌', opposition: '☍', square: '□',
-                trine: '△', sextile: '⚹', quincunx: '⚻'
-            };
-
-            const natalYear = document.getElementById('natalYear').value;
-            const natalMonth = document.getElementById('natalMonth').value;
-            const natalDay = document.getElementById('natalDay').value;
-            const natalHour = document.getElementById('natalHour').value || 12;
-            const natalMinute = document.getElementById('natalMinute').value || 0;
-
             const resultBlock = document.getElementById('result');
-            document.querySelector('.natal-layout').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
             const params = new URLSearchParams({
-                natal_year: natalYear, natal_month: natalMonth, natal_day: natalDay,
-                natal_hour: natalHour, natal_minute: natalMinute,
-                lat: birthLat, lon: birthLon
+                natal_year: document.getElementById('natalYear').value,
+                natal_month: document.getElementById('natalMonth').value,
+                natal_day: document.getElementById('natalDay').value,
+                natal_hour: document.getElementById('natalHour').value || 12,
+                natal_minute: document.getElementById('natalMinute').value || 0,
+                lat: document.getElementById('lat').value,
+                lon: document.getElementById('lon').value,
             });
 
             try {
                 const response = await fetch('/api/v1/natal?' + params.toString());
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера: ' + response.status);
+                }
+                
                 const data = await response.json();
-
-                // Сохраняем промпты и темы
+                
                 natalPrompts = data.prompts || {};
                 natalThemes = data.themes || {};
-                activeThemeKey = data.strongest_theme || null;
 
-                data.planets = data.analysis?.chart?.planets || {};
-                data.houses = data.analysis?.chart?.houses || {};
-                data.aspects = data.analysis?.chart?.aspects || [];
+                const wheelHtml = data.wheel ? <div style="text-align:center;margin:20px 0;"></div> : '';
 
-                const sunSign = data.natal_sun_sign || 'Aquarius';
-                showOverlay(sunSign);
-
-                const wheelHtml = data.wheel ? `<div style="text-align:center;margin-bottom:20px;">${data.wheel}</div>` : '';
-
-                let planetListHtml = '<h3 style="color:#d4af37;">Планеты в знаках</h3>';
-                planetListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
-                for (const [name, info] of Object.entries(data.planets)) {
-                    const planet = planetNames[name] || name;
-                    const sign = signNames[info.sign] || info.sign;
-                    planetListHtml += `<tr><td>${planet}</td><td>${sign}</td><td>${info.degree}°</td></tr>`;
+                // Планеты
+                let planetsHtml = '<h3 style="color:#d4af37;">Планеты</h3><table>';
+                planetsHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
+                for (const [name, info] of Object.entries(data.planets || {})) {
+                    planetsHtml += <tr><td></td><td></td><td>°</td></tr>;
                 }
-                planetListHtml += '</table>';
+                planetsHtml += '</table>';
 
-                let houseListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Дома</h3>';
-                houseListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                houseListHtml += '<tr><th>Дом</th><th>Знак</th><th>Градус</th></tr>';
+                // Дома
+                let housesHtml = '<h3 style="color:#d4af37;margin-top:15px;">Дома</h3><table>';
+                housesHtml += '<tr><th>Дом</th><th>Знак</th><th>Градус</th></tr>';
                 for (let i = 1; i <= 12; i++) {
                     const house = data.houses?.[i];
                     if (house) {
-                        const sign = signNames[house.sign] || house.sign;
-                        houseListHtml += `<tr><td>${i}</td><td>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
+                        housesHtml += <tr><td></td><td></td><td>°</td></tr>;
                     }
                 }
-                houseListHtml += '</table>';
+                housesHtml += '</table>';
 
-                let aspectListHtml = '';
-                if (data.aspects && data.aspects.length > 0) {
-                    aspectListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Аспекты</h3>';
-                    aspectListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                    aspectListHtml += '<tr><th>Планета 1</th><th>Аспект</th><th>Планета 2</th><th>Угол</th></tr>';
-                    for (const aspect of data.aspects) {
-                        const p1 = planetNames[aspect.planet1] || aspect.planet1;
-                        const p2 = planetNames[aspect.planet2] || aspect.planet2;
-                        const name = aspectNames[aspect.type] || aspect.type;
-                        const symbol = aspectSymbols[aspect.type] || '';
-                        aspectListHtml += `<tr><td>${p1}</td><td>${symbol} ${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
-                    }
-                    aspectListHtml += '</table>';
-                }
-
-                const interpretationText = data.interpretation || '';
-                const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
-                const interpretationSections = [];
-                let match;
-                while ((match = sectionRegex.exec(interpretationText)) !== null) {
-                    interpretationSections.push({ key: match[1], start: sectionRegex.lastIndex, markerStart: match.index });
-                }
-
-                let interpretationHtml = '';
-                if (interpretationSections.length > 0) {
-                    const interpretationTitles = {
-                        MAIN: 'Главная тема', STRENGTHS: 'Сильные стороны', WEAKNESSES: 'Слабые места',
-                        PSYCHOLOGY: 'Психологический слой', TENSION: 'Внутреннее напряжение',
-                        HERMETIC: 'Герметический смысл', TRANSFORMATION: 'Путь преобразования', CONCLUSION: 'Итог'
-                    };
-                    for (let i = 0; i < interpretationSections.length; i++) {
-                        const section = interpretationSections[i];
-                        const endPos = i + 1 < interpretationSections.length ? interpretationSections[i + 1].markerStart : interpretationText.length;
-                        const sectionText = interpretationText.slice(section.start, endPos).trim();
-                        if (sectionText) {
-                            const title = interpretationTitles[section.key] || section.key;
-                            interpretationHtml += `
-                                <div class="interpretation-block">
-                                    <div class="interpretation-block-title">✦ ${title}</div>
-                                    <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
-                                </div>
-                            `;
-                        }
-                    }
-                } else {
-                    interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${interpretationText.replace(/\n/g, '<br>')}</div></div>`;
-                }
-
-                // ===== НОВОЕ: КНОПКИ ТЕМ =====
+                // Темы
                 let themesHtml = '';
-                if (natalThemes && Object.keys(natalThemes).length > 0) {
-                    themesHtml = `
-                        <div class="themes-block">
-                            <div class="themes-title">✦ Альтернативные темы интерпретации</div>
-                            <div class="theme-buttons">
-                    `;
-                    
-                    for (const [themeKey, themeInfo] of Object.entries(natalThemes)) {
-                        const themeName = themeInfo.core_theme || themeKey;
-                        const strength = themeInfo.strength || 0;
-                        const isActive = themeKey === activeThemeKey;
-                        
-                        themesHtml += `
-                            <button 
-                                class="theme-btn ${isActive ? 'active' : ''}"
-                                onclick="generateTheme('${themeKey}')"
-                            >
-                                ${themeName} (${strength.toFixed(1)})
-                            </button>
-                        `;
+                if (Object.keys(natalThemes).length > 0) {
+                    themesHtml = '<h3 style="color:#d4af37;margin-top:15px;">Темы</h3><div>';
+                    for (const [key, info] of Object.entries(natalThemes)) {
+                        themesHtml += <button class="theme-btn" onclick="generateTheme('')"> ()</button>;
                     }
-                    
-                    themesHtml += `
-                            </div>
-                            <div id="themeResult"></div>
-                        </div>
-                    `;
+                    themesHtml += '</div><div id="themeResult"></div>';
                 }
 
-                resultBlock.innerHTML = `
-                    <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
-                        <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☉ Натальная карта — Результат</h3>
-                        ${wheelHtml}
-                        ${planetListHtml}
-                        ${houseListHtml}
-                        ${aspectListHtml}
-                        <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
-                        ${interpretationHtml}
-                        ${themesHtml}
+                resultBlock.innerHTML = 
+                    <div style="background:rgba(28,28,28,0.8);border:1px solid #444;border-radius:14px;padding:20px;">
+                        <h2 style="color:#d4af37;text-align:center;">Результат</h2>
+                        
+                        
+                        
+                        <h3 style="color:#d4af37;margin-top:15px;">Интерпретация</h3>
+                        <div class="interpretation-block">
+                            <div class="interpretation-block-text"></div>
+                        </div>
+                        
                         <br>
-                        <a href="/" class="back-btn">← В главное меню</a>
+                        <a href="/" class="back-btn">← В меню</a>
                     </div>
-                `;
+                ;
             } catch (e) {
-                showErrorModal();
+                resultBlock.innerHTML = <p style="color:#d4af37;">Ошибка: </p>;
             }
         }
 
-        // ===== РУКА МИСТЕРИЙ =====
-        document.getElementById('mysteryPortal').addEventListener('click', function() {
-            window.location.href = '/key';
-        });
+        async function generateTheme(themeKey) {
+            const prompt = natalPrompts[themeKey];
+            if (!prompt) { alert('Промпт не найден'); return; }
+
+            const themeResult = document.getElementById('themeResult');
+            themeResult.innerHTML = '<div class="loading">Генерация...</div>';
+
+            try {
+                const response = await fetch('/api/generate-from-prompt', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: prompt}),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера: ' + response.status);
+                }
+
+                const data = await response.json();
+
+                if (data.text) {
+                    themeResult.innerHTML = 
+                        <div class="interpretation-block">
+                            <div class="interpretation-block-title">✦ </div>
+                            <div class="interpretation-block-text"></div>
+                        </div>
+                    ;
+                } else {
+                    themeResult.innerHTML = '<p style="color:#d4af37;">Ошибка генерации</p>';
+                }
+            } catch (e) {
+                themeResult.innerHTML = <p style="color:#d4af37;">Ошибка: </p>;
+            }
+        }
     </script>
 </body>
-</html> 
+</html>
