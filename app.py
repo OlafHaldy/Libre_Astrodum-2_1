@@ -803,11 +803,11 @@ def natal_v1(
     }
 # ================== ГЕНЕРАЦИЯ ПО ПРОМПТУ ==================
 @app.post("/api/generate-from-prompt")
-def generate_from_prompt():
+async def generate_from_prompt(request: Request):
     """Генерация текста по переданному промпту."""
     from ai import generate
     
-    data = request.json
+    data = await request.json()
     prompt = data.get("prompt", "")
     
     if not prompt:
