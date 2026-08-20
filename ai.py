@@ -234,7 +234,7 @@ def _call_groq_short(prompt):
         "model": "openai/gpt-oss-120b",  # ← новая модель
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
-        "max_tokens": 60,
+        "max_tokens": 200,
     }
 
     try:
