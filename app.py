@@ -914,6 +914,8 @@ def lunar_v1(
         chart=chart,
         chart_type="lunar",
     )
+    
+    prompts = {strongest_comp.theme_key: strongest_prompt} if strongest_comp else {}
 
     try:
         import re
