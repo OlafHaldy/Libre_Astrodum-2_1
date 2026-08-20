@@ -848,8 +848,7 @@ def lunar_v1(
     """Лунар через полный конвейер Liber Astrodum 2.0."""
     import swisseph as swe
     from builders.lunar_builder import build_lunar_chart
-    from core.pipeline import run_full_pipeline
-    from core.prompt_builder import build_prompt_from_dict
+    from engine import analyze_full
     from ai import generate
     from graphics.wheel_renderer import draw_wheel
     from datetime import datetime
@@ -895,11 +894,17 @@ def lunar_v1(
     )
     wheel_svg = draw_wheel(chart)
 
-    result = run_full_pipeline(chart)
-    prompt = build_prompt_from_dict(result["prompt_context"], "lunar")
+    result = analyze_full(chart)
+    prompts = result["prompts"]
+    strongest_prompt = list(prompts.values())[0] if prompts else ""
 
     try:
-        interpretation = generate(prompt)
+        import re
+        interpretation = generate(strongest_prompt)
+        interpretation = re.sub(r'\[SECTION:\w+\]\s*', '', interpretation)
+        interpretation = interpretation.strip()
+        if not interpretation:
+            interpretation = "Звёзды сегодня говорят тихо."
     except Exception as e:
         logger.error(f"LLM failed: {e}")
         interpretation = "Интерпретация временно недоступна."
@@ -922,13 +927,29 @@ def lunar_v1(
         },
         "date": chart.datetime,
         "interpretation": interpretation,
-        "analysis": result["analysis"],
+        "analysis": result["analysis"] if "analysis" in result else {},
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
         "natal_sun_sign": natal_sun_sign,
-        "wheel": wheel_svg
+        "wheel": wheel_svg,
+        "themes": {
+            theme_key: {
+                "core_theme": comp.core_theme,
+                "strength": comp.strength,
+                "confidence": comp.confidence,
+                "planets": list(comp.planets),
+                "houses": list(comp.houses),
+            }
+            for theme_key, comp in {
+                c.theme_key: c for c in result["compositions"]
+            }.items()
+        },
+        "prompts": prompts,
+        "strongest_theme": list(prompts.keys())[0] if prompts else None,
     }
+
+    
 import datetime
 
 @app.get("/api/v1/key")
@@ -1550,8 +1571,7 @@ def solar_v1(
     Соляр — карта возвращения Солнца с накладкой на натал.
     """
     from builders.solar_builder import build_solar_chart
-    from core.pipeline import run_full_pipeline
-    from core.prompt_builder import build_prompt_from_dict
+    from engine import analyze_full
     from ai import generate
     from graphics.wheel_renderer import draw_wheel
     import datetime
@@ -1569,24 +1589,17 @@ def solar_v1(
     chart = build_solar_chart(natal_data, target_year, lat, lon)
     wheel_svg = draw_wheel(chart)
 
-    result = run_full_pipeline(chart)
-    
-    # Добавляем солярные метаданные в промпт-контекст
-    result["prompt_context"].update({
-        "chart_type": "solar",
-        "solar_year": target_year,
-        "solar_return_date": getattr(chart, 'solar_return_date', None),
-        "solar_asc_ruler": getattr(chart, 'solar_asc_ruler', None),
-        "solar_asc_house": getattr(chart, 'solar_asc_house', None),
-        "solar_sun_house": getattr(chart, 'solar_sun_house', None),
-        "overlay": getattr(chart, 'overlay', {}),
-        "ascendant_sign": chart.houses.get(1, {}).get('sign', None),
-    })
-
-    prompt = build_prompt_from_dict(result["prompt_context"], "solar")
+    result = analyze_full(chart)
+    prompts = result["prompts"]
+    strongest_prompt = list(prompts.values())[0] if prompts else ""
 
     try:
-        interpretation = generate(prompt)
+        import re
+        interpretation = generate(strongest_prompt)
+        interpretation = re.sub(r'\[SECTION:\w+\]\s*', '', interpretation)
+        interpretation = interpretation.strip()
+        if not interpretation:
+            interpretation = "Звёзды сегодня говорят тихо."
     except Exception as e:
         logger.error(f"LLM failed for Solar: {e}")
         interpretation = "Интерпретация временно недоступна."
@@ -1607,5 +1620,19 @@ def solar_v1(
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
-        "wheel": wheel_svg
+        "wheel": wheel_svg,
+                "themes": {
+            theme_key: {
+                "core_theme": comp.core_theme,
+                "strength": comp.strength,
+                "confidence": comp.confidence,
+                "planets": list(comp.planets),
+                "houses": list(comp.houses),
+            }
+            for theme_key, comp in {
+                c.theme_key: c for c in result["compositions"]
+            }.items()
+        },
+        "prompts": prompts,
+        "strongest_theme": list(prompts.keys())[0] if prompts else None,
     }
