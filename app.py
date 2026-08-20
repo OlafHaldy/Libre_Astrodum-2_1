@@ -781,7 +781,7 @@ def natal_v1(
     return {
         "date": chart.datetime,
         "interpretation": interpretation,
-        "analysis": result["analysis"] if "analysis" in result else {},  # Оставляем для совместимости
+        "analysis": result.get("analysis", {}) if "analysis" in result else {},  # Оставляем для совместимости
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
@@ -946,7 +946,7 @@ def lunar_v1(
         },
         "date": chart.datetime,
         "interpretation": interpretation,
-        "analysis": result["analysis"] if "analysis" in result else {},
+        "analysis": result.get("analysis", {}) if "analysis" in result else {},
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
@@ -980,7 +980,7 @@ def key_v1(sign: str = "Aquarius"):
 
     import datetime
     import re
-    from ai import generate_short
+    from ai import generate
 
     SIGN_NAMES_RU = {
         'Aries': 'Овен',
@@ -1505,7 +1505,7 @@ def key_v1(sign: str = "Aquarius"):
         )
 
         # Первая генерация.
-        raw = generate_short(prompt)
+        raw = generate(prompt)
 
         logger.info(
             "CLAVIS RAW RESPONSE: %r",
@@ -1550,7 +1550,7 @@ def key_v1(sign: str = "Aquarius"):
 Никаких пояснений до или после него.
 """
 
-            raw_retry = generate_short(retry_prompt)
+            raw_retry = generate(retry_prompt)
 
             logger.info(
                 "CLAVIS RETRY RESPONSE: %r",
@@ -1651,7 +1651,7 @@ def solar_v1(
         "solar_sun_house": getattr(chart, 'solar_sun_house', None),
         "overlay": getattr(chart, 'overlay', {}),
         "interpretation": interpretation,
-        "analysis": result["analysis"],
+        "analysis": result.get("analysis", {}),
         "planets": chart.planets,
         "houses": chart.houses,
         "aspects": chart.aspects,
