@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Liber Astrodum — Лунар</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Marck+Script&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -22,19 +22,11 @@
             overflow-x: hidden;
         }
         .container { max-width: 700px; width: 100%; }
-        .app-title h1 {
-            font-family: 'UnifrakturMaguntia', 'Uncial Antiqua', cursive;
-            font-size: 3em;
-            background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
-            text-align: center; margin-bottom: 10px;
-        }
         .back-btn {
             background: none; border: 1px solid #d4af37; color: #d4af37;
             padding: 8px 20px; border-radius: 20px; cursor: pointer;
             font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
-            transition: all 0.3s; display: inline-block;
+            transition: all 0.3s; display: inline-block; text-decoration: none;
         }
         .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
         .card {
@@ -72,7 +64,8 @@
             margin-top: 15px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
         }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-                /* ===== БЛОКИ ИНТЕРПРЕТАЦИИ ===== */
+
+        /* ===== БЛОКИ ИНТЕРПРЕТАЦИИ ===== */
         .interpretation-block {
             position: relative;
             margin: 18px 0;
@@ -82,7 +75,7 @@
             border-left: 3px solid rgba(212, 175, 55, 0.55);
             border-radius: 10px;
             box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
-            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+            transition: border-color 0.25s ease, background 0.25s ease;
         }
 
         .interpretation-block:hover {
@@ -109,107 +102,72 @@
             text-align: left;
         }
 
-        /* Первый блок — главный */
-        .interpretation-block:first-child {
-            border-left-color: #d4af37;
-            background: linear-gradient(135deg, rgba(55, 45, 20, 0.32), rgba(15, 15, 15, 0.62));
+        /* ===== АФОРИЗМ-ЭПИГРАФ ===== */
+        .aphorism {
+            font-family: 'Caveat', cursive;
+            font-size: 1.35em;
+            color: #d4af37;
+            font-style: italic;
+            margin: 8px 0 15px 0;
+            padding: 12px 18px;
+            border-left: 3px solid rgba(212, 175, 55, 0.6);
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.02), transparent);
+            border-radius: 0 10px 10px 0;
+            text-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+            line-height: 1.5;
+            letter-spacing: 0.03em;
         }
 
-        .interpretation-block:first-child .interpretation-block-title {
-            font-size: 1.25rem;
+        .aphorism::before {
+            content: '❧ ';
+            font-size: 1.1em;
+            color: #b8860b;
+            opacity: 0.8;
+            margin-right: 5px;
         }
 
-        /* Последний блок — итог */
-        .interpretation-block:last-child {
-            margin-top: 24px;
-            border-left-color: rgba(212, 175, 55, 0.75);
+        .aphorism-label {
+            font-family: 'Cormorant Infant', serif;
+            font-size: 0.7em;
+            color: #b8860b;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.6;
+            margin-bottom: 3px;
+            margin-top: 5px;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 20px 0;
+        }
+        table th {
+            background: rgba(212, 175, 55, 0.08);
+            color: #d4af37;
+            font-weight: 600;
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+        }
+        table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(68, 68, 68, 0.5);
+        }
+        table tr:hover td { background: rgba(212, 175, 55, 0.05); }
+        .planet-symbol { font-size: 1.3em; margin-right: 6px; color: #d4af37; }
+        .sign-symbol { font-size: 1.1em; margin-right: 4px; }
+        .aspect-symbol { font-size: 1.3em; color: #d4af37; margin: 0 4px; }
 
         @media (max-width: 600px) {
-            .interpretation-block {
-                margin: 14px 0;
-                padding: 16px 16px 18px 18px;
-            }
-            .interpretation-block-title {
-                font-size: 1rem;
-                letter-spacing: 0.04em;
-            }
-            .interpretation-block:first-child .interpretation-block-title {
-                font-size: 1.08rem;
-            }
-            .interpretation-block-text {
-                font-size: 0.95rem;
-                line-height: 1.7;
-            }
+            .interpretation-block { margin: 14px 0; padding: 16px; }
+            .interpretation-block-title { font-size: 1rem; }
+            .interpretation-block-text { font-size: 0.95rem; }
+            .aphorism { font-size: 1.1em; padding: 8px 12px; }
+            .card { padding: 20px; }
+            .row { flex-direction: column; gap: 8px; }
         }
-    
-
-/* ===== АФОРИЗМ-ЭПИГРАФ ===== */
-.aphorism {
-    font-family: 'Caveat', cursive;
-    font-size: 1.35em;
-    color: #d4af37;
-    font-style: italic;
-    margin: 8px 0 15px 0;
-    padding: 12px 18px;
-    border-left: 3px solid rgba(212, 175, 55, 0.6);
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.02), transparent);
-    border-radius: 0 10px 10px 0;
-    text-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
-    line-height: 1.5;
-    letter-spacing: 0.03em;
-}
-
-.aphorism::before {
-    content: '❧ ';
-    font-size: 1.1em;
-    color: #b8860b;
-    opacity: 0.8;
-    margin-right: 5px;
-}
-
-.aphorism-label {
-    font-family: 'Cormorant Infant', serif;
-    font-size: 0.7em;
-    color: #b8860b;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    opacity: 0.6;
-    margin-bottom: 3px;
-    margin-top: 5px;
-}
-
-/* ===== БЛОК ИНТЕРПРЕТАЦИИ ===== */
-.interpretation-block {
-    margin: 20px 0;
-    padding: 22px 24px;
-    background: linear-gradient(135deg, rgba(35, 35, 35, 0.85), rgba(10, 10, 10, 0.7));
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    border-left: 3px solid #d4af37;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(5px);
-}
-
-.interpretation-block-title {
-    color: #d4af37;
-    font-size: 1.15rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-}
-
-.interpretation-block-text {
-    color: #e4e4e4;
-    font-size: 1.05rem;
-    line-height: 1.85;
-    text-align: left;
-}
-
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
@@ -231,16 +189,15 @@
                 <div id="suggestions" class="suggestions-dropdown"></div>
             </div>
             <div style="position: relative; margin-top: 18px;">
-                <label>Место встречи лунара (где вы сейчас)</label>
+                <label>Место встречи лунара</label>
                 <input type="text" id="lunarCity" value="Ровно" placeholder="Начните вводить город...">
                 <div id="lunarSuggestions" class="suggestions-dropdown"></div>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 18px;">
-                <div style="flex: 1;"><label>Год прогноза</label><input type="number" id="lunarYear" value="2026"></div>
-                <div style="flex: 1;"><label>Месяц прогноза</label><input type="number" id="lunarMonth" value="8" min="1" max="12"></div>
+            <div class="row" style="margin-top: 18px;">
+                <div><label>Год прогноза</label><input type="number" id="lunarYear" value="2026"></div>
+                <div><label>Месяц прогноза</label><input type="number" id="lunarMonth" value="8" min="1" max="12"></div>
             </div>
             <button onclick="askLunar()">Построить Лунар</button>
-            <div id="lunarResult" style="margin-top: 20px; display: none;"></div>
         </div>
         <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
     </div>
@@ -290,12 +247,12 @@
             if (oldAuthor) oldAuthor.remove();
             const mottoElement = document.createElement('div');
             mottoElement.id = 'signMotto';
-            mottoElement.style.cssText = 'color: #d4af37; font-style: italic; font-size: 1.2em; margin-top: 15px; text-align: center; max-width: 450px; line-height: 1.5; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);';
+            mottoElement.style.cssText = 'color: #d4af37; font-style: italic; font-size: 1.2em; margin-top: 15px; text-align: center; max-width: 450px; line-height: 1.5;';
             mottoElement.textContent = motto;
             document.getElementById('overlay').appendChild(mottoElement);
             const authorElement = document.createElement('div');
             authorElement.id = 'signMottoAuthor';
-            authorElement.style.cssText = 'color: #b8860b; font-size: 0.9em; margin-top: 8px; text-align: center; font-style: normal;';
+            authorElement.style.cssText = 'color: #b8860b; font-size: 0.9em; margin-top: 8px; text-align: center;';
             authorElement.textContent = signMottoAuthor;
             document.getElementById('overlay').appendChild(authorElement);
             document.getElementById('overlay').style.display = 'flex';
@@ -304,6 +261,20 @@
 
         let birthLat = 50.4188, birthLon = 25.7456;
         let lunarLat = 50.6199, lunarLon = 26.2516;
+
+        function formatAphorism(text) {
+            const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
+            if (match) {
+                const aphorismText = match[1];
+                const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
+                return `
+                    <div class="aphorism-label">Эпиграф</div>
+                    <div class="aphorism">${aphorismText}</div>
+                    <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
+                `;
+            }
+            return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
+        }
 
         const birthCityInput = document.getElementById('birthCity');
         const suggestionsBox = document.getElementById('suggestions');
@@ -378,6 +349,10 @@
                 Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
                 Venus: 'Венера', Mars: 'Марс', Jupiter: 'Юпитер', Saturn: 'Сатурн'
             };
+            const planetSymbols = {
+                Sun: '☉', Moon: '☽', Mercury: '☿', Venus: '♀',
+                Mars: '♂', Jupiter: '♃', Saturn: '♄'
+            };
             const signNames = {
                 Aries: 'Овен', Taurus: 'Телец', Gemini: 'Близнецы', Cancer: 'Рак',
                 Leo: 'Лев', Virgo: 'Дева', Libra: 'Весы', Scorpio: 'Скорпион',
@@ -401,7 +376,6 @@
             const month = document.getElementById('lunarMonth').value || 1;
 
             const resultBlock = document.getElementById('result');
-                        // Скрываем форму
             document.querySelector('.card').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
@@ -418,68 +392,64 @@
                 const response = await fetch('/api/v1/lunar?' + params.toString());
                 const data = await response.json();
 
-                // Заставка
                 const sunSign = data.natal_sun_sign || 'Aquarius';
                 showOverlay(sunSign);
 
-                // Колесо
                 const wheelHtml = data.wheel ? `<div style="text-align:center;margin-bottom:20px;">${data.wheel}</div>` : '';
 
-                // Таблица планет
                 let planetListHtml = '<h3 style="color:#d4af37;">Планеты в знаках</h3>';
-                planetListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                planetListHtml += '<tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
+                planetListHtml += '<table><tr><th>Планета</th><th>Знак</th><th>Градус</th></tr>';
                 if (data.planets) {
                     for (const [name, info] of Object.entries(data.planets)) {
                         const planet = planetNames[name] || name;
+                        const symbol = planetSymbols[name] || '';
                         const sign = signNames[info.sign] || info.sign;
-                        planetListHtml += `<tr><td>${planet}</td><td>${sign}</td><td>${info.degree}°</td></tr>`;
+                        const signSymbol = signEmojis[info.sign] || '';
+                        planetListHtml += `<tr><td><span class="planet-symbol">${symbol}</span>${planet}</td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${info.degree}°</td></tr>`;
                     }
                 }
                 planetListHtml += '</table>';
 
-                // Таблица домов
                 let houseListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Дома</h3>';
-                houseListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                houseListHtml += '<tr><th>Дом</th><th>Знак</th><th>Градус</th></tr>';
+                houseListHtml += '<table><tr><th>Дом</th><th>Знак</th><th>Градус</th></tr>';
                 for (let i = 1; i <= 12; i++) {
                     const house = data.houses?.[i];
                     if (house) {
                         const sign = signNames[house.sign] || house.sign;
-                        houseListHtml += `<tr><td>${i}</td><td>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
+                        const signSymbol = signEmojis[house.sign] || '';
+                        houseListHtml += `<tr><td>${i}</td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
                     }
                 }
                 const asc = data.houses?.Ascendant;
                 const mc = data.houses?.MC;
                 if (asc) {
                     const sign = signNames[asc.sign] || asc.sign;
-                    houseListHtml += `<tr><td><b>ASC</b></td><td>${sign}</td><td>${asc.degree?.toFixed(2)}°</td></tr>`;
+                    const signSymbol = signEmojis[asc.sign] || '';
+                    houseListHtml += `<tr><td><b>ASC</b></td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${asc.degree?.toFixed(2)}°</td></tr>`;
                 }
                 if (mc) {
                     const sign = signNames[mc.sign] || mc.sign;
-                    houseListHtml += `<tr><td><b>MC</b></td><td>${sign}</td><td>${mc.degree?.toFixed(2)}°</td></tr>`;
+                    const signSymbol = signEmojis[mc.sign] || '';
+                    houseListHtml += `<tr><td><b>MC</b></td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${mc.degree?.toFixed(2)}°</td></tr>`;
                 }
                 houseListHtml += '</table>';
 
-                // Таблица аспектов
                 let aspectListHtml = '';
                 if (data.aspects && data.aspects.length > 0) {
                     aspectListHtml = '<h3 style="color:#d4af37;margin-top:20px;">Аспекты</h3>';
-                    aspectListHtml += '<table style="width:100%;color:#f0f0f0;border-collapse:collapse;">';
-                    aspectListHtml += '<tr><th>Планета 1</th><th>Аспект</th><th>Планета 2</th><th>Угол</th></tr>';
+                    aspectListHtml += '<table><tr><th>Планета 1</th><th>Аспект</th><th>Планета 2</th><th>Угол</th></tr>';
                     for (const aspect of data.aspects) {
                         const p1 = planetNames[aspect.planet1] || aspect.planet1;
                         const p2 = planetNames[aspect.planet2] || aspect.planet2;
                         const name = aspectNames[aspect.type] || aspect.type;
                         const symbol = aspectSymbols[aspect.type] || '';
-                        aspectListHtml += `<tr><td>${p1}</td><td>${symbol} ${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
+                        aspectListHtml += `<tr><td>${p1}</td><td><span class="aspect-symbol">${symbol}</span>${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
                     }
                     aspectListHtml += '</table>';
                 }
 
-                // Интерпретация с парсингом секций
                 const interpretationText = data.interpretation || '';
-                const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
+                const sectionRegex = /\[SECTION:(ATMOSPHERE|THEME|RELATIONS|WORK|ADVICE)\]\s*/g;
                 const interpretationSections = [];
                 let match;
                 while ((match = sectionRegex.exec(interpretationText)) !== null) {
@@ -489,13 +459,15 @@
                         markerStart: match.index
                     });
                 }
-                
+
                 let interpretationHtml = '';
                 if (interpretationSections.length > 0) {
                     const interpretationTitles = {
-                        MAIN: 'Главная тема', STRENGTHS: 'Сильные стороны', WEAKNESSES: 'Слабые места',
-                        PSYCHOLOGY: 'Психологический слой', TENSION: 'Внутреннее напряжение',
-                        HERMETIC: 'Герметический смысл', TRANSFORMATION: 'Путь преобразования', CONCLUSION: 'Итог'
+                        ATMOSPHERE: 'Эмоциональный фон',
+                        THEME: 'Главная тема месяца',
+                        RELATIONS: 'Отношения',
+                        WORK: 'Дела и работа',
+                        ADVICE: 'Совет месяца'
                     };
                     for (let i = 0; i < interpretationSections.length; i++) {
                         const section = interpretationSections[i];
@@ -508,16 +480,15 @@
                             interpretationHtml += `
                                 <div class="interpretation-block">
                                     <div class="interpretation-block-title">✦ ${title}</div>
-                                    <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
+                                    ${formatAphorism(sectionText)}
                                 </div>
                             `;
                         }
                     }
                 } else {
-                    interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${interpretationText.replace(/\n/g, '<br>')}</div></div>`;
+                    interpretationHtml = `<div class="interpretation-block">${formatAphorism(interpretationText)}</div>`;
                 }
 
-                // Собираем всё вместе
                 resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
                         <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ Лунар — Результат</h3>
@@ -541,24 +512,6 @@
                 `;
             }
         }
-    
-function formatAphorism(text) {
-    const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
-    
-    if (match) {
-        const aphorismText = match[1];
-        const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
-        
-        return `
-            <div class="aphorism-label">Эпиграф</div>
-            <div class="aphorism">${aphorismText}</div>
-            <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
-        `;
-    }
-    
-    return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
-}
-
-</script>
+    </script>
 </body>
 </html>
