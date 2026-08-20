@@ -103,6 +103,38 @@
             line-height: 1.8;
             text-align: left;
         }
+                /* ===== АФОРИЗМ-ЭПИГРАФ ===== */
+        .aphorism {
+            font-family: 'Caveat', cursive;
+            font-size: 1.25em;
+            color: #c9a84c;
+            font-style: italic;
+            margin: 5px 0 15px 0;
+            padding: 8px 15px;
+            border-left: 3px solid rgba(212, 175, 55, 0.4);
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.06), transparent);
+            border-radius: 0 8px 8px 0;
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+            letter-spacing: 0.02em;
+        }
+
+        .aphorism::before {
+            content: '❧';
+            margin-right: 8px;
+            font-size: 1.1em;
+            color: #b8860b;
+            opacity: 0.7;
+        }
+
+        .aphorism-label {
+            font-family: 'Cormorant Infant', serif;
+            font-size: 0.7em;
+            color: #b8860b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            margin-bottom: 3px;
+        }
         .error-modal {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -474,6 +506,22 @@
                 themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${e.message}</p>`;
             }
         }
+        function formatAphorism(text) {
+    const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
+    
+    if (match) {
+        const aphorismText = match[1];
+        const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
+        
+        return `
+            <div class="aphorism-label">Эпиграф</div>
+            <div class="aphorism">${aphorismText}</div>
+            <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
+        `;
+    }
+    
+    return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
+}
 
         async function askNatal() {
             const planetNames = {
@@ -591,7 +639,7 @@
                             interpretationHtml += `
                                 <div class="interpretation-block">
                                     <div class="interpretation-block-title">✦ ${title}</div>
-                                    <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
+                                    ${formatAphorism(sectionText)}
                                 </div>
                             `;
                         }

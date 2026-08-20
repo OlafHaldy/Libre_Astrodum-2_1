@@ -894,9 +894,26 @@ def lunar_v1(
     )
     wheel_svg = draw_wheel(chart)
 
+    from core.prompt_builder import build_lunar_prompt
+    from core.evidence import build_evidence
+    from core.composer import build_compositions
+    
     result = analyze_full(chart)
-    prompts = result["prompts"]
-    strongest_prompt = list(prompts.values())[0] if prompts else ""
+    
+    # Для лунара — специальный промпт
+    compositions = result["compositions"]
+    evidence = result["evidence"]
+    
+    # Находим composition и evidence для самой сильной темы
+    strongest_comp = compositions[0] if compositions else None
+    strongest_evidence = evidence[0] if len(evidence) > 0 else None
+    
+    strongest_prompt = build_lunar_prompt(
+        composition=strongest_comp,
+        evidence_plan=strongest_evidence,
+        chart=chart,
+        chart_type="lunar",
+    )
 
     try:
         import re
@@ -1589,9 +1606,25 @@ def solar_v1(
     chart = build_solar_chart(natal_data, target_year, lat, lon)
     wheel_svg = draw_wheel(chart)
 
+    from core.prompt_builder import build_solar_prompt
+    
     result = analyze_full(chart)
-    prompts = result["prompts"]
-    strongest_prompt = list(prompts.values())[0] if prompts else ""
+    
+    # Для соляра — специальный промпт
+    compositions = result["compositions"]
+    evidence = result["evidence"]
+    
+    # Находим composition и evidence для самой сильной темы
+    strongest_comp = compositions[0] if compositions else None
+    strongest_evidence = evidence[0] if len(evidence) > 0 else None
+    
+    strongest_prompt = build_solar_prompt(
+        composition=strongest_comp,
+        evidence_plan=strongest_evidence,
+        chart=chart,
+        chart_type="solar",
+        solar_year=target_year,
+    )
 
     try:
         import re
