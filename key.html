@@ -433,7 +433,19 @@
                 getAphorism(currentSign);
             }
         }
-
+        function splitAphorism(text) {
+            const words = text.trim().split(/\s+/);
+            if (words.length <= 6) return text;
+            
+            const lines = [];
+            const wordsPerLine = Math.ceil(words.length / 2);
+            
+            for (let i = 0; i < words.length; i += wordsPerLine) {
+                lines.push(words.slice(i, i + wordsPerLine).join(' '));
+            }
+            
+            return lines.join('<br>');
+        }
         async function getAphorism(sign) {
             const container = document.getElementById('parchmentContainer');
             const text = document.getElementById('parchmentText');
@@ -459,7 +471,8 @@
             try {
                 const response = await fetch(`${endpoint}?sign=${sign}`);
                 const data = await response.json();
-                text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+                const rawAphorism = data.aphorism || 'Сегодня звёзды говорят тихо.';
+                text.innerHTML = splitAphorism(rawAphorism);
                 
                 const signData = zodiacSigns.find(s => s.name === sign);
                 if (signData) {
@@ -551,7 +564,7 @@
             const signImg = document.querySelector('#parchmentSign img');
             
             if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
-                modalText.textContent = text;
+                modalText.innerHTML = splitAphorism(text);
                 modalSign.innerHTML = '';
                 if (signImg) {
                     modalSign.appendChild(signImg.cloneNode(true));
