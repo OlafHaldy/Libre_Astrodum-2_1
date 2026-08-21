@@ -10,17 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Le Murmure -->
     <style>
         @font-face {
             font-family: 'Gibb Sans';
             src: url('/static/Gibb_Sans.otf') format('opentype');
-            font-weight: 400;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Aphorism';
-            src: url('/static/Aphorism.ttf') format('truetype');
             font-weight: 400;
             font-style: normal;
         }
@@ -47,9 +40,8 @@
             text-decoration: none; display: inline-block;
             transition: background 0.3s;
         }
-        .back-btn:hover {
-            background: rgba(212, 175, 55, 0.1);
-        }
+        .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
+        
         .key-title {
             font-family: 'Cormorant SC', serif;
             font-size: 2.5em;
@@ -62,8 +54,40 @@
             font-size: 1.3em;
             color: #ccc;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
+        
+        /* ===== ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМОВ ===== */
+        .mode-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            background: none;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 10px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 15px;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+        .mode-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateY(-1px);
+        }
+        .mode-btn.active {
+            background: rgba(212, 175, 55, 0.25);
+            font-weight: 600;
+            border-color: #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        
         .zodiac-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -75,9 +99,7 @@
             text-align: center;
             transition: transform 0.3s;
         }
-        .zodiac-item:hover {
-            transform: scale(1.1);
-        }
+        .zodiac-item:hover { transform: scale(1.1); }
         .zodiac-item img {
             width: 80px;
             height: 80px;
@@ -98,138 +120,122 @@
             position: relative;
             cursor: pointer;
         }
-        #parchmentContainer img {
+        #parchmentContainer > img {
             width: 100%;
             height: auto;
         }
         
         #parchmentContent {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    text-align: center;
-}
-
-#parchmentTextWrapper {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-#parchmentText {
-    color: #502103;
-    font-family: 'Gibb Sans', sans-serif;
-    font-size: 2.0em;
-    font-weight: 400;
-    line-height: 1.5;
-}
-
-#parchmentSign {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-#parchmentSign img {
-    width: 35px;
-    height: 35px;
-    object-fit: contain;
-    opacity: 0.8;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-/* ===== КНОПКА ПОДЕЛИТЬСЯ ===== */
-#shareWrapper {
-    text-align: center;
-    margin-top: 15px;
-    position: relative;
-    display: inline-block;
-}
-
-#shareToggle {
-    background: none;
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    color: #d4af37;
-    padding: 6px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-family: 'Cormorant Infant', serif;
-    font-size: 13px;
-    transition: all 0.3s;
-    letter-spacing: 1px;
-}
-
-#shareToggle:hover {
-    background: rgba(212, 175, 55, 0.1);
-    border-color: #d4af37;
-}
-
-#shareMenu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 8px;
-    background: rgba(20, 20, 30, 0.95);
-    border: 1px solid #2a2a40;
-    border-radius: 12px;
-    padding: 8px;
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 160px;
-    backdrop-filter: blur(10px);
-    z-index: 100;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-#shareMenu.show {
-    display: flex;
-}
-
-#shareMenu button {
-    background: none;
-    border: none;
-    color: #e4e4e4;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Cormorant Infant', serif;
-    font-size: 14px;
-    transition: all 0.2s;
-    text-align: left;
-}
-
-#shareMenu button:hover {
-    background: rgba(212, 175, 55, 0.15);
-    color: #d4af37;
-}
-
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            text-align: center;
+        }
+        
+        #parchmentTextWrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        #parchmentText {
+            color: #502103;
+            font-family: 'Gibb Sans', sans-serif;
+            font-size: 2.0em;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+        
+        #parchmentSign img {
+            width: 35px;
+            height: 35px;
+            object-fit: contain;
+            opacity: 0.8;
+        }
+        
+        /* ===== ПОДПИСЬ РЕЖИМА ===== */
+        #modeLabel {
+            text-align: center;
+            margin-top: 12px;
+            font-family: 'Caveat', cursive;
+            font-size: 1.1em;
+            color: #b8860b;
+            letter-spacing: 1px;
+        }
+        
+        /* ===== КНОПКА ПОДЕЛИТЬСЯ ===== */
+        #shareWrapper {
+            text-align: center;
+            margin-top: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        #shareToggle {
+            background: none;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #d4af37;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        #shareToggle:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #d4af37;
+        }
+        #shareMenu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        #shareMenu.show { display: flex; }
+        #shareMenu button {
+            background: none;
+            border: none;
+            color: #e4e4e4;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 14px;
+            text-align: left;
+        }
+        #shareMenu button:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
+        }
+        
         /* ===== МОДАЛЬНОЕ ОКНО ===== */
         #parchmentModal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85);
             z-index: 9999;
             justify-content: center;
             align-items: center;
             padding: 20px;
             cursor: pointer;
-            animation: modalFadeIn 0.3s ease;
         }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         #parchmentModal .modal-content {
             position: relative;
             max-width: 650px;
@@ -239,15 +245,12 @@
             justify-content: center;
             align-items: center;
         }
-
         #parchmentModal .modal-content img {
             width: 100%;
             height: auto;
             max-height: 85vh;
             object-fit: contain;
-            border-radius: 8px;
         }
-
         #modalContent {
             position: absolute;
             top: 50%;
@@ -260,23 +263,19 @@
             align-items: center;
             gap: 10px;
         }
-
         #modalText {
             color: #3d2b1f;
             font-family: 'Gibb Sans', sans-serif;
-            font-size: 1.6em;
-            font-weight: 600;
+            font-size: 2.2em;
+            font-weight: 400;
             line-height: 1.5;
-            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.15);
         }
-
         #modalSign img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
             opacity: 0.5;
         }
-
         #parchmentModal .close-hint {
             position: fixed;
             bottom: 30px;
@@ -285,65 +284,22 @@
             color: #888;
             font-family: 'Cormorant Infant', serif;
             font-size: 14px;
-            letter-spacing: 1px;
             opacity: 0.6;
-            z-index: 10000;
         }
-
+        
         /* ===== АДАПТИВ ===== */
         @media (max-width: 600px) {
             .zodiac-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 10px;
             }
-            .zodiac-item img {
-                width: 60px;
-                height: 60px;
-            }
-            #parchmentText {
-                font-size: 0.9em;
-            }
-            #parchmentSign img {
-                width: 35px;
-                height: 35px;
-            }
-            .key-title {
-                font-size: 2em;
-            }
-            .key-subtitle {
-                font-size: 1.1em;
-            }
-            #modalText {
-                font-size: 1.2em;
-            }
-            #modalSign img {
-                width: 45px;
-                height: 45px;
-            }
-            #parchmentModal .modal-content {
-                max-width: 95%;
-                width: 95%;
-            }
-            #shareButtons button {
-                font-size: 12px;
-                padding: 6px 14px;
-            }
-            @media (max-width: 600px) {
-    /* ... */
-
-    #parchmentText {
-        font-family: 'Gibb Sans', sans-serif !important;
-        font-size: 1.4em; font-weight: 400; line-height: 1.5;
-        max-width: 80%;
-    }
-
-    #modalText {
-        font-family: 'Gibb Sans', sans-serif !important;
-        font-size: 2.5em; font-weight: 400; line-height: 1.4;
-    }
-
-    /* ... */
-}
+            .zodiac-item img { width: 60px; height: 60px; }
+            .key-title { font-size: 2em; }
+            .key-subtitle { font-size: 1.1em; }
+            .mode-btn { font-size: 13px; padding: 8px 16px; }
+            #parchmentText { font-size: 1.4em; }
+            #modalText { font-size: 1.6em; }
+            #parchmentModal .modal-content { max-width: 95%; width: 95%; }
         }
     </style>
 </head>
@@ -353,30 +309,41 @@
         <div class="key-title">Clavis Signi</div>
         <div class="key-subtitle">Выберите свой знак</div>
 
+        <!-- ===== ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМОВ ===== -->
+        <div class="mode-switcher">
+            <button class="mode-btn active" id="modeSapientia" onclick="setMode('sapientia')">
+                🔮 Sapientia Signi
+            </button>
+            <button class="mode-btn" id="modeRisus" onclick="setMode('risus')">
+                😏 Risus Signi
+            </button>
+        </div>
+
         <div class="zodiac-grid" id="zodiacGrid"></div>
 
         <div id="parchmentContainer">
-    <img src="/static/scrol1.png" alt="Пергамент">
-        <div id="parchmentContent">
-        <div id="parchmentTextWrapper">
-            <span id="parchmentText"></span>
-            <span id="parchmentSign"></span>
+            <img src="/static/scrol1.png" alt="Пергамент">
+            <div id="parchmentContent">
+                <div id="parchmentTextWrapper">
+                    <span id="parchmentText"></span>
+                    <span id="parchmentSign"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="modeLabel"></div>
+
+        <div id="shareWrapper" style="display: none; text-align: center; margin-top: 10px;">
+            <button id="shareToggle" onclick="toggleShareMenu()">🔗 Поделиться</button>
+            <div id="shareMenu">
+                <button onclick="shareTelegram()">📨 Telegram</button>
+                <button onclick="shareFacebook()">📘 Facebook</button>
+                <button onclick="shareTwitter()">🐦 Twitter</button>
+                <button onclick="copyLink()">🔗 Копировать</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Кнопка "Поделиться" (компактная) -->
-<div id="shareWrapper" style="display: none; text-align: center; margin-top: 15px;">
-    <button id="shareToggle" onclick="toggleShareMenu()">🔗 Поделиться</button>
-    <div id="shareMenu">
-        <button onclick="shareTelegram()">📨 Telegram</button>
-        <button onclick="shareFacebook()">📘 Facebook</button>
-        <button onclick="shareTwitter()">🐦 Twitter</button>
-        <button onclick="copyLink()">🔗 Копировать</button>
-    </div>
-</div>
-
-    <!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
     <div id="parchmentModal">
         <div class="modal-content">
             <img src="/static/scrol1.png" alt="Пергамент">
@@ -388,189 +355,182 @@
         <div class="close-hint">✕ Нажмите в любом месте, чтобы закрыть</div>
     </div>
 
-<script>
-    const zodiacSigns = [
-        { name: 'Aries', ru: 'Овен', img: '/static/zodiac/aries.png' },
-        { name: 'Taurus', ru: 'Телец', img: '/static/zodiac/taurus.png' },
-        { name: 'Gemini', ru: 'Близнецы', img: '/static/zodiac/gemini.png' },
-        { name: 'Cancer', ru: 'Рак', img: '/static/zodiac/cancer.png' },
-        { name: 'Leo', ru: 'Лев', img: '/static/zodiac/leo.png' },
-        { name: 'Virgo', ru: 'Дева', img: '/static/zodiac/virgo.png' },
-        { name: 'Libra', ru: 'Весы', img: '/static/zodiac/libra.png' },
-        { name: 'Scorpio', ru: 'Скорпион', img: '/static/zodiac/scorpio.png' },
-        { name: 'Sagittarius', ru: 'Стрелец', img: '/static/zodiac/sagittarius.png' },
-        { name: 'Capricorn', ru: 'Козерог', img: '/static/zodiac/capricorn.png' },
-        { name: 'Aquarius', ru: 'Водолей', img: '/static/zodiac/aquarius.png' },
-        { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
-    ];
+    <script>
+        const zodiacSigns = [
+            { name: 'Aries', ru: 'Овен', img: '/static/zodiac/aries.png' },
+            { name: 'Taurus', ru: 'Телец', img: '/static/zodiac/taurus.png' },
+            { name: 'Gemini', ru: 'Близнецы', img: '/static/zodiac/gemini.png' },
+            { name: 'Cancer', ru: 'Рак', img: '/static/zodiac/cancer.png' },
+            { name: 'Leo', ru: 'Лев', img: '/static/zodiac/leo.png' },
+            { name: 'Virgo', ru: 'Дева', img: '/static/zodiac/virgo.png' },
+            { name: 'Libra', ru: 'Весы', img: '/static/zodiac/libra.png' },
+            { name: 'Scorpio', ru: 'Скорпион', img: '/static/zodiac/scorpio.png' },
+            { name: 'Sagittarius', ru: 'Стрелец', img: '/static/zodiac/sagittarius.png' },
+            { name: 'Capricorn', ru: 'Козерог', img: '/static/zodiac/capricorn.png' },
+            { name: 'Aquarius', ru: 'Водолей', img: '/static/zodiac/aquarius.png' },
+            { name: 'Pisces', ru: 'Рыбы', img: '/static/zodiac/pisces.png' }
+        ];
 
-    let currentSign = '';
+        let currentSign = '';
+        let currentMode = 'sapientia';
 
-    const grid = document.getElementById('zodiacGrid');
-    zodiacSigns.forEach(sign => {
-        const item = document.createElement('div');
-        item.className = 'zodiac-item';
-        item.onclick = () => getAphorism(sign.name);
-        item.innerHTML = `
-            <img src="${sign.img}" alt="${sign.ru}">
-            <div class="zodiac-name">${sign.ru}</div>
-        `;
-        grid.appendChild(item);
-    });
-
-    // ===== ОСНОВНАЯ ФУНКЦИЯ =====
-    async function getAphorism(sign) {
-        const container = document.getElementById('parchmentContainer');
-        const text = document.getElementById('parchmentText');
-        const signEl = document.getElementById('parchmentSign');
         const grid = document.getElementById('zodiacGrid');
-        const subtitle = document.querySelector('.key-subtitle');
-        const shareWrapper = document.getElementById('shareWrapper');
-        
-        currentSign = sign;
-        
-        grid.style.display = 'none';
-        subtitle.style.display = 'none';
-        if (shareWrapper) shareWrapper.style.display = 'none';
-        text.innerHTML = 'Загрузка...';
-        signEl.innerHTML = '';
-        container.style.display = 'block';
+        zodiacSigns.forEach(sign => {
+            const item = document.createElement('div');
+            item.className = 'zodiac-item';
+            item.onclick = () => getAphorism(sign.name);
+            item.innerHTML = `
+                <img src="${sign.img}" alt="${sign.ru}">
+                <div class="zodiac-name">${sign.ru}</div>
+            `;
+            grid.appendChild(item);
+        });
 
-        try {
-            const response = await fetch(`/api/v1/key?sign=${sign}`);
-            const data = await response.json();
-            text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeSapientia').classList.toggle('active', mode === 'sapientia');
+            document.getElementById('modeRisus').classList.toggle('active', mode === 'risus');
             
-            const signData = zodiacSigns.find(s => s.name === sign);
-            if (signData) {
-                const signIcon = document.createElement('img');
-                signIcon.src = signData.img;
-                signIcon.alt = signData.ru;
-                signEl.appendChild(signIcon);
+            if (currentSign) {
+                getAphorism(currentSign);
             }
+        }
+
+        async function getAphorism(sign) {
+            const container = document.getElementById('parchmentContainer');
+            const text = document.getElementById('parchmentText');
+            const signEl = document.getElementById('parchmentSign');
+            const gridEl = document.getElementById('zodiacGrid');
+            const subtitle = document.querySelector('.key-subtitle');
+            const shareWrapper = document.getElementById('shareWrapper');
+            const modeLabel = document.getElementById('modeLabel');
             
-            if (shareWrapper) shareWrapper.style.display = 'inline-block';
+            currentSign = sign;
             
-        } catch (e) {
-            text.innerHTML = 'Сегодня звёзды говорят тихо.';
-        }
-    }
-
-    // ===== ПОДЕЛИТЬСЯ (компактное меню) =====
-
-    function toggleShareMenu() {
-        const menu = document.getElementById('shareMenu');
-        if (menu) {
-            menu.classList.toggle('show');
-        }
-    }
-
-    document.addEventListener('click', function(e) {
-        const wrapper = document.getElementById('shareWrapper');
-        const menu = document.getElementById('shareMenu');
-        if (wrapper && menu && !wrapper.contains(e.target)) {
-            menu.classList.remove('show');
-        }
-    });
-
-    function getShareText() {
-        const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
-        const text = document.getElementById('parchmentText').textContent;
-        const signNamesRu = {
-            'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
-            'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
-            'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
-            'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
-        };
-        const signRu = signNamesRu[sign] || sign;
-        return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
-    }
-
-    function shareTelegram() {
-        const text = getShareText();
-        const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-        closeShareMenu();
-    }
-
-    function shareFacebook() {
-        const text = getShareText();
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-        closeShareMenu();
-    }
-
-    function shareTwitter() {
-        const text = getShareText();
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
-        window.open(url, '_blank');
-        closeShareMenu();
-    }
-
-    function copyLink() {
-        const text = getShareText() + '\n\n' + window.location.href;
-        if (navigator.share) {
-            navigator.share({
-                title: 'Ключ к знаку — Liber Astrodum',
-                text: text,
-                url: window.location.href
-            });
-        } else {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('✅ Афоризм скопирован!');
-            }).catch(() => {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('✅ Афоризм скопирован!');
-            });
-        }
-        closeShareMenu();
-    }
-
-    function closeShareMenu() {
-        const menu = document.getElementById('shareMenu');
-        if (menu) {
-            menu.classList.remove('show');
-        }
-    }
-
-    // ===== МОДАЛЬНОЕ ОКНО =====
-    const parchmentContainer = document.getElementById('parchmentContainer');
-    const modal = document.getElementById('parchmentModal');
-    const modalText = document.getElementById('modalText');
-    const modalSign = document.getElementById('modalSign');
-
-    parchmentContainer.addEventListener('click', function() {
-        const text = document.getElementById('parchmentText').textContent;
-        const signImg = document.querySelector('#parchmentSign img');
-        
-        if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
-            modalText.textContent = text;
+            gridEl.style.display = 'none';
+            subtitle.style.display = 'none';
+            if (shareWrapper) shareWrapper.style.display = 'none';
+            text.innerHTML = 'Загрузка...';
+            signEl.innerHTML = '';
+            container.style.display = 'block';
             
-            modalSign.innerHTML = '';
-            if (signImg) {
-                const clone = signImg.cloneNode(true);
-                modalSign.appendChild(clone);
+            modeLabel.textContent = currentMode === 'sapientia' ? '— Sapientia Signi —' : '— Risus Signi —';
+
+            const endpoint = currentMode === 'sapientia' ? '/api/v1/key' : '/api/v1/key-risus';
+
+            try {
+                const response = await fetch(`${endpoint}?sign=${sign}`);
+                const data = await response.json();
+                text.innerHTML = data.aphorism || 'Сегодня звёзды говорят тихо.';
+                
+                const signData = zodiacSigns.find(s => s.name === sign);
+                if (signData) {
+                    const signIcon = document.createElement('img');
+                    signIcon.src = signData.img;
+                    signIcon.alt = signData.ru;
+                    signEl.appendChild(signIcon);
+                }
+                
+                if (shareWrapper) shareWrapper.style.display = 'inline-block';
+            } catch (e) {
+                text.innerHTML = 'Сегодня звёзды говорят тихо.';
             }
-            
-            modal.style.display = 'flex';
         }
-    });
 
-    modal.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
+        function toggleShareMenu() {
+            document.getElementById('shareMenu').classList.toggle('show');
+        }
 
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('shareWrapper');
+            const menu = document.getElementById('shareMenu');
+            if (wrapper && menu && !wrapper.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        function getShareText() {
+            const sign = document.querySelector('#parchmentSign img')?.alt || 'Знак';
+            const text = document.getElementById('parchmentText').textContent;
+            const signNamesRu = {
+                'Aries': 'Овен', 'Taurus': 'Телец', 'Gemini': 'Близнецы',
+                'Cancer': 'Рак', 'Leo': 'Лев', 'Virgo': 'Дева',
+                'Libra': 'Весы', 'Scorpio': 'Скорпион', 'Sagittarius': 'Стрелец',
+                'Capricorn': 'Козерог', 'Aquarius': 'Водолей', 'Pisces': 'Рыбы'
+            };
+            const signRu = signNamesRu[sign] || sign;
+            return `«${text}»\n\n— ${signRu}, Liber Astrodum`;
+        }
+
+        function shareTelegram() {
+            const text = getShareText();
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`, '_blank');
+            closeShareMenu();
+        }
+
+        function shareFacebook() {
+            const text = getShareText();
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(text)}`, '_blank');
+            closeShareMenu();
+        }
+
+        function shareTwitter() {
+            const text = getShareText();
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+            closeShareMenu();
+        }
+
+        function copyLink() {
+            const text = getShareText() + '\n\n' + window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: 'Ключ к знаку — Liber Astrodum', text: text, url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(text).then(() => alert('✅ Афоризм скопирован!')).catch(() => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('✅ Афоризм скопирован!');
+                });
+            }
+            closeShareMenu();
+        }
+
+        function closeShareMenu() {
+            document.getElementById('shareMenu').classList.remove('show');
+        }
+
+        // ===== МОДАЛЬНОЕ ОКНО =====
+        const parchmentContainer = document.getElementById('parchmentContainer');
+        const modal = document.getElementById('parchmentModal');
+        const modalText = document.getElementById('modalText');
+        const modalSign = document.getElementById('modalSign');
+
+        parchmentContainer.addEventListener('click', function() {
+            const text = document.getElementById('parchmentText').textContent;
+            const signImg = document.querySelector('#parchmentSign img');
+            
+            if (text && text !== 'Загрузка...' && text !== 'Выберите знак') {
+                modalText.textContent = text;
+                modalSign.innerHTML = '';
+                if (signImg) {
+                    modalSign.appendChild(signImg.cloneNode(true));
+                }
+                modal.style.display = 'flex';
+            }
+        });
+
+        modal.addEventListener('click', function() {
             modal.style.display = 'none';
-        }
-    });
-</script>
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
-
