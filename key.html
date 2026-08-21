@@ -130,16 +130,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%;
+            width: 70%;
+            max-width: 400px;
             text-align: center;
-        }
-        
-        #parchmentTextWrapper {
-            display: inline-flex;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
+        }
+        
+        #parchmentText {
+            color: #502103;
+            font-family: 'Gibb Sans', sans-serif;
+            font-size: 1.6em;
+            font-weight: 400;
+            line-height: 1.5;
+            max-width: 80%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         #parchmentText {
@@ -264,12 +272,12 @@
             gap: 10px;
         }
         #modalText {
-            color: #3d2b1f;
-            font-family: 'Gibb Sans', sans-serif;
-            font-size: 2.2em;
-            font-weight: 400;
-            line-height: 1.5;
+            font-size: 1.5em;
+            max-width: 70%;
+            word-wrap: break-word;
+            line-height: 1.4;
         }
+        
         #modalSign img {
             width: 50px;
             height: 50px;
@@ -297,9 +305,39 @@
             .key-title { font-size: 2em; }
             .key-subtitle { font-size: 1.1em; }
             .mode-btn { font-size: 13px; padding: 8px 16px; }
-            #parchmentText { font-size: 1.4em; }
-            #modalText { font-size: 1.6em; }
+            #parchmentText {
+                font-size: 1.1em;
+                max-width: 70%;
+                line-height: 1.4;
+            }
+            #parchmentContent {
+                width: 65%;
+            }
+            #modalText {
+                font-size: 1.5em;
+                max-width: 70%;
+                word-wrap: break-word;
+                line-height: 1.4;
+            }
             #parchmentModal .modal-content { max-width: 95%; width: 95%; }
+        }
+                @media (max-width: 600px) {
+            #parchmentContainer {
+                max-width: 400px;
+                margin: 20px auto;
+            }
+            #parchmentContainer img {
+                max-height: 500px;
+                object-fit: contain;
+            }
+            #parchmentContent {
+                width: 65%;
+            }
+            #parchmentText {
+                font-size: 1.1em;
+                max-width: 70%;
+                line-height: 1.4;
+            }
         }
     </style>
 </head>
