@@ -354,6 +354,7 @@
     </div>
 
     <script>
+        
         let natalPrompts = {};
         let natalThemes = {};
 
@@ -384,6 +385,11 @@
             'Pisces': '«Я — океан, где растворяются все границы и рождается вера.»'
         };
         const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
+        const THEME_NAMES_RU = {
+    'career_under_constraint': 'Стезя под гнётом',
+    'community_under_constraint': 'Община в оковах',
+    'community_polarization': 'Раскол в кругу',
+};
 
         function showOverlay(signKey) {
             const emoji = signEmojis[signKey] || '❓';
@@ -656,7 +662,7 @@
                             <div class="theme-buttons">
                     `;
                     for (const [themeKey, themeInfo] of Object.entries(natalThemes)) {
-                        const themeName = themeInfo.core_theme || themeKey;
+                        const themeName = THEME_NAMES_RU[themeKey] || themeInfo.core_theme || themeKey;
                         const strength = themeInfo.strength || 0;
                         themesHtml += `
                             <button class="theme-btn" onclick="generateTheme('${themeKey}')">
