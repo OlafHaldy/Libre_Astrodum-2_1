@@ -421,6 +421,9 @@ HTML_PAGE = r"""<!DOCTYPE html>
                     <div class="moon-sign">Луна в знаке: ${data.moon_sign}</div>
                     <div class="lunar-day">День ${data.lunar_day}: ${data.lunar_day_name}</div>
                     <div class="coligny-month">🌿 месяца ${data.coligny_month} · ${data.coligny_month_ru}</div>
+                    <div class="lunar-time">Начало: ${data.lunar_day_start}</div>
+                    <div class="lunar-time">Окончание: ${data.lunar_day_end}</div>
+
                     <div class="event-title">🌿 Совет дня</div>
                     <div class="event-text">${data.advice}</div>
                 `;
@@ -734,6 +737,64 @@ def get_moon_phase():
         30: "День золотого лебедя — совершенство, благодарность, свет.",
     }
     advice = lunar_advices.get(lunar_day, "Доверьтесь интуиции и наблюдайте за ритмами природы.")
+        # Время начала и окончания лунного дня (по восходу Луны)
+    # Расчёт восхода Луны через Swiss Ephemeris
+    from datetime import timedelta
+
+    def format_moon_time(dt):
+        """Форматирует время в человеческий вид."""
+        now_local = datetime.utcnow() + timedelta(hours=2)  # Киев UTC+2
+        day_diff = (dt.date() - now_local.date()).days
+
+        if day_diff == -1:
+            day_word = "вчера"
+        elif day_diff == 0:
+            day_word = "сегодня"
+        elif day_diff == 1:
+            day_word = "завтра"
+        else:
+            day_word = f"через {day_diff} дн."
+
+        return f"{day_word}, {dt.strftime('%H:%M')}"
+
+    # Ищем ближайший восход Луны
+    try:
+        # Текущий восход
+        rise_start = None
+        rise_end = None
+
+        for day_offset in range(-1, 2):
+            check_date = now + timedelta(days=day_offset)
+            jd_check = swe.julday(
+                check_date.year, check_date.month, check_date.day,
+                check_date.hour + check_date.minute / 60.0
+            )
+
+            # Восход Луны
+            try:
+                rise_time = swe.rise_trans(
+                    jd_check,
+                    swe.MOON,
+                    swe.CALC_RISE,
+                    (50.45, 30.52, 0),  # координаты по умолчанию
+                    0, 0, 0
+                )
+
+                if rise_time:
+                    rise_dt = datetime.fromordinal(int(rise_time[0])) + timedelta(days=rise_time[0] % 1)
+
+                    if rise_dt > now and rise_end is None:
+                        rise_end = rise_dt
+                    elif rise_dt <= now:
+                        rise_start = rise_dt
+            except Exception:
+                pass
+
+        lunar_day_start = format_moon_time(rise_start) if rise_start else "—"
+        lunar_day_end = format_moon_time(rise_end) if rise_end else "—"
+    except Exception:
+        lunar_day_start = "—"
+        lunar_day_end = "—"
     coligny_month = get_coligny_month(now)
 
     return {
@@ -745,6 +806,8 @@ def get_moon_phase():
         "advice": advice,
         "coligny_month": coligny_month[0],
         "coligny_month_ru": coligny_month[1],
+        "lunar_day_start": lunar_day_start,
+        "lunar_day_end": lunar_day_end,
     }
 
 
@@ -762,6 +825,8 @@ def widget_data():
         "advice": moon_data["advice"],
         "coligny_month": moon_data.get("coligny_month", ""),
         "coligny_month_ru": moon_data.get("coligny_month_ru", ""),
+        "lunar_day_start": moon_data.get("lunar_day_start", "—"),
+        "lunar_day_end": moon_data.get("lunar_day_end", "—"),
     })
 @app.get("/", response_class=HTMLResponse)
 def home():
