@@ -420,7 +420,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
                     <div class="moon-label">${data.moon_phase}</div>
                     <div class="moon-sign">Луна в знаке: ${data.moon_sign}</div>
                     <div class="lunar-day">День ${data.lunar_day}: ${data.lunar_day_name}</div>
-
+                    <div class="coligny-month">🌿 месяца ${data.coligny_month} · ${data.coligny_month_ru}</div>
                     <div class="event-title">🌿 Совет дня</div>
                     <div class="event-text">${data.advice}</div>
                 `;
@@ -606,7 +606,45 @@ def daily_personal_v1(
 # ================== ЛУННЫЙ КАЛЕНДАРЬ ==================
 
 # ================== ЛУННЫЙ КАЛЕНДАРЬ ==================
+def get_coligny_month(date_now=None):
+    """
+    Возвращает месяц кельтского календаря Колиньи.
+    Приблизительная реконструкция: 12 месяцев по 30 дней.
+    Samonios начинается 1 ноября.
+    """
+    from datetime import datetime
 
+    if date_now is None:
+        date_now = datetime.utcnow()
+
+    months = [
+        ("Samonios", "Самоний"),
+        ("Dumannios", "Думаний"),
+        ("Riuros", "Риврос"),
+        ("Anagantios", "Анагантий"),
+        ("Ogronios", "Огроний"),
+        ("Cutios", "Кутий"),
+        ("Giamonios", "Джамоний"),
+        ("Simivisonnios", "Симивизонний"),
+        ("Equos", "Эквос"),
+        ("Elembivios", "Элембивий"),
+        ("Edrinios", "Эдриний"),
+        ("Cantlos", "Кантлос"),
+    ]
+
+    year = date_now.year
+    start = datetime(year, 11, 1)
+
+    if date_now < start:
+        start = datetime(year - 1, 11, 1)
+
+    days_passed = (date_now - start).days
+    month_index = days_passed // 30
+
+    if month_index >= len(months):
+        month_index = month_index % len(months)
+
+    return months[month_index]
 def get_moon_phase():
     """Возвращает полную информацию о Луне для виджета."""
     from datetime import datetime
@@ -696,6 +734,7 @@ def get_moon_phase():
         30: "День золотого лебедя — совершенство, благодарность, свет.",
     }
     advice = lunar_advices.get(lunar_day, "Доверьтесь интуиции и наблюдайте за ритмами природы.")
+    coligny_month = get_coligny_month(now)
 
     return {
         "phase_emoji": phase_emoji,
@@ -704,6 +743,8 @@ def get_moon_phase():
         "lunar_day": lunar_day,
         "lunar_day_name": lunar_day_name,
         "advice": advice,
+        "coligny_month": coligny_month[0],
+        "coligny_month_ru": coligny_month[1],
     }
 
 
@@ -719,6 +760,8 @@ def widget_data():
         "lunar_day": moon_data["lunar_day"],
         "lunar_day_name": moon_data["lunar_day_name"],
         "advice": moon_data["advice"],
+        "coligny_month": moon_data.get("coligny_month", ""),
+        "coligny_month_ru": moon_data.get("coligny_month_ru", ""),
     })
 @app.get("/", response_class=HTMLResponse)
 def home():
