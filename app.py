@@ -776,12 +776,14 @@ def get_moon_phase():
                     jd_check,
                     swe.MOON,
                     swe.CALC_RISE,
-                    (50.45, 30.52, 0),  # координаты по умолчанию
+                    (50.45, 30.52, 0),
                     0, 0, 0
                 )
 
-                if rise_time:
-                    rise_dt = datetime.fromordinal(int(rise_time[0])) + timedelta(days=rise_time[0] % 1)
+                if rise_time and rise_time[1] and rise_time[1][0]:
+                    jd_rise = rise_time[1][0]
+                    jd_start = 2440587.5
+                    rise_dt = datetime(1970, 1, 1) + timedelta(days=jd_rise - jd_start)
 
                     if rise_dt > now and rise_end is None:
                         rise_end = rise_dt
