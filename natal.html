@@ -656,28 +656,7 @@
                     interpretationHtml = `<div class="interpretation-block"><div class="interpretation-block-text">${cleanInterpretation.replace(/\n/g, '<br>')}</div></div>`;
                 }
 
-                let themesHtml = '';
-                if (natalThemes && Object.keys(natalThemes).length > 0) {
-                    themesHtml = `
-                        <div class="themes-block">
-                            <div class="themes-title">❧ Иные прочтения</div>
-                            <div class="theme-buttons">
-                    `;
-                    for (const [themeKey, themeInfo] of Object.entries(natalThemes)) {
-                        const themeName = THEME_NAMES_RU[themeKey] || themeInfo.core_theme || themeKey;
-                        const strength = themeInfo.strength || 0;
-                        themesHtml += `
-                            <button class="theme-btn" onclick="generateTheme('${themeKey}')">
-                                ${themeName}
-                            </button>
-                        `;
-                    }
-                    themesHtml += `
-                            </div>
-                            <div id="themeResult"></div>
-                        </div>
-                    `;
-                }
+
 
                 resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
@@ -688,7 +667,7 @@
                         ${aspectListHtml}
                         <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
                         ${interpretationHtml}
-                        ${themesHtml}
+                       
                         <br>
                         <a href="/" class="back-btn">← В главное меню</a>
                     </div>
