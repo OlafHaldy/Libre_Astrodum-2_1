@@ -1416,14 +1416,14 @@ def solar_v1(
     strongest_evidence = evidence[0] if len(evidence) > 0 else None
     
     strongest_prompt = build_solar_prompt(
-        
         composition=strongest_comp,
         evidence_plan=strongest_evidence,
         chart=chart,
         chart_type="solar",
         solar_year=target_year,
-        prompts = {strongest_comp.theme_key: strongest_prompt} if strongest_comp else {}
     )
+
+    prompts = {strongest_comp.theme_key: strongest_prompt} if strongest_comp else {}
 
     try:
         import re
