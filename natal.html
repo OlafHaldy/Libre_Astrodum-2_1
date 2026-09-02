@@ -103,6 +103,7 @@
             line-height: 1.8;
             text-align: left;
         }
+                /* ===== АФОРИЗМ-ЭПИГРАФ ===== */
         .aphorism {
             font-family: 'Caveat', cursive;
             font-size: 1.25em;
@@ -116,6 +117,7 @@
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
             letter-spacing: 0.02em;
         }
+
         .aphorism::before {
             content: '❧';
             margin-right: 8px;
@@ -123,6 +125,7 @@
             color: #b8860b;
             opacity: 0.7;
         }
+
         .aphorism-label {
             font-family: 'Cormorant Infant', serif;
             font-size: 0.7em;
@@ -157,6 +160,8 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000; display: none;
         }
+
+        /* ===== LAYOUT ===== */
         .natal-layout {
             display: flex;
             align-items: flex-start;
@@ -187,6 +192,8 @@
             letter-spacing: 2px;
             margin-top: 6px;
         }
+
+        /* ===== ТАБЛИЦЫ ===== */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -226,6 +233,8 @@
             color: #d4af37;
             margin: 0 4px;
         }
+
+        /* ===== КНОПКИ ТЕМ ===== */
         .themes-block {
             margin-top: 25px;
             padding: 15px;
@@ -278,6 +287,7 @@
         #themeResult {
             margin-top: 15px;
         }
+
         @media (max-width: 600px) {
             .natal-layout {
                 flex-direction: column;
@@ -344,8 +354,15 @@
     </div>
 
     <script>
+        
         let natalPrompts = {};
         let natalThemes = {};
+
+        const THEME_NAMES_RU = {
+              'career_under_constraint': 'Стезя под гнётом',
+              'community_under_constraint': 'Община в оковах',
+              'community_polarization': 'Раскол в кругу',
+        };
 
         const signEmojis = {
             'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
@@ -375,10 +392,10 @@
         };
         const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
         const THEME_NAMES_RU = {
-            'career_under_constraint': 'Стезя под гнётом',
-            'community_under_constraint': 'Община в оковах',
-            'community_polarization': 'Раскол в кругу',
-        };
+    'career_under_constraint': 'Стезя под гнётом',
+    'community_under_constraint': 'Община в оковах',
+    'community_polarization': 'Раскол в кругу',
+};
 
         function showOverlay(signKey) {
             const emoji = signEmojis[signKey] || '❓';
@@ -450,20 +467,6 @@
             }
         });
 
-        function formatAphorism(text) {
-            const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
-            if (match) {
-                const aphorismText = match[1];
-                const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
-                return `
-                    <div class="aphorism-label">Эпиграф</div>
-                    <div class="aphorism">${aphorismText}</div>
-                    <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
-                `;
-            }
-            return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
-        }
-
         async function generateTheme(themeKey) {
             const prompt = natalPrompts[themeKey];
             if (!prompt) { alert('Промпт не найден'); return; }
@@ -473,6 +476,7 @@
 
             const themeResult = document.getElementById('themeResult');
             const themeName = THEME_NAMES_RU[themeKey] || natalThemes[themeKey]?.core_theme || themeKey;
+            const themeStrength = natalThemes[themeKey]?.strength || 0;
 
             themeResult.innerHTML = `
                 <div class="loading">
@@ -501,6 +505,7 @@
                     themeResult.innerHTML = `
                         <div class="interpretation-block">
                             <div class="interpretation-block-title">✦ ${themeName}</div>
+                            <div class="interpretation-block-subtitle">Сила темы: ${themeStrength.toFixed(1)}</div>
                             <div class="interpretation-block-text">${cleanText.replace(/\n/g, '<br>')}</div>
                         </div>
                     `;
@@ -513,6 +518,22 @@
                 themeResult.innerHTML = `<p style="color:#d4af37;">Ошибка: ${e.message}</p>`;
             }
         }
+        function formatAphorism(text) {
+    const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
+    
+    if (match) {
+        const aphorismText = match[1];
+        const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
+        
+        return `
+            <div class="aphorism-label">Эпиграф</div>
+            <div class="aphorism">${aphorismText}</div>
+            <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
+        `;
+    }
+    
+    return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
+}
 
         async function askNatal() {
             const planetNames = {
@@ -648,6 +669,7 @@
                     `;
                     for (const [themeKey, themeInfo] of Object.entries(natalThemes)) {
                         const themeName = THEME_NAMES_RU[themeKey] || themeInfo.core_theme || themeKey;
+                        const strength = themeInfo.strength || 0;
                         themesHtml += `
                             <button class="theme-btn" onclick="generateTheme('${themeKey}')">
                                 ${themeName}
@@ -663,4 +685,26 @@
 
                 resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px; backdrop-filter: blur(5px);">
-                        <h3 style="color: #d4af37; font-family: '
+                        <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☉ Натальная карта — Результат</h3>
+                        ${wheelHtml}
+                        ${planetListHtml}
+                        ${houseListHtml}
+                        ${aspectListHtml}
+                        <h3 style="color: #d4af37; margin-top: 20px;">Интерпретация</h3>
+                        ${interpretationHtml}
+                        ${themesHtml}
+                        <br>
+                        <a href="/" class="back-btn">← В главное меню</a>
+                    </div>
+                `;
+            } catch (e) {
+                showErrorModal();
+            }
+        }
+
+        document.getElementById('mysteryPortal').addEventListener('click', function() {
+            window.location.href = '/key';
+        });
+    </script>
+</body>
+</html>
