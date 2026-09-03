@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liber Astrodum — Элекция</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Infant', serif;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.65)), url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { max-width: 700px; width: 100%; }
+        .back-btn {
+            background: none; border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cormorant Infant', serif; font-size: 16px;
+            margin-bottom: 15px; text-decoration: none; display: inline-block;
+        }
+        .card {
+            background: rgba(30, 20, 10, 0.6);
+            border: 1px solid #5a5a5a; border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #d4af37;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-family: 'Caveat', cursive;
+            color: #ccc;
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-top: 18px;
+            color: #d4af37;
+            font-size: 1.1em;
+            font-family: 'Caveat', cursive;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            background: #1c1c1c;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Cormorant Infant', serif;
+        }
+        button {
+            background: linear-gradient(135deg, #b8860b, #d4af37);
+            color: #1a1a1a;
+            border: none;
+            padding: 14px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 25px;
+            width: 100%;
+            font-family: 'Cormorant Infant', serif;
+            text-transform: uppercase;
+        }
+        .result-block {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(35, 35, 35, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-left: 3px solid #d4af37;
+            border-radius: 10px;
+            text-align: left;
+            display: none;
+        }
+        .status-bad { color: #c06050; }
+        .status-good { color: #70b070; }
+        .status-warn { color: #d4af37; }
+        .details-toggle {
+    display: inline-block;
+    margin-top: 12px;
+    color: #d4af37;
+    cursor: pointer;
+    font-style: italic;
+    border-bottom: 1px dashed rgba(212, 175, 55, 0.4);
+    transition: color 0.3s;
+        }
+        .details-toggle:hover {
+            color: #f0d070;
+        }
+        .herb-details {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: left;
+            animation: fadeIn 0.3s ease;
+        }
+        .herb-details p {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Назад</a>
+        <div class="card">
+            <h1>☾ Элекция</h1>
+            <div class="subtitle">Выбор времени для сбора трав</div>
+
+            <label>Трава</label>
+            <select id="herbSelect">
+                <option value="зверобой">Зверобой</option>
+                <option value="лопух">Лопух</option>
+                <option value="мята">Мята</option>
+                <option value="крапива">Крапива</option>
+                <option value="ромашка">Ромашка</option>
+                <option value="дуб">Дуб</option>
+                <option value="шалфей">Шалфей</option>
+                <option value="одуванчик">Одуванчик</option>
+                <option value="хвощ">Хвощ</option>
+                <option value="сосна">Сосна</option>
+            </select>
+
+            <label>Дата</label>
+            <input type="date" id="electionDate" value="2026-09-03">
+
+            <button onclick="askElection()">Спросить</button>
+
+            <div class="result-block" id="resultBlock">
+                <div id="resultText"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+                function toggleDetails() {
+            const details = document.getElementById('herbDetails');
+            if (details) {
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+        async function askElection() {
+            const herb = document.getElementById('herbSelect').value;
+            const dateStr = document.getElementById('electionDate').value;
+            const [year, month, day] = dateStr.split('-');
+
+            const resultBlock = document.getElementById('resultBlock');
+            const resultText = document.getElementById('resultText');
+
+            resultBlock.style.display = 'block';
+            resultText.innerHTML = '<span style="color:#d4af37;">Звёзды смотрят на траву...</span>';
+
+            const params = new URLSearchParams({
+                herb: herb,
+                year: year,
+                month: month,
+                day: day,
+            });
+
+            try {
+                const response = await fetch('/api/v1/election-herb?' + params.toString());
+                const data = await response.json();
+
+                if (data.error) {
+                    resultText.innerHTML = `<span class="status-bad">${data.error}</span>`;
+                    return;
+                }
+
+                let statusClass = 'status-warn';
+                let statusText = 'Условно';
+
+                if (data.status === 'благоприятно') {
+                    statusClass = 'status-good';
+                    statusText = 'Благоприятно';
+                } else if (data.status === 'неблагоприятно') {
+                    statusClass = 'status-bad';
+                    statusText = 'Неблагоприятно';
+                } else {
+                    statusText = 'Не сезон';
+                }
+
+                resultText.innerHTML = `
+                    <div class="${statusClass}" style="font-size:1.3em;margin-bottom:10px;">✦ ${statusText}</div>
+                    <p style="line-height:1.6;">${data.advice}</p>
+                    <p style="margin-top:10px;color:#b8860b;font-style:italic;">${data.time_note}</p>
+                    <p style="margin-top:10px;color:#ccc;">
+                        Планета: ${data.planet} · Луна: ${data.moon_trend}, в знаке ${data.moon_sign}
+                    </p>
+
+                    <div class="details-toggle" onclick="toggleDetails()">❧ Подробнее о ${data.herb}</div>
+                    <div class="herb-details" id="herbDetails">
+                        <p><strong>Врачевание.</strong> ${data.medicine}</p>
+                        <p><strong>Магия.</strong> ${data.magic}</p>
+                        <p><strong>Как применяли.</strong> ${data.magic_use}</p>
+                    </div>
+                `;
+            } catch (e) {
+                resultText.innerHTML = `<span class="status-bad">Ошибка: ${e.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -90,6 +90,9 @@ def city_search(q: str = Query(..., min_length=2)):
 @app.get("/solar", response_class=HTMLResponse)
 def solar_page():
     return open("solar.html", "r", encoding="utf-8").read()
+@app.get("/election", response_class=HTMLResponse)
+def election_page():
+    return open("election.html", "r", encoding="utf-8").read()
 
 HTML_PAGE = r"""<!DOCTYPE html>
 <html lang="ru">
@@ -377,6 +380,10 @@ HTML_PAGE = r"""<!DOCTYPE html>
         <div class="main-mode-desc">Прогноз на год</div>
     </a>
 </div>
+    <a href="/election" class="main-mode-card">
+        <img src="/static/mandragora.png" alt="Элекция">
+        <div class="main-mode-desc">Выбор времени</div>
+    </a>
             <div class="dev-mode-card">
                 <div class="dev-mode-title">⏳ Прогрессии</div>
                 <div class="dev-mode-desc">В разработке</div>
@@ -385,10 +392,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
                 <div class="dev-mode-title">💞 Синастрия</div>
                 <div class="dev-mode-desc">В разработке</div>
             </div>
-            <div class="dev-mode-card">
-                <div class="dev-mode-title">🔮 Элекция</div>
-                <div class="dev-mode-desc">В разработке</div>
-            </div>
+
         </div>
     </div>
 
@@ -833,6 +837,7 @@ def widget_data():
 @app.get("/", response_class=HTMLResponse)
 def home():
     return HTML_PAGE
+
 
 @app.get("/lunar", response_class=HTMLResponse)
 def lunar_page():
@@ -1577,4 +1582,124 @@ def solar_v1(
         },
         "prompts": prompts,
         "strongest_theme": list(prompts.keys())[0] if prompts else None,
+    }
+@app.get("/api/v1/election-herb")
+def election_herb_v1(
+    herb: str = "зверобой",
+    year: int = 2026,
+    month: int = 9,
+    day: int = 3,
+):
+    """
+    Элекция для сбора травы.
+    """
+    import swisseph as swe
+    from datetime import datetime
+    from herbs import get_herb
+
+    herb_data = get_herb(herb)
+
+    if not herb_data:
+        return JSONResponse(
+            content={"error": f"Трава '{herb}' не найдена"},
+            status_code=404,
+        )
+
+    # Текущая дата или выбранная
+    try:
+        chosen_date = datetime(year, month, day)
+    except Exception:
+        chosen_date = datetime.utcnow()
+
+    jd = swe.julday(
+        chosen_date.year,
+        chosen_date.month,
+        chosen_date.day,
+        12.0,
+    )
+
+    sun_lon = swe.calc_ut(jd, swe.SUN)[0][0]
+    moon_lon = swe.calc_ut(jd, swe.MOON)[0][0]
+    angle = (moon_lon - sun_lon) % 360
+
+    # Фаза Луны
+    if angle < 22.5 or angle >= 337.5:
+        phase = "новолуние"
+    elif 22.5 <= angle < 67.5:
+        phase = "молодая луна"
+    elif 67.5 <= angle < 112.5:
+        phase = "первая четверть"
+    elif 112.5 <= angle < 157.5:
+        phase = "прибывающая"
+    elif 157.5 <= angle < 202.5:
+        phase = "полнолуние"
+    elif 202.5 <= angle < 247.5:
+        phase = "убывающая"
+    elif 247.5 <= angle < 292.5:
+        phase = "последняя четверть"
+    else:
+        phase = "старая луна"
+
+    # Растущая или убывающая
+    if angle < 180:
+        moon_trend = "растущая"
+    else:
+        moon_trend = "убывающая"
+
+    # Знак Луны
+    signs = [
+        'Овен', 'Телец', 'Близнецы', 'Рак',
+        'Лев', 'Дева', 'Весы', 'Скорпион',
+        'Стрелец', 'Козерог', 'Водолей', 'Рыбы'
+    ]
+    moon_sign = signs[int(moon_lon // 30)]
+
+    # Проверка по фазе
+    required_phase = herb_data["phase"]
+    phase_ok = moon_trend == required_phase
+
+    # Проверка по месяцу
+    month_ok = chosen_date.month in herb_data["months"]
+
+    # Формируем ответ
+    month_names = {
+        1: 'январе', 2: 'феврале', 3: 'марте', 4: 'апреле',
+        5: 'мае', 6: 'июне', 7: 'июле', 8: 'августе',
+        9: 'сентябре', 10: 'октябре', 11: 'ноябре', 12: 'декабре'
+    }
+
+    if not month_ok:
+        status = "не сезон"
+        months_ru = [month_names.get(m, str(m)) for m in herb_data['months']]
+        advice = f"{herb.capitalize()} собирают в {', '.join(months_ru)}."
+    elif phase_ok:
+        status = "благоприятно"
+        advice = (
+            f"{herb.capitalize()} ({herb_data['organ']}) лучше собирать на "
+            f"{herb_data['phase']} Луне. Сейчас Луна {moon_trend} — время подходит."
+        )
+    else:
+        status = "неблагоприятно"
+        advice = (
+            f"{herb.capitalize()} ({herb_data['organ']}) требует "
+            f"{herb_data['phase']} Луны. Сейчас Луна {moon_trend} — лучше подождать."
+        )
+
+    return {
+        "herb": herb,
+        "planet": herb_data["planet"],
+        "organ": herb_data["organ"],
+        "phase": phase,
+        "moon_trend": moon_trend,
+        "moon_sign": moon_sign,
+        "required_phase": required_phase,
+        "months": herb_data["months"],
+        "month_ok": month_ok,
+        "phase_ok": phase_ok,
+        "status": status,
+        "advice": advice,
+        "time_note": herb_data["time_note"],
+        "medicine": herb_data.get("medicine", ""),
+        "magic": herb_data.get("magic", ""),
+        "magic_use": herb_data.get("magic_use", ""),
     }
