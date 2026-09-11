@@ -388,9 +388,10 @@ HTML_PAGE = r"""<!DOCTYPE html>
         <div class="main-mode-desc">Выбор времени</div>
     </a>
     <a href="/sinastriya" class="main-mode-card">
-    <div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;font-size:80px;color:#d4af37;filter:drop-shadow(0 0 15px rgba(212,175,55,0.4));">☍</div>
-    <div class="main-mode-desc">Связь двух</div>
-</a>
+    <img src="/static/duo_lumina.png" alt="Duo Lumina">
+    <div class="main-mode-title">Duo Lumina</div>
+    <div class="main-mode-desc">Два светила</div>
+    </a>
             <div class="dev-mode-card">
                 <div class="dev-mode-title">⏳ Прогрессии</div>
                 <div class="dev-mode-desc">В разработке</div>
