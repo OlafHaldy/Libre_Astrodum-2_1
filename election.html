@@ -164,7 +164,7 @@
             const resultText = document.getElementById('resultText');
 
             resultBlock.style.display = 'block';
-            resultText.innerHTML = '<span style="color:#d4af37;">Звёзды смотрят на траву...</span>';
+            resultText.innerHTML = '<span style="color:#d4af37;">Звёзды смотрят на траву...';
 
             const params = new URLSearchParams({
                 herb: herb,
@@ -178,7 +178,7 @@
                 const data = await response.json();
 
                 if (data.error) {
-                    resultText.innerHTML = `<span class="status-bad">${data.error}</span>`;
+                    resultText.innerHTML = `<span class="status-bad">${data.error}`;
                     return;
                 }
 
@@ -211,7 +211,7 @@
                     </div>
                 `;
             } catch (e) {
-                resultText.innerHTML = `<span class="status-bad">Ошибка: ${e.message}</span>`;
+                resultText.innerHTML = `<span class="status-bad">Ошибка: ${e.message}`;
             }
         }
     </script>

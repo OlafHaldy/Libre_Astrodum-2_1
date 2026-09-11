@@ -316,7 +316,7 @@
         <div class="natal-layout">
             <div id="mysteryPortal">
                 <img src="/static/mystery_hand.png" alt="Рука мистерий">
-                <span class="hand-label">Clavis Signi</span>
+                <span class="hand-label">Clavis Signi
             </div>
 
             <div class="card">
@@ -476,7 +476,7 @@
 
             themeResult.innerHTML = `
                 <div class="loading">
-                    <span style="display:inline-block;animation:float 1.5s ease-in-out infinite;">✦</span>
+                    <span style="display:inline-block;animation:float 1.5s ease-in-out infinite;">✦
                     Звёзды раскрывают: ${themeName}...
                 </div>
             `;
@@ -590,7 +590,7 @@
                     const symbol = planetSymbols[name] || '';
                     const sign = signNames[info.sign] || info.sign;
                     const signSymbol = signEmojis[info.sign] || '';
-                    planetListHtml += `<tr><td><span class="planet-symbol">${symbol}</span>${planet}</td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${info.degree}°</td></tr>`;
+                    planetListHtml += `<tr><td><span class="planet-symbol">${symbol}${planet}</td><td><span class="sign-symbol">${signSymbol}${sign}</td><td>${info.degree}°</td></tr>`;
                 }
                 planetListHtml += '</table>';
 
@@ -601,7 +601,7 @@
                     if (house) {
                         const sign = signNames[house.sign] || house.sign;
                         const signSymbol = signEmojis[house.sign] || '';
-                        houseListHtml += `<tr><td>${i}</td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
+                        houseListHtml += `<tr><td>${i}</td><td><span class="sign-symbol">${signSymbol}${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
                     }
                 }
                 houseListHtml += '</table>';
@@ -615,7 +615,7 @@
                         const p2 = planetNames[aspect.planet2] || aspect.planet2;
                         const name = aspectNames[aspect.type] || aspect.type;
                         const symbol = aspectSymbols[aspect.type] || '';
-                        aspectListHtml += `<tr><td>${p1}</td><td><span class="aspect-symbol">${symbol}</span>${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
+                        aspectListHtml += `<tr><td>${p1}</td><td><span class="aspect-symbol">${symbol}${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
                     }
                     aspectListHtml += '</table>';
                 }

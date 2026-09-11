@@ -405,7 +405,7 @@
                         const symbol = planetSymbols[name] || '';
                         const sign = signNames[info.sign] || info.sign;
                         const signSymbol = signEmojis[info.sign] || '';
-                        planetListHtml += `<tr><td><span class="planet-symbol">${symbol}</span>${planet}</td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${info.degree}°</td></tr>`;
+                        planetListHtml += `<tr><td><span class="planet-symbol">${symbol}${planet}</td><td><span class="sign-symbol">${signSymbol}${sign}</td><td>${info.degree}°</td></tr>`;
                     }
                 }
                 planetListHtml += '</table>';
@@ -417,7 +417,7 @@
                     if (house) {
                         const sign = signNames[house.sign] || house.sign;
                         const signSymbol = signEmojis[house.sign] || '';
-                        houseListHtml += `<tr><td>${i}</td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
+                        houseListHtml += `<tr><td>${i}</td><td><span class="sign-symbol">${signSymbol}${sign}</td><td>${house.degree?.toFixed(2)}°</td></tr>`;
                     }
                 }
                 const asc = data.houses?.Ascendant;
@@ -425,12 +425,12 @@
                 if (asc) {
                     const sign = signNames[asc.sign] || asc.sign;
                     const signSymbol = signEmojis[asc.sign] || '';
-                    houseListHtml += `<tr><td><b>ASC</b></td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${asc.degree?.toFixed(2)}°</td></tr>`;
+                    houseListHtml += `<tr><td><b>ASC</b></td><td><span class="sign-symbol">${signSymbol}${sign}</td><td>${asc.degree?.toFixed(2)}°</td></tr>`;
                 }
                 if (mc) {
                     const sign = signNames[mc.sign] || mc.sign;
                     const signSymbol = signEmojis[mc.sign] || '';
-                    houseListHtml += `<tr><td><b>MC</b></td><td><span class="sign-symbol">${signSymbol}</span>${sign}</td><td>${mc.degree?.toFixed(2)}°</td></tr>`;
+                    houseListHtml += `<tr><td><b>MC</b></td><td><span class="sign-symbol">${signSymbol}${sign}</td><td>${mc.degree?.toFixed(2)}°</td></tr>`;
                 }
                 houseListHtml += '</table>';
 
@@ -443,7 +443,7 @@
                         const p2 = planetNames[aspect.planet2] || aspect.planet2;
                         const name = aspectNames[aspect.type] || aspect.type;
                         const symbol = aspectSymbols[aspect.type] || '';
-                        aspectListHtml += `<tr><td>${p1}</td><td><span class="aspect-symbol">${symbol}</span>${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
+                        aspectListHtml += `<tr><td>${p1}</td><td><span class="aspect-symbol">${symbol}${name}</td><td>${p2}</td><td>${aspect.angle}°</td></tr>`;
                     }
                     aspectListHtml += '</table>';
                 }
