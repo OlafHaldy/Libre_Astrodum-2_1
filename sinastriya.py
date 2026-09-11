@@ -94,13 +94,16 @@ def build_sinastriya(
 
     aspects = _find_aspects(pos1, pos2)
 
-    return {
+    result = {
         'name1': name1,
         'name2': name2,
         'pos1': pos1,
         'pos2': pos2,
         'aspects': aspects,
     }
+    result['rating'] = calculate_score(result)
+
+    return result
 
 
 def format_for_prompt(data):
@@ -131,3 +134,102 @@ def format_for_prompt(data):
         lines.append('- нет точных аспектов')
 
     return '\n'.join(lines)
+def calculate_score(data):
+    """
+    Считает оценку совместимости 0–100.
+    """
+    score = 0
+
+    # 1. Солнце-Солнце: 0–25
+    sun1 = data['pos1']['Солнце']
+    sun2 = data['pos2']['Солнце']
+
+    # Стихии
+    FIRE = {'Овен', 'Лев', 'Стрелец'}
+    EARTH = {'Телец', 'Дева', 'Козерог'}
+    AIR = {'Близнецы', 'Весы', 'Водолей'}
+    WATER = {'Рак', 'Скорпион', 'Рыбы'}
+
+    def element(sign):
+        if sign in FIRE: return 'fire'
+        if sign in EARTH: return 'earth'
+        if sign in AIR: return 'air'
+        return 'water'
+
+    e1 = element(sun1['sign'])
+    e2 = element(sun2['sign'])
+
+    if e1 == e2:
+        score += 18
+    elif {e1, e2} in ({'fire', 'air'}, {'earth', 'water'}):
+        score += 15
+    else:
+        score += 8
+
+    # Аспект Солнце-Солнце
+    for a in data['aspects']:
+        if a['p1'] == 'Солнце' and a['p2'] == 'Солнце':
+            if a['type'] in ('трин', 'секстиль', 'соединение'):
+                score += 7
+            elif a['type'] in ('квадрат', 'оппозиция'):
+                score -= 3
+            break
+
+    # 2. Венера-Венера: 0–25
+    for a in data['aspects']:
+        if a['p1'] == 'Венера' and a['p2'] == 'Венера':
+            if a['type'] in ('трин', 'секстиль', 'соединение'):
+                score += 25
+            elif a['type'] in ('квадрат', 'оппозиция'):
+                score += 5
+            break
+    else:
+        score += 12  # нет аспекта — нейтрально
+
+    # 3. Венера-Марс: 0–25
+    for a in data['aspects']:
+        if {a['p1'], a['p2']} == {'Венера', 'Марс'}:
+            if a['type'] in ('трин', 'секстиль', 'соединение'):
+                score += 25
+            elif a['type'] in ('квадрат', 'оппозиция'):
+                score += 15  # страсть есть, но с трением
+            break
+    else:
+        score += 10
+
+    # 4. Меркурий-Меркурий: 0–25
+    for a in data['aspects']:
+        if a['p1'] == 'Меркурий' and a['p2'] == 'Меркурий':
+            if a['type'] in ('трин', 'секстиль', 'соединение'):
+                score += 25
+            elif a['type'] in ('квадрат', 'оппозиция'):
+                score += 10
+            break
+    else:
+        score += 15
+
+    # Итог
+    score = max(0, min(100, score))
+
+    # Слово и звёзды
+    if score >= 85:
+        word = 'Редкая'
+        stars = 5
+    elif score >= 70:
+        word = 'Сильная'
+        stars = 4
+    elif score >= 50:
+        word = 'Средняя'
+        stars = 3
+    elif score >= 30:
+        word = 'Хрупкая'
+        stars = 2
+    else:
+        word = 'Сложная'
+        stars = 1
+
+    return {
+        'score': score,
+        'word': word,
+        'stars': stars,
+    }

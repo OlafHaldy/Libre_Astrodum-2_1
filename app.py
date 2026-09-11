@@ -1812,4 +1812,5 @@ def sinastriya_v1(
         "pos2": data["pos2"],
         "aspects": data["aspects"],
         "interpretation": interpretation,
+        "rating": data.get("rating", {}),
     }

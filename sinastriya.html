@@ -173,7 +173,16 @@
                     VERDICT: 'Итог',
                 };
 
-                let html = '';
+                const rating = data.rating || {};
+                const stars = '✦'.repeat(rating.stars || 0) + '✧'.repeat(5 - (rating.stars || 0));
+
+                let html = `
+                    <div class="interpretation-block" style="text-align:center;">
+                        <div style="font-size:3em;color:#d4af37;font-family:'Uncial Antiqua',cursive;">${rating.score || 0}</div>
+                        <div style="font-size:1.2em;color:#c9a84c;margin-top:5px;">${rating.word || ''}</div>
+                        <div style="font-size:1.5em;color:#d4af37;margin-top:10px;letter-spacing:5px;">${stars}</div>
+                    </div>
+                `;
                 if (sections.length > 0) {
                     for (let i = 0; i < sections.length; i++) {
                         const s = sections[i];
