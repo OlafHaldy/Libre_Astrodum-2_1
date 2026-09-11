@@ -93,6 +93,9 @@ def solar_page():
 @app.get("/election", response_class=HTMLResponse)
 def election_page():
     return open("election.html", "r", encoding="utf-8").read()
+@app.get("/sinastriya", response_class=HTMLResponse)
+def sinastriya_page():
+    return open("sinastriya.html", "r", encoding="utf-8").read()
 
 HTML_PAGE = r"""<!DOCTYPE html>
 <html lang="ru">
@@ -384,14 +387,18 @@ HTML_PAGE = r"""<!DOCTYPE html>
         <img src="/static/mandragora.png" alt="Элекция">
         <div class="main-mode-desc">Выбор времени</div>
     </a>
+    <a href="/sinastriya" class="main-mode-card">
+    <div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;font-size:80px;color:#d4af37;filter:drop-shadow(0 0 15px rgba(212,175,55,0.4));">☍</div>
+    <div class="main-mode-desc">Связь двух</div>
+</a>
             <div class="dev-mode-card">
                 <div class="dev-mode-title">⏳ Прогрессии</div>
                 <div class="dev-mode-desc">В разработке</div>
             </div>
-            <div class="dev-mode-card">
-                <div class="dev-mode-title">💞 Синастрия</div>
-                <div class="dev-mode-desc">В разработке</div>
-            </div>
+           
+              
+            
+          
 
         </div>
     </div>
@@ -1702,4 +1709,107 @@ def election_herb_v1(
         "medicine": herb_data.get("medicine", ""),
         "magic": herb_data.get("magic", ""),
         "magic_use": herb_data.get("magic_use", ""),
+    }
+@app.get("/api/v1/sinastriya")
+def sinastriya_v1(
+    name1: str = "Он",
+    date1: str = "1991-02-14",
+    name2: str = "Она",
+    date2: str = "1993-07-21",
+):
+    """
+    Обзорная синастрия по датам рождения.
+    """
+    from sinastriya import build_sinastriya, format_for_prompt
+    from ai import generate
+    import re
+
+    try:
+        data = build_sinastriya(name1, date1, name2, date2)
+    except Exception as e:
+        logger.error(f"Sinastriya calc error: {e}")
+        return JSONResponse(
+            content={"error": "Не удалось рассчитать карты"},
+            status_code=400,
+        )
+
+    prompt_data = format_for_prompt(data)
+
+    prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
+
+Составь обзорную синастрию между двумя людьми.
+Это НЕ гороскоп. Это НЕ предсказание. Это разбор их связи через планеты.
+
+==================================================
+ВХОДНЫЕ ДАННЫЕ
+==================================================
+
+{name1}:
+{prompt_data.split('Аспекты между ними:')[0]}
+
+==================================================
+АСПЕКТЫ МЕЖДУ НИМИ
+==================================================
+
+{chr(10).join(f"- {a['p1']}1 — {a['p2']}2: {a['type']} (орб {a['orb']}°)" for a in data['aspects']) if data['aspects'] else 'нет точных аспектов'}
+
+==================================================
+ВАЖНО
+==================================================
+
+Мы НЕ знаем времени рождения.
+Луна, Асцендент и дома не рассчитаны.
+Работай только с тем, что дано.
+Не выдумывай Луну, дома и аспекты к ним.
+
+==================================================
+СТРУКТУРА ОТВЕТА
+==================================================
+
+Пиши в 5 разделах:
+
+[SECTION:SOULS] Души двух
+Как соотносятся их Солнца. Что их объединяет, что различается.
+
+[SECTION:LOVE] Как любят
+Как соотносятся их Венеры. Что оба ценят, где могут не совпасть.
+
+[SECTION:PASSION] Огонь
+Венера и Марс между ними. Есть ли притяжение, страсть, искра.
+
+[SECTION:MIND] Слово
+Как соотносятся их Меркурии. Легко ли им говорить, понимать друг друга.
+
+[SECTION:VERDICT] Итог
+Короткий вывод: сила союза, слабое место, совет.
+
+==================================================
+СТИЛЬ
+==================================================
+
+- Русский язык, тёплый, но без сентиментальности.
+- Обращайся к паре по именам.
+- Называй планеты и знаки конкретно.
+- Без markdown, без звёздочек.
+- Каждый раздел — 2–3 предложения.
+- Не используй: «вам следует», «вы должны».
+- Не предсказывай события. Говори о характере связи.
+
+Выдай только текст с разделителями [SECTION:...]
+"""
+
+    try:
+        raw = generate(prompt)
+        interpretation = raw.strip()
+    except Exception as e:
+        logger.error(f"Sinastriya LLM failed: {e}")
+        interpretation = "Синастрия временно недоступна."
+
+    return {
+        "name1": name1,
+        "name2": name2,
+        "pos1": data["pos1"],
+        "pos2": data["pos2"],
+        "aspects": data["aspects"],
+        "interpretation": interpretation,
     }
