@@ -105,6 +105,9 @@ def election_page():
 @app.get("/sinastriya", response_class=HTMLResponse)
 def sinastriya_page():
     return open("sinastriya.html", "r", encoding="utf-8").read()
+@app.get("/profile", response_class=HTMLResponse)
+def profile_page():
+    return open("profile.html", "r", encoding="utf-8").read()
 
 HTML_PAGE = r"""<!DOCTYPE html>
 <html lang="ru">
@@ -1824,6 +1827,3 @@ def sinastriya_v1(
         "interpretation": interpretation,
         "rating": data.get("rating", {}),
     }
-@app.get("/profile", response_class=HTMLResponse)
-def profile_page():
-    return open("profile.html", "r", encoding="utf-8").read()
