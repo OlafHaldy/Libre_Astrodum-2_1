@@ -11,6 +11,7 @@ import json
 from db.database import get_db
 from db.models import User, NatalChart
 from core.auth import require_user
+from core.prompt_builder import build_prompt
 
 router = APIRouter(prefix="/api/v1/me", tags=["me"])
 
@@ -46,9 +47,10 @@ def save_natal(
 ):
     from builders.natal_builder import build_natal_chart
     from core.pipeline import run_full_pipeline
-    from core.prompt_builder import build_prompt_from_dict
+    from core.prompt_builder import build_prompt
     from ai import generate
     from graphics.wheel_renderer import draw_wheel
+    import json
 
     try:
         # Строим натал
@@ -63,15 +65,17 @@ def save_natal(
 
         # Конвейер
         result = run_full_pipeline(chart)
-        prompt = build_prompt_from_dict(result["prompt_context"], "natal")
 
-        # Генерируем интерпретацию
+        # Промпт
+        prompt = build_prompt(result["prompt_context"], chart_type="natal")
+
+        # Генерация интерпретации
         try:
             interpretation = generate(prompt)
         except Exception as e:
             interpretation = "Интерпретация временно недоступна."
 
-        # Сохраняем всё в JSON
+        # Сохраняем в JSON
         chart_json = json.dumps({
             "planets": chart.planets,
             "houses": chart.houses,
