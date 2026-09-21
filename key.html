@@ -6,7 +6,6 @@
     <title>Liber Astrodum — Ключ к знаку</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
     
-    <!-- Шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -150,14 +149,6 @@
             overflow-wrap: break-word;
         }
         
-        #parchmentText {
-            color: #502103;
-            font-family: 'Gibb Sans', sans-serif;
-            font-size: 2.0em;
-            font-weight: 400;
-            line-height: 1.5;
-        }
-        
         #parchmentSign img {
             width: 35px;
             height: 35px;
@@ -173,6 +164,32 @@
             font-size: 1.1em;
             color: #b8860b;
             letter-spacing: 1px;
+        }
+
+        /* ===== КНОПКА В ИЗБРАННОЕ ===== */
+        #favoriteWrapper {
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        #favoriteBtn {
+            background: none;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #d4af37;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        #favoriteBtn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #d4af37;
+        }
+        #favoriteBtn.saved {
+            background: rgba(212, 175, 55, 0.25);
+            color: #f0d060;
         }
         
         /* ===== КНОПКА ПОДЕЛИТЬСЯ ===== */
@@ -310,9 +327,7 @@
                 max-width: 70%;
                 line-height: 1.4;
             }
-            #parchmentContent {
-                width: 65%;
-            }
+            #parchmentContent { width: 65%; }
             #modalText {
                 font-size: 1.5em;
                 max-width: 70%;
@@ -321,7 +336,7 @@
             }
             #parchmentModal .modal-content { max-width: 95%; width: 95%; }
         }
-                @media (max-width: 600px) {
+        @media (max-width: 600px) {
             #parchmentContainer {
                 max-width: 400px;
                 margin: 20px auto;
@@ -330,9 +345,7 @@
                 max-height: 500px;
                 object-fit: contain;
             }
-            #parchmentContent {
-                width: 65%;
-            }
+            #parchmentContent { width: 65%; }
             #parchmentText {
                 font-size: 1.1em;
                 max-width: 70%;
@@ -347,7 +360,6 @@
         <div class="key-title">Clavis Signi</div>
         <div class="key-subtitle">Выберите свой знак</div>
 
-        <!-- ===== ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМОВ ===== -->
         <div class="mode-switcher">
             <button class="mode-btn active" id="modeSapientia" onclick="setMode('sapientia')">
                 ❧ Sapientia Signi
@@ -370,6 +382,11 @@
         </div>
         
         <div id="modeLabel"></div>
+
+        <!-- Кнопка "В избранное" -->
+        <div id="favoriteWrapper">
+            <button id="favoriteBtn" onclick="saveToFavorites()">⭐ В избранное</button>
+        </div>
 
         <div id="shareWrapper" style="display: none; text-align: center; margin-top: 10px;">
             <button id="shareToggle" onclick="toggleShareMenu()">🔗 Поделиться</button>
@@ -411,6 +428,7 @@
 
         let currentSign = '';
         let currentMode = 'sapientia';
+        let currentAphorism = '';
 
         const grid = document.getElementById('zodiacGrid');
         zodiacSigns.forEach(sign => {
@@ -454,12 +472,16 @@
             const subtitle = document.querySelector('.key-subtitle');
             const shareWrapper = document.getElementById('shareWrapper');
             const modeLabel = document.getElementById('modeLabel');
+            const favWrapper = document.getElementById('favoriteWrapper');
+            const favBtn = document.getElementById('favoriteBtn');
             
             currentSign = sign;
             
             gridEl.style.display = 'none';
             subtitle.style.display = 'none';
             if (shareWrapper) shareWrapper.style.display = 'none';
+            if (favWrapper) favWrapper.style.display = 'none';
+            if (favBtn) favBtn.classList.remove('saved');
             text.innerHTML = 'Загрузка...';
             signEl.innerHTML = '';
             container.style.display = 'block';
@@ -471,8 +493,8 @@
             try {
                 const response = await fetch(`${endpoint}?sign=${sign}`);
                 const data = await response.json();
-                const rawAphorism = data.aphorism || 'Сегодня звёзды говорят тихо.';
-                text.innerHTML = splitAphorism(rawAphorism);
+                currentAphorism = data.aphorism || 'Сегодня звёзды говорят тихо.';
+                text.innerHTML = splitAphorism(currentAphorism);
                 
                 const signData = zodiacSigns.find(s => s.name === sign);
                 if (signData) {
@@ -483,8 +505,48 @@
                 }
                 
                 if (shareWrapper) shareWrapper.style.display = 'inline-block';
+                if (favWrapper) favWrapper.style.display = 'block';
             } catch (e) {
                 text.innerHTML = 'Сегодня звёзды говорят тихо.';
+            }
+        }
+
+        // ===== ИЗБРАННОЕ =====
+        async function saveToFavorites() {
+            const token = localStorage.getItem('token');
+            const favBtn = document.getElementById('favoriteBtn');
+
+            if (!token) {
+                alert('Войдите в личный кабинет, чтобы сохранять афоризмы');
+                return;
+            }
+
+            const signData = zodiacSigns.find(s => s.name === currentSign);
+            const title = `${signData.ru} — ${currentMode === 'sapientia' ? 'Sapientia' : 'Risus'}`;
+
+            try {
+                const res = await fetch('/api/v1/me/predictions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        chart_type: 'favorite',
+                        target_year: new Date().getFullYear(),
+                        title: title,
+                        interpretation: currentAphorism
+                    })
+                });
+
+                if (res.ok) {
+                    favBtn.textContent = '✓ Сохранено';
+                    favBtn.classList.add('saved');
+                } else {
+                    alert('Не удалось сохранить');
+                }
+            } catch (e) {
+                alert('Ошибка сохранения');
             }
         }
 
