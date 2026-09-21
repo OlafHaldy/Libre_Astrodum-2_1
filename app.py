@@ -401,9 +401,16 @@ HTML_PAGE = r"""<!DOCTYPE html>
     </a>
     <a href="/sinastriya" class="main-mode-card">
     <img src="/static/duo_lumina.png" alt="Duo Lumina">
-    <div class="main-mode-title">Duo Lumina</div>
+    <div class="main-mode-title">Синастрия</div>
     <div class="main-mode-desc">Два светила</div>
     </a>
+            <div class="dev-modes">
+            <a href="/profile" class="dev-mode-card" style="cursor: pointer; opacity: 1; text-decoration: none;">
+                <div class="dev-mode-title">🔑 Личный кабинет</div>
+                <div class="dev-mode-desc">Регистрация и вход</div>
+            </a>
+  
+</div>
             <div class="dev-mode-card">
                 <div class="dev-mode-title">⏳ Прогрессии</div>
                 <div class="dev-mode-desc">В разработке</div>
@@ -455,6 +462,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
             .catch(() => {
                 document.getElementById('moonWidget').innerHTML = 'Данные недоступны.';
             });
+            
     </script>
 </body>
 </html>"""
