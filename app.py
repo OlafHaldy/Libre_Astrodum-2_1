@@ -149,12 +149,20 @@ HTML_PAGE = r"""<!DOCTYPE html>
         /* Шапка: прогноз слева, заголовок по центру, луна справа */
         .header {
             display: grid;
-            grid-template-columns: 200px 1fr 220px;
+            grid-template-columns: 220px 1fr 220px;
             gap: 20px;
             align-items: center;
             margin-bottom: 20px;
         }
+
         .header-left { text-align: left; }
+
+        .header-left-inner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .header-left img {
             width: 100px;
             height: 100px;
@@ -163,92 +171,100 @@ HTML_PAGE = r"""<!DOCTYPE html>
             transition: transform 0.3s, filter 0.3s;
             filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
         }
+
         .header-left img:hover {
             transform: scale(1.08);
             filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.7));
         }
-        .header-left-label {
-            color: #d4af37;
-            font-family: 'Caveat', cursive;
-            font-size: 1.2em;
-            text-align: center;
-            margin-top: 5px;
-        }
-        .header-center { text-align: center; }
-        .app-title h1 {
-            font-family: 'UnifrakturMaguntia', cursive;
-            font-size: 3em;
-            background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
-        }
-        .header-right {
-        text-align: center;
-        background: rgba(28, 28, 28, 0.8);
-        border: 1px solid #444;
-        border-radius: 14px;
-        padding: 20px;
-        backdrop-filter: blur(5px);
-        position: relative;
-    }
 
-.profile-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: 1px solid #d4af37;
-    color: #d4af37;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-family: 'Cormorant Infant', serif;
-    font-size: 11px;
-    text-decoration: none;
-    letter-spacing: 1px;
-    opacity: 0.8;
-    transition: all 0.3s;
-}
-
-.profile-btn:hover {
-    opacity: 1;
-    background: rgba(212, 175, 55, 0.15);
-}
-        .moon-phase {
-            font-size: 2.5em;
-            text-align: center;
-        }
-        .moon-label {
+        .profile-btn {
+            background: rgba(28, 28, 28, 0.8);
+            border: 1px solid #d4af37;
             color: #d4af37;
-            font-family: 'Cormorant SC', serif;
-            font-size: 1.2em;
-            text-align: center;
-            margin: 10px 0;
-            font-style: normal;
-        }
-        .moon-sign, .lunar-day {
+            padding: 10px 8px;
+            border-radius: 14px;
             font-family: 'Cormorant Infant', serif;
-            font-size: 1em;
+            font-size: 12px;
+            text-decoration: none;
             text-align: center;
-            margin: 5px 0;
-            color: #e4e4e4;
-        }
-        .event-title {
-            font-family: 'Cormorant SC', serif;
-            font-size: 0.85em;
-            text-transform: uppercase;
             letter-spacing: 1px;
-            color: #b8860b;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-        .event-text {
-            font-family: 'Caveat', cursive;
-            font-size: 1.1em;
-            color: #f0f0f0;
             line-height: 1.4;
-            text-align: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            backdrop-filter: blur(5px);
         }
+
+        .profile-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: #f0d060;
+        }
+
+        .header-right {
+            text-align: center;
+            background: rgba(28, 28, 28, 0.8);
+            border: 1px solid #444;
+            border-radius: 14px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .profile-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-family: 'Cormorant Infant', serif;
+            font-size: 11px;
+            text-decoration: none;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            transition: all 0.3s;
+        }
+
+        .profile-btn:hover {
+            opacity: 1;
+            background: rgba(212, 175, 55, 0.15);
+        }
+                .moon-phase {
+                    font-size: 2.5em;
+                    text-align: center;
+                }
+                .moon-label {
+                    color: #d4af37;
+                    font-family: 'Cormorant SC', serif;
+                    font-size: 1.2em;
+                    text-align: center;
+                    margin: 10px 0;
+                    font-style: normal;
+                }
+                .moon-sign, .lunar-day {
+                    font-family: 'Cormorant Infant', serif;
+                    font-size: 1em;
+                    text-align: center;
+                    margin: 5px 0;
+                    color: #e4e4e4;
+                }
+                .event-title {
+                    font-family: 'Cormorant SC', serif;
+                    font-size: 0.85em;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    color: #b8860b;
+                    margin-top: 15px;
+                    margin-bottom: 5px;
+                    text-align: center;
+                }
+                .event-text {
+                    font-family: 'Caveat', cursive;
+                    font-size: 1.1em;
+                    color: #f0f0f0;
+                    line-height: 1.4;
+                    text-align: center;
+                }
 
         /* Стих */
         .poem-section { text-align: center; margin-bottom: 30px; }
@@ -382,9 +398,12 @@ HTML_PAGE = r"""<!DOCTYPE html>
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <a href="/daily">
-                    <img src="/static/zodiac/zodiac_circle.png" alt="Прогноз на день">
-                </a>
+                <div class="header-left-inner">
+                    <a href="/daily">
+                        <img src="/static/zodiac/zodiac_circle.png" alt="Прогноз на день">
+                    </a>
+                    <a href="/profile" class="profile-btn">🔑<br>Кабинет</a>
+                </div>
             </div>
             <div class="header-center">
                 <div class="app-title">
@@ -393,7 +412,6 @@ HTML_PAGE = r"""<!DOCTYPE html>
                 </div>
             </div>
             <div class="header-right">
-                <a href="/profile" class="profile-btn">🔑 Личный кабинет</a>
                 <div class="side-widget-title">🌙 Лунный календарь</div>
                 <div id="moonWidget">Загрузка...</div>
             </div>
