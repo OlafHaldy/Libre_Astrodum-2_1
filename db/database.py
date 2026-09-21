@@ -46,5 +46,24 @@ def get_db():
 
 
 def init_db():
+    """Создаёт все таблицы и делает простую миграцию."""
     from db import models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # Простая миграция: добавить недостающие колонки
+    import sqlite3
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Проверяем колонку interpretation в natal_charts
+        cursor.execute("PRAGMA table_info(natal_charts)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if "interpretation" not in columns:
+            cursor.execute("ALTER TABLE natal_charts ADD COLUMN interpretation TEXT DEFAULT ''")
+            conn.commit()
+            print("[DB] Migration: added column interpretation to natal_charts")
+
+        conn.close()
+    except Exception as e:
+        print(f"[DB] Migration warning: {e}")
