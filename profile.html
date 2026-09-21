@@ -189,6 +189,32 @@
             color: #e74c3c;
         }
         .danger-btn:hover { background: rgba(231, 76, 60, 0.1); }
+        .interpretation-block {
+    margin: 18px 0;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(35, 35, 35, 0.78), rgba(10, 10, 10, 0.58));
+    border: 1px solid rgba(212, 175, 55, 0.20);
+    border-left: 3px solid rgba(212, 175, 55, 0.55);
+    border-radius: 10px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+}
+
+.interpretation-block-title {
+    margin-bottom: 13px;
+    color: #d4af37;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: 9px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+.interpretation-block-text {
+    color: #e4e4e4;
+    font-size: 1rem;
+    line-height: 1.8;
+}
     </style>
 </head>
 <body>
@@ -244,39 +270,56 @@
                 </div>
 
                 <!-- Натал -->
-                <h2>🌙 Натальная карта</h2>
-                <div id="natalForm">
-                    <label>Год рождения</label>
-                    <input type="number" id="birthYear" value="1991">
-                    <div class="row">
-                        <div><label>Месяц</label><input type="number" id="birthMonth" value="2"></div>
-                        <div><label>День</label><input type="number" id="birthDay" value="14"></div>
-                    </div>
-                    <div class="row">
-                        <div><label>Час</label><input type="number" id="birthHour" value="6"></div>
-                        <div><label>Минуты</label><input type="number" id="birthMinute" value="55"></div>
-                    </div>
-                    <label>Город рождения</label>
-                    <input type="text" id="birthCity" value="Дубно">
-                    <label>Широта</label>
-                    <input type="number" step="0.01" id="birthLat" value="50.45">
-                    <label>Долгота</label>
-                    <input type="number" step="0.01" id="birthLon" value="30.52">
-                    <button onclick="saveNatal()">Сохранить натал</button>
-                </div>
+<h2>🌙 Натальная карта</h2>
 
-                <div id="natalInfo" class="hidden">
-                    <div class="info-block">
-                        <p><b>Дата:</b> <span id="infoDate"></span></p>
-                        <p><b>Время:</b> <span id="infoTime"></span></p>
-                        <p><b>Место:</b> <span id="infoCity"></span></p>
-                        <p><b>Координаты:</b> <span id="infoCoords"></span></p>
-                    </div>
-                    <button class="settings-btn" onclick="editNatal()">✏️ Изменить данные</button>
-                </div>
+<!-- Форма (если натала нет) -->
+<div id="natalForm">
+    <label>Год рождения</label>
+    <input type="number" id="birthYear" value="1991">
+    <div class="row">
+        <div><label>Месяц</label><input type="number" id="birthMonth" value="2"></div>
+        <div><label>День</label><input type="number" id="birthDay" value="14"></div>
+    </div>
+    <div class="row">
+        <div><label>Час</label><input type="number" id="birthHour" value="6"></div>
+        <div><label>Минуты</label><input type="number" id="birthMinute" value="55"></div>
+    </div>
+    <label>Город рождения</label>
+    <input type="text" id="birthCity" value="Дубно">
+    <label>Широта</label>
+    <input type="number" step="0.01" id="birthLat" value="50.45">
+    <label>Долгота</label>
+    <input type="number" step="0.01" id="birthLon" value="30.52">
+    <button onclick="saveNatal()">Сохранить паспорт</button>
+</div>
 
-                <div id="message2" class="message"></div>
-            </div>
+<!-- Информация (если натал есть) -->
+<div id="natalInfo" class="hidden">
+    <div class="info-block">
+        <p><b>Дата:</b> <span id="infoDate"></span></p>
+        <p><b>Время:</b> <span id="infoTime"></span></p>
+        <p><b>Место:</b> <span id="infoCity"></span></p>
+        <p><b>Координаты:</b> <span id="infoCoords"></span></p>
+    </div>
+
+    <!-- Колесо натала -->
+    <div id="natalWheel" style="text-align:center; margin: 15px 0;"></div>
+
+    <!-- Кнопки -->
+    <button onclick="openNatalInterpretation()">🔮 Открыть интерпретацию</button>
+    <button class="settings-btn" onclick="editNatal()" style="margin-top: 10px;">✏️ Изменить данные</button>
+</div>
+
+<!-- Модальное окно интерпретации -->
+<div id="interpretationModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto; padding:20px;">
+    <div style="max-width:700px; margin:30px auto; background:rgba(28,28,28,0.95); border:1px solid #444; border-radius:16px; padding:25px; position:relative;">
+        <button onclick="closeInterpretation()" style="position:absolute; top:10px; right:15px; background:none; border:none; color:#d4af37; font-size:24px; cursor:pointer; padding:0; width:auto; margin:0;">✕</button>
+        <h2 style="color:#d4af37; font-family:'Uncial Antiqua', cursive; text-align:center; margin-bottom:15px;">🔮 Интерпретация натала</h2>
+        <div id="interpretationContent"></div>
+    </div>
+</div>
+
+<div id="message2" class="message"></div>
 
             <!-- Разделы -->
             <div class="card">
@@ -413,52 +456,168 @@
             }
         }
 
-        function showNatalInfo(data) {
-            document.getElementById('natalForm').classList.add('hidden');
-            document.getElementById('natalInfo').classList.remove('hidden');
-            document.getElementById('infoDate').textContent = `${data.birth_day}.${data.birth_month}.${data.birth_year}`;
-            document.getElementById('infoTime').textContent = `${String(data.birth_hour).padStart(2,'0')}:${String(data.birth_minute).padStart(2,'0')}`;
-            document.getElementById('infoCity').textContent = data.birth_city || '—';
-            document.getElementById('infoCoords').textContent = `${data.birth_lat}, ${data.birth_lon}`;
-        }
+let natalData = null;
 
-        function editNatal() {
-            document.getElementById('natalForm').classList.remove('hidden');
-            document.getElementById('natalInfo').classList.add('hidden');
-        }
+function showNatalInfo(data) {
+    natalData = data;
+    document.getElementById('natalForm').classList.add('hidden');
+    document.getElementById('natalInfo').classList.remove('hidden');
 
-        async function saveNatal() {
-            const token = localStorage.getItem('token');
-            const msg = document.getElementById('message2');
+    document.getElementById('infoDate').textContent =
+        `${data.birth_day}.${data.birth_month}.${data.birth_year}`;
+    document.getElementById('infoTime').textContent =
+        `${String(data.birth_hour).padStart(2,'0')}:${String(data.birth_minute).padStart(2,'0')}`;
+    document.getElementById('infoCity').textContent = data.birth_city || '—';
+    document.getElementById('infoCoords').textContent =
+        `${data.birth_lat}, ${data.birth_lon}`;
 
-            const data = {
-                birth_year: parseInt(document.getElementById('birthYear').value),
-                birth_month: parseInt(document.getElementById('birthMonth').value),
-                birth_day: parseInt(document.getElementById('birthDay').value),
-                birth_hour: parseInt(document.getElementById('birthHour').value),
-                birth_minute: parseInt(document.getElementById('birthMinute').value),
-                birth_city: document.getElementById('birthCity').value,
-                birth_lat: parseFloat(document.getElementById('birthLat').value),
-                birth_lon: parseFloat(document.getElementById('birthLon').value),
-            };
+    // Показываем колесо, если есть
+    const wheelBlock = document.getElementById('natalWheel');
+    if (data.wheel) {
+        wheelBlock.innerHTML = data.wheel;
+    } else if (data.chart_data && data.chart_data.wheel) {
+        wheelBlock.innerHTML = data.chart_data.wheel;
+    } else {
+        wheelBlock.innerHTML = '';
+    }
+}
 
-            try {
-                const res = await fetch(`${API}/api/v1/me/natal`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.detail || 'Ошибка');
-                showMessage(msg, '✅ Натал сохранён!', 'success');
-                showNatalInfo(data);
-            } catch (e) {
-                showMessage(msg, '❌ ' + e.message, 'error');
+function openNatalInterpretation() {
+    if (!natalData || !natalData.interpretation) {
+        alert('Интерпретация недоступна');
+        return;
+    }
+
+    const modal = document.getElementById('interpretationModal');
+    const content = document.getElementById('interpretationContent');
+
+    // Парсим секции
+    const text = natalData.interpretation;
+    const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
+    const titles = {
+        MAIN: 'Главная тема',
+        STRENGTHS: 'Сильные стороны',
+        WEAKNESSES: 'Слабые места',
+        PSYCHOLOGY: 'Психологический слой',
+        TENSION: 'Внутреннее напряжение',
+        HERMETIC: 'Герметический смысл',
+        TRANSFORMATION: 'Путь преобразования',
+        CONCLUSION: 'Итог'
+    };
+
+    const sections = [];
+    let match;
+    while ((match = sectionRegex.exec(text)) !== null) {
+        sections.push({ key: match[1], start: sectionRegex.lastIndex, markerStart: match.index });
+    }
+
+    let html = '';
+    if (sections.length > 0) {
+        for (let i = 0; i < sections.length; i++) {
+            const section = sections[i];
+            const endPos = i + 1 < sections.length ? sections[i + 1].markerStart : text.length;
+            const sectionText = text.slice(section.start, endPos).trim();
+            if (sectionText) {
+                const title = titles[section.key] || section.key;
+                html += `
+                    <div class="interpretation-block">
+                        <div class="interpretation-block-title">✦ ${title}</div>
+                        <div class="interpretation-block-text">${sectionText.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
             }
         }
+    } else {
+        html = `<div class="interpretation-block"><div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div></div>`;
+    }
+
+    content.innerHTML = html;
+    modal.style.display = 'block';
+}
+
+function closeInterpretation() {
+    document.getElementById('interpretationModal').style.display = 'none';
+}
+
+async function loadProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('profileScreen').classList.remove('hidden');
+
+    try {
+        const res = await fetch(`${API}/api/v1/me/`, {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        if (!res.ok) throw new Error('Auth failed');
+        const me = await res.json();
+
+        document.getElementById('displayName').textContent = me.display_name || 'Искатель';
+        document.getElementById('userEmail').textContent = me.email;
+        document.getElementById('userDate').textContent = me.created_at ? `С нами с ${me.created_at}` : '';
+
+        if (me.avatar_url) {
+            document.getElementById('avatarCircle').style.backgroundImage = `url('${me.avatar_url}')`;
+        }
+
+        if (me.has_natal) {
+            const natalRes = await fetch(`${API}/api/v1/me/natal`, {
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            if (natalRes.ok) {
+                const data = await natalRes.json();
+                showNatalInfo(data);
+            }
+        }
+    } catch (e) {
+        localStorage.removeItem('token');
+        location.reload();
+    }
+}
+
+async function saveNatal() {
+    const token = localStorage.getItem('token');
+    const msg = document.getElementById('message2');
+
+    const data = {
+        birth_year: parseInt(document.getElementById('birthYear').value),
+        birth_month: parseInt(document.getElementById('birthMonth').value),
+        birth_day: parseInt(document.getElementById('birthDay').value),
+        birth_hour: parseInt(document.getElementById('birthHour').value),
+        birth_minute: parseInt(document.getElementById('birthMinute').value),
+        birth_city: document.getElementById('birthCity').value,
+        birth_lat: parseFloat(document.getElementById('birthLat').value),
+        birth_lon: parseFloat(document.getElementById('birthLon').value),
+    };
+
+    showMessage(msg, '⏳ Строим натал и генерируем интерпретацию...', 'success');
+
+    try {
+        const res = await fetch(`${API}/api/v1/me/natal`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.detail || 'Ошибка');
+
+        showMessage(msg, '✅ Натал сохранён!', 'success');
+
+        // Перезагружаем данные
+        const natalRes = await fetch(`${API}/api/v1/me/natal`, {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        const natalData = await natalRes.json();
+        showNatalInfo(natalData);
+
+    } catch (e) {
+        showMessage(msg, '❌ ' + e.message, 'error');
+    }
+}
 
         async function uploadAvatar(event) {
             const file = event.target.files[0];
@@ -535,6 +694,7 @@
         if (localStorage.getItem('token')) {
             loadProfile();
         }
+        
     </script>
 </body>
 </html>

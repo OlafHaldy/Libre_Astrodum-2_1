@@ -43,6 +43,7 @@ class NatalChart(Base):
     birth_city = Column(String, default="")
 
     chart_data = Column(Text, default="{}")
+    interpretation = Column(Text, default="")   # ← НОВОЕ ПОЛЕ
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -45,21 +45,43 @@ def save_natal(
     db: Session = Depends(get_db),
 ):
     from builders.natal_builder import build_natal_chart
+    from core.pipeline import run_full_pipeline
+    from core.prompt_builder import build_prompt_from_dict
+    from ai import generate
+    from graphics.wheel_renderer import draw_wheel
 
     try:
+        # Строим натал
         chart = build_natal_chart(
             data.birth_year, data.birth_month, data.birth_day,
             data.birth_hour, data.birth_minute,
             data.birth_lat, data.birth_lon,
         )
+
+        # Колесо
+        wheel_svg = draw_wheel(chart)
+
+        # Конвейер
+        result = run_full_pipeline(chart)
+        prompt = build_prompt_from_dict(result["prompt_context"], "natal")
+
+        # Генерируем интерпретацию
+        try:
+            interpretation = generate(prompt)
+        except Exception as e:
+            interpretation = "Интерпретация временно недоступна."
+
+        # Сохраняем всё в JSON
         chart_json = json.dumps({
             "planets": chart.planets,
             "houses": chart.houses,
             "aspects": chart.aspects,
             "datetime": chart.datetime,
+            "wheel": wheel_svg,
         }, default=str)
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Natal build error: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка построения натала: {e}")
 
     natal = db.query(NatalChart).filter(NatalChart.user_id == user.id).first()
     if not natal:
@@ -75,11 +97,17 @@ def save_natal(
     natal.birth_lon = data.birth_lon
     natal.birth_city = data.birth_city
     natal.chart_data = chart_json
+    natal.interpretation = interpretation
 
     db.commit()
     db.refresh(natal)
 
-    return {"status": "ok", "has_natal": True}
+    return {
+        "status": "ok",
+        "has_natal": True,
+        "wheel": wheel_svg,
+        "interpretation": interpretation,
+    }
 
 
 @router.get("/natal")
@@ -89,7 +117,9 @@ def get_natal(
 ):
     natal = db.query(NatalChart).filter(NatalChart.user_id == user.id).first()
     if not natal:
-        raise HTTPException(status_code=404, detail="Natal not saved")
+        raise HTTPException(status_code=404, detail="Натал не сохранён")
+
+    chart_data = json.loads(natal.chart_data or "{}")
 
     return {
         "birth_year": natal.birth_year,
@@ -100,7 +130,9 @@ def get_natal(
         "birth_lat": natal.birth_lat,
         "birth_lon": natal.birth_lon,
         "birth_city": natal.birth_city,
-        "chart_data": json.loads(natal.chart_data or "{}"),
+        "chart_data": chart_data,
+        "wheel": chart_data.get("wheel", ""),
+        "interpretation": natal.interpretation or "",
     }
 from fastapi import UploadFile, File
 import shutil
