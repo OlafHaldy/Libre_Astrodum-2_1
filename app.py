@@ -155,12 +155,11 @@ HTML_PAGE = r"""<!DOCTYPE html>
             margin-bottom: 20px;
         }
 
-        .header-left { text-align: left; }
-
-        .header-left-inner {
+        .header-left {
             display: flex;
             align-items: center;
             gap: 12px;
+            text-align: left;
         }
 
         .header-left img {
@@ -175,6 +174,28 @@ HTML_PAGE = r"""<!DOCTYPE html>
         .header-left img:hover {
             transform: scale(1.08);
             filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.7));
+        }
+
+        .header-center { text-align: center; }
+
+        .app-title h1 {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 3em;
+            background: linear-gradient(135deg, #b0b0b0 0%, #e8e8e8 20%, #ffffff 35%, #a0a0a0 50%, #d0d0d0 65%, #f5f5f5 80%, #909090 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
+        }
+
+        .app-subtitle {
+            font-family: 'Caveat', cursive;
+            font-size: 0.9em;
+            color: #b8860b;
+            letter-spacing: 3px;
+            opacity: 0.7;
+            margin-top: -5px;
+            text-shadow: 0 0 10px rgba(184, 134, 11, 0.2);
         }
 
         .profile-btn {
@@ -442,7 +463,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
     </a>
     <a href="/sinastriya" class="main-mode-card">
     <img src="/static/duo_lumina.png" alt="Duo Lumina">
-    <div class="main-mode-title">Синастрия</div>
+    
     <div class="main-mode-desc">Два светила</div>
     </a>
             <div class="dev-modes">
