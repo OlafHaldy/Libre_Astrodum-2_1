@@ -8,6 +8,9 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime
 from ai import generate, generate_short
+from db.database import init_db
+from api.auth_routes import router as auth_router
+from api.me_routes import router as me_router
 
 
 # ==========================
@@ -35,6 +38,12 @@ logger = logging.getLogger(__name__)
 # FastAPI
 # ==========================
 app = FastAPI(title="Liber Astrodum 2.1")
+# Инициализация БД
+init_db()
+
+# Роутеры авторизации
+app.include_router(auth_router)
+app.include_router(me_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ================== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПОИСКА ГОРОДА ==================
@@ -1815,3 +1824,6 @@ def sinastriya_v1(
         "interpretation": interpretation,
         "rating": data.get("rating", {}),
     }
+@app.get("/profile", response_class=HTMLResponse)
+def profile_page():
+    return open("profile.html", "r", encoding="utf-8").read()

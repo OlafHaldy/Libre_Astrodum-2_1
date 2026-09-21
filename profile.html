@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liber Astrodum — Профиль</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Infant', serif;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('/static/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { max-width: 600px; width: 100%; }
+        .back-btn {
+            background: none; border: 1px solid #d4af37; color: #d4af37;
+            padding: 8px 20px; border-radius: 20px; cursor: pointer;
+            font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
+            text-decoration: none; display: inline-block;
+        }
+        .card {
+            background: rgba(28, 28, 28, 0.9);
+            border: 1px solid #444;
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h2 {
+            color: #d4af37;
+            font-family: 'Uncial Antiqua', cursive;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 14px;
+            color: #b8860b;
+            font-family: 'Caveat', cursive;
+            font-size: 1.1em;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            background: #1c1c1c;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Cormorant Infant', serif;
+        }
+        input:focus { outline: none; border-color: #b8860b; }
+        button {
+            background: linear-gradient(135deg, #b8860b, #d4af37);
+            color: #1a1a1a;
+            border: none;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            font-family: 'Cormorant Infant', serif;
+            text-transform: uppercase;
+        }
+        button:hover { transform: translateY(-2px); }
+        .row { display: flex; gap: 10px; } .row > div { flex: 1; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #888;
+        }
+        .tab.active {
+            border-color: #d4af37;
+            color: #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+        }
+        .hidden { display: none; }
+        .message {
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        .message.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; display: block; }
+        .message.error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← На главную</a>
+
+        <div class="card" id="authCard">
+            <h2>🔑 Личный кабинет</h2>
+
+            <div class="tabs">
+                <div class="tab active" id="tabLogin" onclick="switchTab('login')">Вход</div>
+                <div class="tab" id="tabRegister" onclick="switchTab('register')">Регистрация</div>
+            </div>
+
+            <div id="formLogin">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="your@email.com">
+                <label>Пароль</label>
+                <input type="password" id="loginPassword" placeholder="••••••">
+                <button onclick="doLogin()">Войти</button>
+            </div>
+
+            <div id="formRegister" class="hidden">
+                <label>Email</label>
+                <input type="email" id="regEmail" placeholder="your@email.com">
+                <label>Пароль</label>
+                <input type="password" id="regPassword" placeholder="Минимум 6 символов">
+                <button onclick="doRegister()">Зарегистрироваться</button>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+
+        <div class="card hidden" id="profileCard" style="margin-top: 20px;">
+            <h2>🌙 Мой натал</h2>
+            <div id="profileInfo"></div>
+
+            <label>Год рождения</label>
+            <input type="number" id="birthYear" value="1991">
+            <div class="row">
+                <div>
+                    <label>Месяц</label>
+                    <input type="number" id="birthMonth" value="2">
+                </div>
+                <div>
+                    <label>День</label>
+                    <input type="number" id="birthDay" value="14">
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    <label>Час</label>
+                    <input type="number" id="birthHour" value="6">
+                </div>
+                <div>
+                    <label>Минуты</label>
+                    <input type="number" id="birthMinute" value="55">
+                </div>
+            </div>
+            <label>Город рождения</label>
+            <input type="text" id="birthCity" value="Дубно">
+            <label>Широта</label>
+            <input type="number" step="0.01" id="birthLat" value="50.45">
+            <label>Долгота</label>
+            <input type="number" step="0.01" id="birthLon" value="30.52">
+
+            <button onclick="saveNatal()">Сохранить натал</button>
+            <button onclick="logout()" style="background: #444; color: #fff; margin-top: 10px;">Выйти</button>
+
+            <div id="message2" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = "";
+
+        function switchTab(tab) {
+            document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+            document.getElementById('formLogin').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('formRegister').classList.toggle('hidden', tab !== 'register');
+        }
+
+        function showMessage(el, text, type = 'success') {
+            el.textContent = text;
+            el.className = 'message ' + type;
+            setTimeout(() => { el.className = 'message'; }, 4000);
+        }
+
+        async function doRegister() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const msg = document.getElementById('message');
+
+            try {
+                const res = await fetch(`${API}/api/v1/auth/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Ошибка');
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('email', data.email);
+                showMessage(msg, '✅ Вы зарегистрированы!', 'success');
+                setTimeout(loadProfile, 500);
+            } catch (e) {
+                showMessage(msg, '❌ ' + e.message, 'error');
+            }
+        }
+
+        async function doLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const msg = document.getElementById('message');
+
+            try {
+                const res = await fetch(`${API}/api/v1/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Ошибка');
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('email', data.email);
+                showMessage(msg, '✅ Вход выполнен!', 'success');
+                setTimeout(loadProfile, 500);
+            } catch (e) {
+                showMessage(msg, '❌ ' + e.message, 'error');
+            }
+        }
+
+        async function loadProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            document.getElementById('authCard').classList.add('hidden');
+            document.getElementById('profileCard').classList.remove('hidden');
+            document.getElementById('profileInfo').innerHTML = `<p style="color:#b8860b;">Email: ${localStorage.getItem('email')}</p>`;
+
+            try {
+                const res = await fetch(`${API}/api/v1/me/natal`, {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('birthYear').value = data.birth_year;
+                    document.getElementById('birthMonth').value = data.birth_month;
+                    document.getElementById('birthDay').value = data.birth_day;
+                    document.getElementById('birthHour').value = data.birth_hour;
+                    document.getElementById('birthMinute').value = data.birth_minute;
+                    document.getElementById('birthCity').value = data.birth_city;
+                    document.getElementById('birthLat').value = data.birth_lat;
+                    document.getElementById('birthLon').value = data.birth_lon;
+                }
+            } catch (e) {}
+        }
+
+        async function saveNatal() {
+            const token = localStorage.getItem('token');
+            const msg = document.getElementById('message2');
+
+            const data = {
+                birth_year: parseInt(document.getElementById('birthYear').value),
+                birth_month: parseInt(document.getElementById('birthMonth').value),
+                birth_day: parseInt(document.getElementById('birthDay').value),
+                birth_hour: parseInt(document.getElementById('birthHour').value),
+                birth_minute: parseInt(document.getElementById('birthMinute').value),
+                birth_city: document.getElementById('birthCity').value,
+                birth_lat: parseFloat(document.getElementById('birthLat').value),
+                birth_lon: parseFloat(document.getElementById('birthLon').value),
+            };
+
+            try {
+                const res = await fetch(`${API}/api/v1/me/natal`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.detail || 'Ошибка');
+                showMessage(msg, '✅ Натал сохранён!', 'success');
+            } catch (e) {
+                showMessage(msg, '❌ ' + e.message, 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('email');
+            location.reload();
+        }
+
+        if (localStorage.getItem('token')) {
+            loadProfile();
+        }
+    </script>
+</body>
+</html>
