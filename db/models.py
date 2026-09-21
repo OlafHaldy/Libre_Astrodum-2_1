@@ -48,3 +48,15 @@ class NatalChart(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="natal_chart")
+class Prediction(Base):
+    __tablename__ = "predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    chart_type = Column(String, nullable=False)   # "lunar", "solar", "daily"
+    target_year = Column(Integer, nullable=False)
+    target_month = Column(Integer, nullable=True)
+    target_day = Column(Integer, nullable=True)
+    title = Column(String, default="")
+    interpretation = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)

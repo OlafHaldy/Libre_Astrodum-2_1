@@ -199,6 +199,7 @@
             </div>
             <button onclick="askLunar()">Построить Лунар</button>
         </div>
+        <div id="historyBlock" style="margin-top: 25px;"></div>
         <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
     </div>
     <div id="overlay">
@@ -207,6 +208,108 @@
     </div>
 
     <script>
+        // ===== АВТОСОХРАНЕНИЕ И ИСТОРИЯ =====
+async function savePrediction(interpretation, year, month) {
+    const token = localStorage.getItem('token');
+    if (!token) return; // не залогинен — не сохраняем
+
+    try {
+        await fetch('/api/v1/me/predictions/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                chart_type: 'lunar',
+                target_year: year,
+                target_month: month,
+                title: `Лунар — ${month}.${year}`,
+                interpretation: interpretation
+            })
+        });
+    } catch (e) {
+        console.error('Save failed:', e);
+    }
+}
+
+async function loadHistory() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const res = await fetch('/api/v1/me/predictions/?chart_type=lunar', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        const items = await res.json();
+
+        const historyBlock = document.getElementById('historyBlock');
+        if (!historyBlock) return;
+
+        if (items.length === 0) {
+            historyBlock.innerHTML = '<p style="color:#666; text-align:center;">Пока нет сохранённых лунаров</p>';
+            return;
+        }
+
+        let html = '<h3 style="color:#d4af37; margin-bottom:10px;">📜 Мои лунары</h3>';
+        items.forEach(item => {
+            html += `
+                <div style="background:rgba(0,0,0,0.3); border:1px solid #444; border-radius:10px; padding:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="color:#d4af37;">${item.title}</div>
+                        <div style="color:#666; font-size:0.85em;">Построен: ${item.created_at}</div>
+                    </div>
+                    <div>
+                        <button onclick="openPrediction(${item.id})" style="background:none; border:1px solid #d4af37; color:#d4af37; padding:4px 10px; border-radius:10px; cursor:pointer; font-size:12px;">Открыть</button>
+                        <button onclick="deletePrediction(${item.id})" style="background:none; border:1px solid #8b0000; color:#e74c3c; padding:4px 10px; border-radius:10px; cursor:pointer; font-size:12px;">Удалить</button>
+                    </div>
+                </div>
+            `;
+        });
+        historyBlock.innerHTML = html;
+    } catch (e) {
+        console.error('History load failed:', e);
+    }
+}
+
+async function openPrediction(id) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const res = await fetch(`/api/v1/me/predictions/${id}`, {
+        headers: {'Authorization': `Bearer ${token}`}
+    });
+    const data = await res.json();
+
+    const resultBlock = document.getElementById('result');
+    document.querySelector('.card').style.display = 'none';
+    resultBlock.style.display = 'block';
+    resultBlock.innerHTML = `
+        <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
+            <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ ${data.title}</h3>
+            <div class="interpretation-block">
+                <div class="interpretation-block-text">${data.interpretation.replace(/\n/g, '<br>')}</div>
+            </div>
+            <br>
+            <a href="/lunar" class="back-btn">← К списку лунаров</a>
+        </div>
+        // Автосохранение (если залогинен)
+
+    `;
+    savePrediction(data.interpretation, year, month);
+}
+
+async function deletePrediction(id) {
+    if (!confirm('Удалить этот лунар?')) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    await fetch(`/api/v1/me/predictions/${id}`, {
+        method: 'DELETE',
+        headers: {'Authorization': `Bearer ${token}`}
+    });
+    loadHistory();
+}
         const signEmojis = {
             'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
             'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',

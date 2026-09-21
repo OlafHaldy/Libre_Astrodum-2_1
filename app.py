@@ -11,6 +11,7 @@ from ai import generate, generate_short
 from db.database import init_db
 from api.auth_routes import router as auth_router
 from api.me_routes import router as me_router
+from api.prediction_routes import router as prediction_router
 
 
 # ==========================
@@ -45,6 +46,7 @@ init_db()
 app.include_router(auth_router)
 app.include_router(me_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(prediction_router)
 
 # ================== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ПОИСКА ГОРОДА ==================
 
