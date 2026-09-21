@@ -88,115 +88,46 @@
             0% { transform: scaleX(0); opacity: 0; }
             100% { transform: scaleX(1); opacity: 1; }
         }
-        .unroll-animation {
-            animation: unroll 1.5s ease-out;
-        }
+        .unroll-animation { animation: unroll 1.5s ease-out; }
         @media (max-width: 600px) {
             #scrollContainer { max-width: 100%; }
             #scrollText { font-size: 0.75em; line-height: 1.4; max-width: 70%; }
+            .row { flex-direction: column; gap: 8px; }
         }
-    
-        .error-modal {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1c1c1c;
-            border: 2px solid #d4af37;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            max-width: 380px;
-            width: 90%;
-            z-index: 1001;
-            display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
+
+        /* ===== ИСТОРИЯ ПРОГНОЗОВ ===== */
+        .history-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
         }
-        .error-modal p { color: #f0f0f0; font-size: 1.15em; line-height: 1.6; margin-bottom: 25px; }
-        .error-modal button {
+        .history-item:hover { border-color: #d4af37; }
+        .history-title { color: #d4af37; font-family: 'Uncial Antiqua', cursive; }
+        .history-date { color: #666; font-size: 0.85em; margin-top: 3px; }
+        .history-btn {
             background: none;
-            border: 1px solid #b8860b;
+            border: 1px solid #d4af37;
             color: #d4af37;
-            padding: 10px 25px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 10px;
             cursor: pointer;
+            font-size: 12px;
             font-family: 'Cormorant Infant', serif;
-            font-size: 1em;
+            transition: all 0.3s;
         }
-        .error-modal button:hover { background: rgba(184,134,11,0.2); }
-        .overlay-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1000; display: none;
+        .history-btn:hover { background: rgba(212, 175, 55, 0.15); }
+        .history-btn.delete {
+            border-color: #8b0000;
+            color: #e74c3c;
         }
-
-    
-
-/* ===== АФОРИЗМ-ЭПИГРАФ ===== */
-.aphorism {
-    font-family: 'Caveat', cursive;
-    font-size: 1.35em;
-    color: #d4af37;
-    font-style: italic;
-    margin: 8px 0 15px 0;
-    padding: 12px 18px;
-    border-left: 3px solid rgba(212, 175, 55, 0.6);
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.02), transparent);
-    border-radius: 0 10px 10px 0;
-    text-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
-    line-height: 1.5;
-    letter-spacing: 0.03em;
-}
-
-.aphorism::before {
-    content: '❧ ';
-    font-size: 1.1em;
-    color: #b8860b;
-    opacity: 0.8;
-    margin-right: 5px;
-}
-
-.aphorism-label {
-    font-family: 'Cormorant Infant', serif;
-    font-size: 0.7em;
-    color: #b8860b;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    opacity: 0.6;
-    margin-bottom: 3px;
-    margin-top: 5px;
-}
-
-/* ===== БЛОК ИНТЕРПРЕТАЦИИ ===== */
-.interpretation-block {
-    margin: 20px 0;
-    padding: 22px 24px;
-    background: linear-gradient(135deg, rgba(35, 35, 35, 0.85), rgba(10, 10, 10, 0.7));
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    border-left: 3px solid #d4af37;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(5px);
-}
-
-.interpretation-block-title {
-    color: #d4af37;
-    font-size: 1.15rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-}
-
-.interpretation-block-text {
-    color: #e4e4e4;
-    font-size: 1.05rem;
-    line-height: 1.85;
-    text-align: left;
-}
-
-</style>
+        .history-btn.delete:hover { background: rgba(231, 76, 60, 0.1); }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -220,6 +151,9 @@
             </div>
             <button onclick="askDailyPersonal()">Получить прогноз</button>
         </div>
+
+        <!-- История прогнозов -->
+        <div id="historyBlock" style="margin-top: 25px;"></div>
 
         <div id="scrollContainer">
             <img src="/static/scrol1.png" alt="Свиток">
@@ -264,6 +198,112 @@
             }
         });
 
+        // ===== АРХИВ ИСКАТЕЛЯ =====
+        async function savePrediction(interpretation) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1;
+            const day = today.getDate();
+
+            try {
+                await fetch('/api/v1/me/predictions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        chart_type: 'daily',
+                        target_year: year,
+                        target_month: month,
+                        target_day: day,
+                        title: `Прогноз на ${day}.${String(month).padStart(2,'0')}.${year}`,
+                        interpretation: interpretation
+                    })
+                });
+                console.log('Прогноз сохранён');
+            } catch (e) {
+                console.error('Save failed:', e);
+            }
+        }
+
+        async function loadHistory() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const res = await fetch('/api/v1/me/predictions/?chart_type=daily', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+
+                if (!res.ok) return;
+
+                const items = await res.json();
+                const historyBlock = document.getElementById('historyBlock');
+                if (!historyBlock) return;
+
+                if (items.length === 0) {
+                    historyBlock.innerHTML = '<p style="color:#666; text-align:center;">Пока нет сохранённых прогнозов</p>';
+                    return;
+                }
+
+                let html = '<h3 style="color:#d4af37; margin-bottom:10px; font-family:\'Uncial Antiqua\', cursive;">📜 Мои прогнозы</h3>';
+                items.forEach(item => {
+                    html += `
+                        <div class="history-item">
+                            <div>
+                                <div class="history-title">${item.title}</div>
+                                <div class="history-date">Построен: ${item.created_at}</div>
+                            </div>
+                            <div>
+                                <button class="history-btn" onclick="openPrediction(${item.id})">Открыть</button>
+                                <button class="history-btn delete" onclick="deletePrediction(${item.id})">Удалить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                historyBlock.innerHTML = html;
+            } catch (e) {
+                console.error('History load failed:', e);
+            }
+        }
+
+        async function openPrediction(id) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch(`/api/v1/me/predictions/${id}`, {
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            const data = await res.json();
+
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('historyBlock').style.display = 'none';
+
+            const scrollContainer = document.getElementById('scrollContainer');
+            const scrollText = document.getElementById('scrollText');
+            scrollContainer.style.display = 'block';
+            scrollContainer.classList.remove('unroll-animation');
+            void scrollContainer.offsetWidth;
+            scrollContainer.classList.add('unroll-animation');
+            scrollText.innerHTML = data.interpretation.replace(/\n/g, '<br>');
+        }
+
+        async function deletePrediction(id) {
+            if (!confirm('Удалить этот прогноз?')) return;
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            await fetch(`/api/v1/me/predictions/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            loadHistory();
+        }
+
         async function askDailyPersonal() {
             const natalYear = document.getElementById('natalYear').value;
             const natalMonth = document.getElementById('natalMonth').value;
@@ -271,10 +311,9 @@
             const natalHour = document.getElementById('natalHour').value || 12;
             const natalMinute = document.getElementById('natalMinute').value || 0;
 
-            // Скрываем форму
             document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('historyBlock').style.display = 'none';
 
-            // Показываем свиток
             const scrollContainer = document.getElementById('scrollContainer');
             const scrollText = document.getElementById('scrollText');
             scrollText.innerHTML = 'Загрузка...';
@@ -293,38 +332,21 @@
                 const response = await fetch('/api/v1/daily-personal?' + params.toString());
                 const data = await response.json();
                 scrollText.innerHTML = data.interpretation || 'Сегодня звёзды говорят тихо.';
+
+                // Автосохранение
+                if (data.interpretation) {
+                    savePrediction(data.interpretation);
+                    loadHistory();
+                }
             } catch (e) {
                 scrollText.innerHTML = 'Сегодня звёзды говорят тихо.';
             }
         }
-    
-        function showErrorModal() {
-            document.getElementById('errorOverlay').style.display = 'block';
-            document.getElementById('errorModal').style.display = 'block';
-        }
-        function closeErrorModal() {
-            document.getElementById('errorOverlay').style.display = 'none';
-            document.getElementById('errorModal').style.display = 'none';
-        }
 
-    
-function formatAphorism(text) {
-    const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
-    
-    if (match) {
-        const aphorismText = match[1];
-        const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
-        
-        return `
-            <div class="aphorism-label">Эпиграф</div>
-            <div class="aphorism">${aphorismText}</div>
-            <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
-        `;
-    }
-    
-    return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
-}
-
-</script>
+        // При загрузке — подгружаем историю
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+        });
+    </script>
 </body>
 </html>
