@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liber Astrodum — Профиль</title>
+    <title>Domus Quaerentis — Liber Astrodum</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 61,39 95,39 68,61 79,95 50,75 21,95 32,61 5,39 39,39' fill='%23d4af37' stroke='%23b8860b' stroke-width='2'/></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&family=Caveat&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Uncial+Antiqua&family=Caveat&family=Cormorant+Infant:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -19,25 +19,43 @@
             flex-direction: column;
             align-items: center;
         }
-        .container { max-width: 600px; width: 100%; }
+        .container { max-width: 700px; width: 100%; }
         .back-btn {
             background: none; border: 1px solid #d4af37; color: #d4af37;
             padding: 8px 20px; border-radius: 20px; cursor: pointer;
             font-family: 'Cormorant Infant', serif; font-size: 16px; margin-bottom: 15px;
             text-decoration: none; display: inline-block;
         }
+        .back-btn:hover { background: rgba(212, 175, 55, 0.1); }
         .card {
             background: rgba(28, 28, 28, 0.9);
             border: 1px solid #444;
             border-radius: 16px;
-            padding: 30px;
+            padding: 25px;
             backdrop-filter: blur(10px);
+            margin-bottom: 20px;
         }
         h2 {
             color: #d4af37;
             font-family: 'Uncial Antiqua', cursive;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        .title-main {
+            font-family: 'UnifrakturMaguntia', cursive;
+            font-size: 2.5em;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .title-sub {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1em;
+            color: #b8860b;
+            text-align: center;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
         }
         label {
             display: block;
@@ -62,175 +80,246 @@
             background: linear-gradient(135deg, #b8860b, #d4af37);
             color: #1a1a1a;
             border: none;
-            padding: 14px 30px;
-            font-size: 16px;
+            padding: 12px 25px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 15px;
             width: 100%;
             font-family: 'Cormorant Infant', serif;
             text-transform: uppercase;
         }
         button:hover { transform: translateY(-2px); }
         .row { display: flex; gap: 10px; } .row > div { flex: 1; }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #444;
-            border-radius: 10px;
-            cursor: pointer;
-            color: #888;
+            flex: 1; text-align: center; padding: 10px;
+            border: 1px solid #444; border-radius: 10px;
+            cursor: pointer; color: #888;
         }
-        .tab.active {
-            border-color: #d4af37;
-            color: #d4af37;
-            background: rgba(212, 175, 55, 0.1);
-        }
+        .tab.active { border-color: #d4af37; color: #d4af37; background: rgba(212, 175, 55, 0.1); }
         .hidden { display: none; }
         .message {
-            text-align: center;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 15px;
-            display: none;
+            text-align: center; padding: 12px; border-radius: 10px;
+            margin-top: 15px; display: none;
         }
         .message.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; display: block; }
         .message.error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; display: block; }
-        .natal-info-block {
+
+        /* Аватар */
+        .avatar-block {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 14px;
+            margin-bottom: 20px;
+        }
+        .avatar-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            background: #1c1c1c url('/static/default_avatar.png') center/cover no-repeat;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .avatar-circle:hover { box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+        .avatar-info { flex: 1; }
+        .avatar-name {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1.3em;
+            color: #d4af37;
+        }
+        .avatar-email { color: #888; font-size: 0.9em; margin-top: 4px; }
+        .avatar-date { color: #666; font-size: 0.85em; margin-top: 4px; }
+
+        /* Блоки */
+        .info-block {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid #444;
             border-radius: 10px;
             padding: 15px;
             margin: 15px 0;
-            text-align: left;
         }
+        .info-block p { color: #e4e4e4; margin: 6px 0; }
+        .info-block b { color: #d4af37; }
 
-        .natal-info-block p {
-            color: #e4e4e4;
-            margin: 6px 0;
+        /* Разделы */
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
-
-        .natal-info-block b {
+        .section-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+        }
+        .section-card:hover {
+            border-color: #d4af37;
+            transform: translateY(-3px);
+        }
+        .section-card .icon { font-size: 1.8em; }
+        .section-card .name {
             color: #d4af37;
+            font-family: 'Uncial Antiqua', cursive;
+            margin-top: 6px;
+            font-size: 0.95em;
         }
+
+        /* Настройки */
+        .settings-btn {
+            background: #333;
+            color: #e4e4e4;
+            border: 1px solid #555;
+        }
+        .settings-btn:hover { background: #444; }
+        .danger-btn {
+            background: none;
+            border: 1px solid #8b0000;
+            color: #e74c3c;
+        }
+        .danger-btn:hover { background: rgba(231, 76, 60, 0.1); }
     </style>
 </head>
 <body>
     <div class="container">
         <a href="/" class="back-btn">← На главную</a>
 
-        <div class="card" id="authCard">
-            <h2>🔑 Личный кабинет</h2>
+        <!-- ЭКРАН АВТОРИЗАЦИИ -->
+        <div id="authScreen">
+            <div class="card">
+                <div class="title-main">Domus Quaerentis</div>
+                <div class="title-sub">ДОМ ИСКАТЕЛЯ</div>
 
-            <div class="tabs">
-                <div class="tab active" id="tabLogin" onclick="switchTab('login')">Вход</div>
-                <div class="tab" id="tabRegister" onclick="switchTab('register')">Регистрация</div>
+                <div class="tabs">
+                    <div class="tab active" id="tabLogin" onclick="switchTab('login')">Вход</div>
+                    <div class="tab" id="tabRegister" onclick="switchTab('register')">Регистрация</div>
+                </div>
+
+                <div id="formLogin">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="••••••">
+                    <button onclick="doLogin()">Войти</button>
+                </div>
+
+                <div id="formRegister" class="hidden">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" placeholder="your@email.com">
+                    <label>Пароль</label>
+                    <input type="password" id="regPassword" placeholder="Минимум 6 символов">
+                    <button onclick="doRegister()">Зарегистрироваться</button>
+                </div>
+
+                <div id="message" class="message"></div>
             </div>
-
-            <div id="formLogin">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="your@email.com">
-                <label>Пароль</label>
-                <input type="password" id="loginPassword" placeholder="••••••">
-                <button onclick="doLogin()">Войти</button>
-            </div>
-
-            <div id="formRegister" class="hidden">
-                <label>Email</label>
-                <input type="email" id="regEmail" placeholder="your@email.com">
-                <label>Пароль</label>
-                <input type="password" id="regPassword" placeholder="Минимум 6 символов">
-                <button onclick="doRegister()">Зарегистрироваться</button>
-            </div>
-
-            <div id="message" class="message"></div>
         </div>
 
-        <div class="card hidden" id="profileCard" style="margin-top: 20px;">
-            <h2>🌙 Мой астрологический паспорт</h2>
-            <div id="profileInfo"></div>
+        <!-- ЭКРАН ПРОФИЛЯ -->
+        <div id="profileScreen" class="hidden">
+            <div class="card">
+                <div class="title-main">Domus Quaerentis</div>
+                <div class="title-sub">ДОМ ИСКАТЕЛЯ</div>
 
-            <!-- Если натал НЕ сохранён -->
-            <div id="natalForm">
-                <label>Год рождения</label>
-                <input type="number" id="birthYear" value="1991">
-                <div class="row">
-                    <div>
-                        <label>Месяц</label>
-                        <input type="number" id="birthMonth" value="2">
-                    </div>
-                    <div>
-                        <label>День</label>
-                        <input type="number" id="birthDay" value="14">
+                <!-- Аватар -->
+                <div class="avatar-block">
+                    <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()"></div>
+                    <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="uploadAvatar(event)">
+                    <div class="avatar-info">
+                        <div class="avatar-name" id="displayName">Искатель</div>
+                        <div class="avatar-email" id="userEmail">email@example.com</div>
+                        <div class="avatar-date" id="userDate">С нами с —</div>
                     </div>
                 </div>
-                <div class="row">
-                    <div>
-                        <label>Час</label>
-                        <input type="number" id="birthHour" value="6">
-                    </div>
-                    <div>
-                        <label>Минуты</label>
-                        <input type="number" id="birthMinute" value="55">
-                    </div>
-                </div>
-                <label>Город рождения</label>
-                <input type="text" id="birthCity" value="Дубно">
-                <label>Широта</label>
-                <input type="number" step="0.01" id="birthLat" value="50.45">
-                <label>Долгота</label>
-                <input type="number" step="0.01" id="birthLon" value="30.52">
 
-                <button onclick="saveNatal()">Сохранить натал</button>
+                <!-- Натал -->
+                <h2>🌙 Натальная карта</h2>
+                <div id="natalForm">
+                    <label>Год рождения</label>
+                    <input type="number" id="birthYear" value="1991">
+                    <div class="row">
+                        <div><label>Месяц</label><input type="number" id="birthMonth" value="2"></div>
+                        <div><label>День</label><input type="number" id="birthDay" value="14"></div>
+                    </div>
+                    <div class="row">
+                        <div><label>Час</label><input type="number" id="birthHour" value="6"></div>
+                        <div><label>Минуты</label><input type="number" id="birthMinute" value="55"></div>
+                    </div>
+                    <label>Город рождения</label>
+                    <input type="text" id="birthCity" value="Дубно">
+                    <label>Широта</label>
+                    <input type="number" step="0.01" id="birthLat" value="50.45">
+                    <label>Долгота</label>
+                    <input type="number" step="0.01" id="birthLon" value="30.52">
+                    <button onclick="saveNatal()">Сохранить натал</button>
+                </div>
+
+                <div id="natalInfo" class="hidden">
+                    <div class="info-block">
+                        <p><b>Дата:</b> <span id="infoDate"></span></p>
+                        <p><b>Время:</b> <span id="infoTime"></span></p>
+                        <p><b>Место:</b> <span id="infoCity"></span></p>
+                        <p><b>Координаты:</b> <span id="infoCoords"></span></p>
+                    </div>
+                    <button class="settings-btn" onclick="editNatal()">✏️ Изменить данные</button>
+                </div>
+
+                <div id="message2" class="message"></div>
             </div>
 
-            <!-- Если натал сохранён -->
-            <div id="natalInfo" class="hidden">
-                <div class="natal-info-block">
-                    <p><b>Дата рождения:</b> <span id="infoDate"></span></p>
-                    <p><b>Время:</b> <span id="infoTime"></span></p>
-                    <p><b>Место:</b> <span id="infoCity"></span></p>
-                    <p><b>Координаты:</b> <span id="infoCoords"></span></p>
+            <!-- Разделы -->
+            <div class="card">
+                <h2>🚪 Разделы</h2>
+                <div class="sections-grid">
+                    <a href="/daily" class="section-card">
+                        <div class="icon">☀️</div>
+                        <div class="name">Прогноз дня</div>
+                    </a>
+                    <a href="/lunar" class="section-card">
+                        <div class="icon">🌙</div>
+                        <div class="name">Лунар</div>
+                    </a>
+                    <a href="/solar" class="section-card">
+                        <div class="icon">☀</div>
+                        <div class="name">Соляр</div>
+                    </a>
+                    <a href="/key" class="section-card">
+                        <div class="icon">🗝️</div>
+                        <div class="name">Ключ к знаку</div>
+                    </a>
                 </div>
-                <button onclick="editNatal()" style="background: #444; color: #fff;">✏️ Изменить данные</button>
             </div>
 
-            <button onclick="logout()" style="background: #444; color: #fff; margin-top: 10px;">Выйти</button>
+            <!-- Избранное -->
+            <div class="card">
+                <h2>⭐ Избранные афоризмы</h2>
+                <p style="text-align:center; color:#666; padding: 15px;">Пока пусто. Сохраняйте афоризмы в «Ключе к знаку»</p>
+            </div>
 
-            <div id="message2" class="message"></div>
+            <!-- Настройки -->
+            <div class="card">
+                <h2>⚙️ Настройки</h2>
+                <button class="settings-btn" onclick="showChangeName()">Изменить имя</button>
+                <button class="settings-btn" onclick="showChangePassword()">Сменить пароль</button>
+                <button class="danger-btn" onclick="deleteAccount()">Удалить аккаунт</button>
+                <button class="settings-btn" onclick="logout()" style="margin-top: 15px;">Выйти</button>
+            </div>
         </div>
     </div>
 
     <script>
         const API = "";
-        function showNatalForm() {
-    document.getElementById('natalForm').classList.remove('hidden');
-    document.getElementById('natalInfo').classList.add('hidden');
-}
-
-function showNatalInfo(data) {
-    document.getElementById('natalForm').classList.add('hidden');
-    document.getElementById('natalInfo').classList.remove('hidden');
-
-    document.getElementById('infoDate').textContent =
-        `${data.birth_day}.${data.birth_month}.${data.birth_year}`;
-    document.getElementById('infoTime').textContent =
-        `${String(data.birth_hour).padStart(2,'0')}:${String(data.birth_minute).padStart(2,'0')}`;
-    document.getElementById('infoCity').textContent = data.birth_city || '—';
-    document.getElementById('infoCoords').textContent =
-        `${data.birth_lat}, ${data.birth_lon}`;
-}
-
-function editNatal() {
-    showNatalForm();
-}
 
         function switchTab(tab) {
             document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
@@ -259,8 +348,7 @@ function editNatal() {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Ошибка');
                 localStorage.setItem('token', data.access_token);
-                localStorage.setItem('email', data.email);
-                showMessage(msg, '✅ Вы зарегистрированы!', 'success');
+                showMessage(msg, '✅ Добро пожаловать в Дом Искателя!', 'success');
                 setTimeout(loadProfile, 500);
             } catch (e) {
                 showMessage(msg, '❌ ' + e.message, 'error');
@@ -281,7 +369,6 @@ function editNatal() {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Ошибка');
                 localStorage.setItem('token', data.access_token);
-                localStorage.setItem('email', data.email);
                 showMessage(msg, '✅ Вход выполнен!', 'success');
                 setTimeout(loadProfile, 500);
             } catch (e) {
@@ -293,35 +380,51 @@ function editNatal() {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            document.getElementById('authCard').classList.add('hidden');
-            document.getElementById('profileCard').classList.remove('hidden');
-            document.getElementById('profileInfo').innerHTML = `<p style="color:#b8860b;">Email: ${localStorage.getItem('email')}</p>`;
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('profileScreen').classList.remove('hidden');
 
             try {
-                const res = await fetch(`${API}/api/v1/me/natal`, {
+                const res = await fetch(`${API}/api/v1/me/`, {
                     headers: {'Authorization': `Bearer ${token}`}
                 });
-                if (res.ok) {
-                    const data = await res.json();
+                if (!res.ok) throw new Error('Auth failed');
+                const me = await res.json();
 
-                    // Заполняем форму
-                    document.getElementById('birthYear').value = data.birth_year;
-                    document.getElementById('birthMonth').value = data.birth_month;
-                    document.getElementById('birthDay').value = data.birth_day;
-                    document.getElementById('birthHour').value = data.birth_hour;
-                    document.getElementById('birthMinute').value = data.birth_minute;
-                    document.getElementById('birthCity').value = data.birth_city;
-                    document.getElementById('birthLat').value = data.birth_lat;
-                    document.getElementById('birthLon').value = data.birth_lon;
+                document.getElementById('displayName').textContent = me.display_name || 'Искатель';
+                document.getElementById('userEmail').textContent = me.email;
+                document.getElementById('userDate').textContent = me.created_at ? `С нами с ${me.created_at}` : '';
 
-                    // Показываем данные вместо формы
-                    showNatalInfo(data);
-                } else {
-                    showNatalForm();
+                if (me.avatar_url) {
+                    document.getElementById('avatarCircle').style.backgroundImage = `url('${me.avatar_url}')`;
+                }
+
+                if (me.has_natal) {
+                    const natalRes = await fetch(`${API}/api/v1/me/natal`, {
+                        headers: {'Authorization': `Bearer ${token}`}
+                    });
+                    if (natalRes.ok) {
+                        const data = await natalRes.json();
+                        showNatalInfo(data);
+                    }
                 }
             } catch (e) {
-                showNatalForm();
+                localStorage.removeItem('token');
+                location.reload();
             }
+        }
+
+        function showNatalInfo(data) {
+            document.getElementById('natalForm').classList.add('hidden');
+            document.getElementById('natalInfo').classList.remove('hidden');
+            document.getElementById('infoDate').textContent = `${data.birth_day}.${data.birth_month}.${data.birth_year}`;
+            document.getElementById('infoTime').textContent = `${String(data.birth_hour).padStart(2,'0')}:${String(data.birth_minute).padStart(2,'0')}`;
+            document.getElementById('infoCity').textContent = data.birth_city || '—';
+            document.getElementById('infoCoords').textContent = `${data.birth_lat}, ${data.birth_lon}`;
+        }
+
+        function editNatal() {
+            document.getElementById('natalForm').classList.remove('hidden');
+            document.getElementById('natalInfo').classList.add('hidden');
         }
 
         async function saveNatal() {
@@ -351,19 +454,81 @@ function editNatal() {
                 const result = await res.json();
                 if (!res.ok) throw new Error(result.detail || 'Ошибка');
                 showMessage(msg, '✅ Натал сохранён!', 'success');
-
-                // ← ВОТ ЗДЕСЬ показываем данные вместо формы
                 showNatalInfo(data);
-
             } catch (e) {
                 showMessage(msg, '❌ ' + e.message, 'error');
             }
         }
-        
+
+        async function uploadAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch(`${API}/api/v1/me/avatar`, {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${token}`},
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Ошибка');
+                document.getElementById('avatarCircle').style.backgroundImage = `url('${data.avatar_url}')`;
+            } catch (e) {
+                alert('❌ ' + e.message);
+            }
+        }
+
+        async function showChangeName() {
+            const newName = prompt('Новое имя:', document.getElementById('displayName').textContent);
+            if (!newName) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API}/api/v1/me/profile`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify({display_name: newName})
+                });
+                if (res.ok) document.getElementById('displayName').textContent = newName;
+            } catch (e) { alert('Ошибка'); }
+        }
+
+        async function showChangePassword() {
+            const oldP = prompt('Старый пароль:');
+            if (!oldP) return;
+            const newP = prompt('Новый пароль (минимум 6):');
+            if (!newP) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API}/api/v1/me/change-password`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify({old_password: oldP, new_password: newP})
+                });
+                const data = await res.json();
+                alert(res.ok ? '✅ Пароль изменён' : '❌ ' + data.detail);
+            } catch (e) { alert('Ошибка'); }
+        }
+
+        async function deleteAccount() {
+            if (!confirm('Удалить аккаунт? Это необратимо.')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API}/api/v1/me/`, {
+                    method: 'DELETE',
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+                if (res.ok) {
+                    localStorage.removeItem('token');
+                    location.reload();
+                }
+            } catch (e) { alert('Ошибка'); }
+        }
 
         function logout() {
             localStorage.removeItem('token');
-            localStorage.removeItem('email');
             location.reload();
         }
 

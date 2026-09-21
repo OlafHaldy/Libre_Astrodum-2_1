@@ -31,7 +31,10 @@ def get_me(user: User = Depends(require_user)):
     return {
         "id": user.id,
         "email": user.email,
+        "display_name": user.display_name or "Искатель",
+        "avatar_url": user.avatar_url or "",
         "has_natal": user.natal_chart is not None,
+        "created_at": user.created_at.strftime("%d.%m.%Y") if user.created_at else "",
     }
 
 
@@ -99,3 +102,88 @@ def get_natal(
         "birth_city": natal.birth_city,
         "chart_data": json.loads(natal.chart_data or "{}"),
     }
+from fastapi import UploadFile, File
+import shutil
+import os
+
+AVATAR_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "avatars")
+os.makedirs(AVATAR_DIR, exist_ok=True)
+
+
+@router.post("/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    # Проверяем тип файла
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Только изображения")
+
+    # Ограничиваем размер (2 МБ)
+    content = await file.read()
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Файл больше 2 МБ")
+
+    # Сохраняем
+    ext = file.filename.split(".")[-1].lower()
+    filename = f"user_{user.id}.{ext}"
+    filepath = os.path.join(AVATAR_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    # Обновляем user
+    user.avatar_url = f"/static/avatars/{filename}"
+    db.commit()
+
+    return {"status": "ok", "avatar_url": user.avatar_url}
+
+
+class UpdateProfileRequest(BaseModel):
+    display_name: str
+
+
+@router.post("/profile")
+def update_profile(
+    data: UpdateProfileRequest,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    user.display_name = data.display_name.strip() or "Искатель"
+    db.commit()
+    return {"status": "ok", "display_name": user.display_name}
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+def change_password(
+    data: ChangePasswordRequest,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    from core.auth import verify_password, hash_password
+
+    if not verify_password(data.old_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Неверный старый пароль")
+
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Пароль слишком короткий")
+
+    user.password_hash = hash_password(data.new_password)
+    db.commit()
+    return {"status": "ok"}
+
+
+@router.delete("/")
+def delete_account(
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    db.delete(user)
+    db.commit()
+    return {"status": "ok"}
