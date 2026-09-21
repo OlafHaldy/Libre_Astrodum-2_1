@@ -46,8 +46,6 @@ def save_natal(
     db: Session = Depends(get_db),
 ):
     from builders.natal_builder import build_natal_chart
-    from core.pipeline import run_full_pipeline
-    from core.prompt_builder import build_prompt
     from ai import generate
     from graphics.wheel_renderer import draw_wheel
     import json
@@ -63,13 +61,91 @@ def save_natal(
         # Колесо
         wheel_svg = draw_wheel(chart)
 
-        # Конвейер
-        result = run_full_pipeline(chart)
+        # === СОБИРАЕМ КОНТЕКСТ ДЛЯ ПОРТРЕТА ===
+        context_lines = []
 
-        # Промпт
-        prompt = build_prompt(result["prompt_context"], chart_type="natal")
+        if "Sun" in chart.planets:
+            sun = chart.planets["Sun"]
+            context_lines.append(f"Солнце: {sun['degree']}° {sun['sign']}")
+        if "Moon" in chart.planets:
+            moon = chart.planets["Moon"]
+            context_lines.append(f"Луна: {moon['degree']}° {moon['sign']}")
+        if "Ascendant" in chart.houses:
+            asc = chart.houses["Ascendant"]
+            context_lines.append(f"Асцендент: {asc['degree']}° {asc['sign']}")
 
-        # Генерация интерпретации
+        context_lines.append("")
+        for planet, pdata in chart.planets.items():
+            if planet in ["Sun", "Moon"]:
+                continue
+            context_lines.append(f"{planet}: {pdata['degree']}° {pdata['sign']}")
+
+        context_lines.append("")
+        for i in range(1, 13):
+            house = chart.houses.get(i)
+            if house:
+                context_lines.append(f"Дом {i}: {house['sign']}")
+
+        context_text = "\n".join(context_lines)
+
+        # === ПРОМПТ ПОРТРЕТА ===
+        prompt = f"""Ты — Астродо, хранитель Небесного Архива Liber Astrodum.
+
+Ты читаешь натальную карту человека. Это не отчёт — это портрет его души.
+
+Твоя задача — создать глубокое, живое и целостное описание личности.
+
+Это НЕ список аспектов.
+Это НЕ техническая интерпретация.
+Это НЕ гороскоп.
+Это НЕ совет.
+Это НЕ предсказание.
+
+Это — ПОРТРЕТ ЧЕЛОВЕКА, написанный языком звёзд.
+
+═══════════════════════════════════════
+
+ДАННЫЕ КАРТЫ:
+{context_text}
+
+═══════════════════════════════════════
+
+СТРУКТУРА (ровно 5 секций):
+
+[SECTION:PORTRAIT] — Портрет
+Опиши человека как целостную личность. Не перечисляй планеты — покажи, как они сплетаются в характер. 3-4 предложения.
+
+[SECTION:STRENGTH] — Сила
+В чём главный дар этого человека? Что помогает ему идти по жизни? 2-3 предложения.
+
+[SECTION:SHADOW] — Тень
+Что мешает? Где внутренний конфликт? Без осуждения, с пониманием. 2-3 предложения.
+
+[SECTION:PATH] — Путь
+Куда ведёт эта карта? Какой урок души? Какая цель? 2-3 предложения.
+
+[SECTION:GIFT] — Дар
+Одно короткое предложение — как афоризм. Что человек может подарить миру.
+
+═══════════════════════════════════════
+
+СТИЛЬ:
+- Обращайся к человеку лично: «Ты — ...», «В тебе — ...»
+- Тёплый, но не сентиментальный
+- Глубокий, но понятный
+- Образный, но конкретный
+- Без технического жаргона (не «Юпитер в 11 доме», а «твоя сила — в сообществах»)
+
+ЗАПРЕЩЕНО:
+- Перечислять планеты и дома напрямую
+- Использовать слова «аспект», «диспозитор», «дом», «градус»
+- Писать «вам нужно», «следует развивать»
+- Давать советы
+- Предсказывать события
+
+Выдай ровно 5 секций с маркерами. Ничего больше."""
+
+        # Генерация
         try:
             interpretation = generate(prompt)
         except Exception as e:

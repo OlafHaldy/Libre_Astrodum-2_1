@@ -493,17 +493,14 @@ function openNatalInterpretation() {
 
     // Парсим секции
     const text = natalData.interpretation;
-    const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
-    const titles = {
-        MAIN: 'Главная тема',
-        STRENGTHS: 'Сильные стороны',
-        WEAKNESSES: 'Слабые места',
-        PSYCHOLOGY: 'Психологический слой',
-        TENSION: 'Внутреннее напряжение',
-        HERMETIC: 'Герметический смысл',
-        TRANSFORMATION: 'Путь преобразования',
-        CONCLUSION: 'Итог'
-    };
+const sectionRegex = /\[SECTION:(PORTRAIT|STRENGTH|SHADOW|PATH|GIFT)\]\s*/g;
+const titles = {
+    PORTRAIT: 'Портрет',
+    STRENGTH: 'Сила',
+    SHADOW: 'Тень',
+    PATH: 'Путь',
+    GIFT: 'Дар'
+};
 
     const sections = [];
     let match;
