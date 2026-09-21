@@ -87,80 +87,45 @@
             line-height: 1.8;
             text-align: left;
         }
+        /* ===== ИСТОРИЯ СОЛЯРОВ ===== */
+        .history-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        .history-item:hover { border-color: #d4af37; }
+        .history-title { color: #d4af37; font-family: 'Uncial Antiqua', cursive; }
+        .history-date { color: #666; font-size: 0.85em; margin-top: 3px; }
+        .history-btn {
+            background: none;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 4px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Cormorant Infant', serif;
+            transition: all 0.3s;
+        }
+        .history-btn:hover { background: rgba(212, 175, 55, 0.15); }
+        .history-btn.delete {
+            border-color: #8b0000;
+            color: #e74c3c;
+        }
+        .history-btn.delete:hover { background: rgba(231, 76, 60, 0.1); }
         @media (max-width: 600px) {
             .row { flex-direction: column; gap: 8px; }
             .interpretation-block { margin: 14px 0; padding: 16px; }
             .interpretation-block-title { font-size: 1rem; }
             .interpretation-block-text { font-size: 0.95rem; }
         }
-    
-
-/* ===== АФОРИЗМ-ЭПИГРАФ ===== */
-.aphorism {
-    font-family: 'Caveat', cursive;
-    font-size: 1.35em;
-    color: #d4af37;
-    font-style: italic;
-    margin: 8px 0 15px 0;
-    padding: 12px 18px;
-    border-left: 3px solid rgba(212, 175, 55, 0.6);
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.02), transparent);
-    border-radius: 0 10px 10px 0;
-    text-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
-    line-height: 1.5;
-    letter-spacing: 0.03em;
-}
-
-.aphorism::before {
-    content: '❧ ';
-    font-size: 1.1em;
-    color: #b8860b;
-    opacity: 0.8;
-    margin-right: 5px;
-}
-
-.aphorism-label {
-    font-family: 'Cormorant Infant', serif;
-    font-size: 0.7em;
-    color: #b8860b;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    opacity: 0.6;
-    margin-bottom: 3px;
-    margin-top: 5px;
-}
-
-/* ===== БЛОК ИНТЕРПРЕТАЦИИ ===== */
-.interpretation-block {
-    margin: 20px 0;
-    padding: 22px 24px;
-    background: linear-gradient(135deg, rgba(35, 35, 35, 0.85), rgba(10, 10, 10, 0.7));
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    border-left: 3px solid #d4af37;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(5px);
-}
-
-.interpretation-block-title {
-    color: #d4af37;
-    font-size: 1.15rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-}
-
-.interpretation-block-text {
-    color: #e4e4e4;
-    font-size: 1.05rem;
-    line-height: 1.85;
-    text-align: left;
-}
-
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
@@ -192,6 +157,10 @@
             </div>
             <button onclick="askSolar()">Построить Соляр</button>
         </div>
+
+        <!-- История соляров -->
+        <div id="historyBlock" style="margin-top: 25px;"></div>
+
         <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
     </div>
     <div id="overlay">
@@ -228,7 +197,6 @@
         };
         const signMottoAuthor = '— Алиса Бейли, «Эзотерическая астрология»';
 
-        // ===== ЗАГОЛОВКИ ДЛЯ СЕКЦИЙ =====
         const interpretationTitles = {
             MAIN: 'Главная тема',
             STRENGTHS: 'Сильные стороны',
@@ -335,13 +303,131 @@
             }
         });
 
+        // ===== АРХИВ ИСКАТЕЛЯ =====
+        async function savePrediction(interpretation, year) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                await fetch('/api/v1/me/predictions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        chart_type: 'solar',
+                        target_year: parseInt(year),
+                        title: `Соляр — ${year}`,
+                        interpretation: interpretation
+                    })
+                });
+                console.log('Соляр сохранён');
+            } catch (e) {
+                console.error('Save failed:', e);
+            }
+        }
+
+        async function loadHistory() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.log('Не залогинен — история не загружена');
+                return;
+            }
+
+            console.log('Загружаю историю соляров...');
+
+            try {
+                const res = await fetch('/api/v1/me/predictions/?chart_type=solar', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+
+                console.log('История — статус:', res.status);
+
+                if (!res.ok) {
+                    console.error('Ошибка загрузки истории');
+                    return;
+                }
+
+                const items = await res.json();
+                console.log('История — записей:', items.length);
+
+                const historyBlock = document.getElementById('historyBlock');
+                if (!historyBlock) return;
+
+                if (items.length === 0) {
+                    historyBlock.innerHTML = '<p style="color:#666; text-align:center;">Пока нет сохранённых соляров</p>';
+                    return;
+                }
+
+                let html = '<h3 style="color:#d4af37; margin-bottom:10px; font-family:\'Uncial Antiqua\', cursive;">📜 Мои соляры</h3>';
+                items.forEach(item => {
+                    html += `
+                        <div class="history-item">
+                            <div>
+                                <div class="history-title">${item.title}</div>
+                                <div class="history-date">Построен: ${item.created_at}</div>
+                            </div>
+                            <div>
+                                <button class="history-btn" onclick="openPrediction(${item.id})">Открыть</button>
+                                <button class="history-btn delete" onclick="deletePrediction(${item.id})">Удалить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                historyBlock.innerHTML = html;
+            } catch (e) {
+                console.error('History load failed:', e);
+            }
+        }
+
+        async function openPrediction(id) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch(`/api/v1/me/predictions/${id}`, {
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            const data = await res.json();
+
+            const resultBlock = document.getElementById('result');
+            document.querySelector('.card').style.display = 'none';
+            document.getElementById('historyBlock').style.display = 'none';
+            resultBlock.style.display = 'block';
+            resultBlock.innerHTML = `
+                <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
+                    <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☀ ${data.title}</h3>
+                    <div class="interpretation-block">
+                        <div class="interpretation-block-text">${data.interpretation.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    <br>
+                    <a href="/solar" class="back-btn">← К списку соляров</a>
+                </div>
+            `;
+        }
+
+        async function deletePrediction(id) {
+            if (!confirm('Удалить этот соляр?')) return;
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            await fetch(`/api/v1/me/predictions/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            loadHistory();
+        }
+
         async function askSolar() {
             const resultBlock = document.getElementById('result');
             const card = document.querySelector('.card');
             
             card.style.display = 'none';
+            document.getElementById('historyBlock').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Солнце возвращается...</div>';
+
+            const targetYear = document.getElementById('targetYear').value;
 
             const params = new URLSearchParams({
                 natal_year: document.getElementById('natalYear').value,
@@ -353,7 +439,7 @@
                 birth_lon: birthLon,
                 lat: currentLat,
                 lon: currentLon,
-                target_year: document.getElementById('targetYear').value
+                target_year: targetYear
             });
 
             try {
@@ -370,7 +456,6 @@
 
                 const wheelHtml = data.wheel ? `<div style="text-align:center;margin-bottom:20px;">${data.wheel}</div>` : '';
 
-                // Таблица планет
                 const planetNames = {
                     Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
                     Venus: 'Венера', Mars: 'Марс', Jupiter: 'Юпитер', Saturn: 'Сатурн'
@@ -393,7 +478,6 @@
                 }
                 planetListHtml += '</table>';
 
-                // Интерпретация с парсингом секций
                 let interpretationHtml = '';
                 const interpretationText = data.interpretation || '';
                 const sectionRegex = /\[SECTION:(MAIN|STRENGTHS|WEAKNESSES|PSYCHOLOGY|TENSION|HERMETIC|TRANSFORMATION|CONCLUSION)\]\s*/g;
@@ -439,6 +523,11 @@
                         <a href="/" class="back-btn">← В главное меню</a>
                     </div>
                 `;
+
+                // Автосохранение прогноза
+                savePrediction(data.interpretation, targetYear);
+                loadHistory();
+
             } catch (e) {
                 resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
@@ -449,24 +538,11 @@
                 `;
             }
         }
-    
-function formatAphorism(text) {
-    const match = text.match(/Афоризм:\s*[«"]([^»"]+)[»"]/);
-    
-    if (match) {
-        const aphorismText = match[1];
-        const restText = text.replace(/Афоризм:\s*[«"][^»"]+[»"]\s*/g, '');
-        
-        return `
-            <div class="aphorism-label">Эпиграф</div>
-            <div class="aphorism">${aphorismText}</div>
-            <div class="interpretation-block-text">${restText.replace(/\n/g, '<br>')}</div>
-        `;
-    }
-    
-    return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
-}
 
-</script>
+        // При загрузке страницы — подгружаем историю
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+        });
+    </script>
 </body>
 </html>
