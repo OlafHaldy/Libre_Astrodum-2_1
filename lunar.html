@@ -159,6 +159,39 @@
         .sign-symbol { font-size: 1.1em; margin-right: 4px; }
         .aspect-symbol { font-size: 1.3em; color: #d4af37; margin: 0 4px; }
 
+        /* ===== ИСТОРИЯ ЛУНАРОВ ===== */
+        .history-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        .history-item:hover { border-color: #d4af37; }
+        .history-title { color: #d4af37; font-family: 'Uncial Antiqua', cursive; }
+        .history-date { color: #666; font-size: 0.85em; margin-top: 3px; }
+        .history-btn {
+            background: none;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 4px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Cormorant Infant', serif;
+            transition: all 0.3s;
+        }
+        .history-btn:hover { background: rgba(212, 175, 55, 0.15); }
+        .history-btn.delete {
+            border-color: #8b0000;
+            color: #e74c3c;
+        }
+        .history-btn.delete:hover { background: rgba(231, 76, 60, 0.1); }
+
         @media (max-width: 600px) {
             .interpretation-block { margin: 14px 0; padding: 16px; }
             .interpretation-block-title { font-size: 1rem; }
@@ -199,7 +232,10 @@
             </div>
             <button onclick="askLunar()">Построить Лунар</button>
         </div>
+
+        <!-- История лунаров -->
         <div id="historyBlock" style="margin-top: 25px;"></div>
+
         <div id="result" style="display: none; margin-top: 20px; width: 100%;"></div>
     </div>
     <div id="overlay">
@@ -208,108 +244,6 @@
     </div>
 
     <script>
-        // ===== АВТОСОХРАНЕНИЕ И ИСТОРИЯ =====
-async function savePrediction(interpretation, year, month) {
-    const token = localStorage.getItem('token');
-    if (!token) return; // не залогинен — не сохраняем
-
-    try {
-        await fetch('/api/v1/me/predictions/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                chart_type: 'lunar',
-                target_year: year,
-                target_month: month,
-                title: `Лунар — ${month}.${year}`,
-                interpretation: interpretation
-            })
-        });
-    } catch (e) {
-        console.error('Save failed:', e);
-    }
-}
-
-async function loadHistory() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const res = await fetch('/api/v1/me/predictions/?chart_type=lunar', {
-            headers: {'Authorization': `Bearer ${token}`}
-        });
-        const items = await res.json();
-
-        const historyBlock = document.getElementById('historyBlock');
-        if (!historyBlock) return;
-
-        if (items.length === 0) {
-            historyBlock.innerHTML = '<p style="color:#666; text-align:center;">Пока нет сохранённых лунаров</p>';
-            return;
-        }
-
-        let html = '<h3 style="color:#d4af37; margin-bottom:10px;">📜 Мои лунары</h3>';
-        items.forEach(item => {
-            html += `
-                <div style="background:rgba(0,0,0,0.3); border:1px solid #444; border-radius:10px; padding:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="color:#d4af37;">${item.title}</div>
-                        <div style="color:#666; font-size:0.85em;">Построен: ${item.created_at}</div>
-                    </div>
-                    <div>
-                        <button onclick="openPrediction(${item.id})" style="background:none; border:1px solid #d4af37; color:#d4af37; padding:4px 10px; border-radius:10px; cursor:pointer; font-size:12px;">Открыть</button>
-                        <button onclick="deletePrediction(${item.id})" style="background:none; border:1px solid #8b0000; color:#e74c3c; padding:4px 10px; border-radius:10px; cursor:pointer; font-size:12px;">Удалить</button>
-                    </div>
-                </div>
-            `;
-        });
-        historyBlock.innerHTML = html;
-    } catch (e) {
-        console.error('History load failed:', e);
-    }
-}
-
-async function openPrediction(id) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const res = await fetch(`/api/v1/me/predictions/${id}`, {
-        headers: {'Authorization': `Bearer ${token}`}
-    });
-    const data = await res.json();
-
-    const resultBlock = document.getElementById('result');
-    document.querySelector('.card').style.display = 'none';
-    resultBlock.style.display = 'block';
-    resultBlock.innerHTML = `
-        <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
-            <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ ${data.title}</h3>
-            <div class="interpretation-block">
-                <div class="interpretation-block-text">${data.interpretation.replace(/\n/g, '<br>')}</div>
-            </div>
-            <br>
-            <a href="/lunar" class="back-btn">← К списку лунаров</a>
-        </div>
-        // Автосохранение (если залогинен)
-
-    `;
-    savePrediction(data.interpretation, year, month);
-}
-
-async function deletePrediction(id) {
-    if (!confirm('Удалить этот лунар?')) return;
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    await fetch(`/api/v1/me/predictions/${id}`, {
-        method: 'DELETE',
-        headers: {'Authorization': `Bearer ${token}`}
-    });
-    loadHistory();
-}
         const signEmojis = {
             'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊',
             'Cancer': '♋', 'Leo': '♌', 'Virgo': '♍',
@@ -379,6 +313,7 @@ async function deletePrediction(id) {
             return `<div class="interpretation-block-text">${text.replace(/\n/g, '<br>')}</div>`;
         }
 
+        // ===== ГОРОД ПОИСК =====
         const birthCityInput = document.getElementById('birthCity');
         const suggestionsBox = document.getElementById('suggestions');
         birthCityInput.addEventListener('input', function() {
@@ -447,6 +382,123 @@ async function deletePrediction(id) {
             }
         });
 
+        // ===== АРХИВ ИСКАТЕЛЯ =====
+        async function savePrediction(interpretation, year, month) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                await fetch('/api/v1/me/predictions/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        chart_type: 'lunar',
+                        target_year: parseInt(year),
+                        target_month: parseInt(month),
+                        title: `Лунар — ${month}.${year}`,
+                        interpretation: interpretation
+                    })
+                });
+                console.log('Прогноз сохранён');
+            } catch (e) {
+                console.error('Save failed:', e);
+            }
+        }
+
+        async function loadHistory() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.log('Не залогинен — история не загружена');
+                return;
+            }
+
+            console.log('Загружаю историю...');
+
+            try {
+                const res = await fetch('/api/v1/me/predictions/?chart_type=lunar', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+
+                console.log('История — статус:', res.status);
+
+                if (!res.ok) {
+                    console.error('Ошибка загрузки истории');
+                    return;
+                }
+
+                const items = await res.json();
+                console.log('История — записей:', items.length);
+
+                const historyBlock = document.getElementById('historyBlock');
+                if (!historyBlock) return;
+
+                if (items.length === 0) {
+                    historyBlock.innerHTML = '<p style="color:#666; text-align:center;">Пока нет сохранённых лунаров</p>';
+                    return;
+                }
+
+                let html = '<h3 style="color:#d4af37; margin-bottom:10px; font-family:\'Uncial Antiqua\', cursive;">📜 Мои лунары</h3>';
+                items.forEach(item => {
+                    html += `
+                        <div class="history-item">
+                            <div>
+                                <div class="history-title">${item.title}</div>
+                                <div class="history-date">Построен: ${item.created_at}</div>
+                            </div>
+                            <div>
+                                <button class="history-btn" onclick="openPrediction(${item.id})">Открыть</button>
+                                <button class="history-btn delete" onclick="deletePrediction(${item.id})">Удалить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                historyBlock.innerHTML = html;
+            } catch (e) {
+                console.error('History load failed:', e);
+            }
+        }
+
+        async function openPrediction(id) {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await fetch(`/api/v1/me/predictions/${id}`, {
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            const data = await res.json();
+
+            const resultBlock = document.getElementById('result');
+            document.querySelector('.card').style.display = 'none';
+            document.getElementById('historyBlock').style.display = 'none';
+            resultBlock.style.display = 'block';
+            resultBlock.innerHTML = `
+                <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
+                    <h3 style="color: #d4af37; font-family: 'Uncial Antiqua', cursive; margin-bottom: 15px;">☽ ${data.title}</h3>
+                    <div class="interpretation-block">
+                        <div class="interpretation-block-text">${data.interpretation.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    <br>
+                    <a href="/lunar" class="back-btn">← К списку лунаров</a>
+                </div>
+            `;
+        }
+
+        async function deletePrediction(id) {
+            if (!confirm('Удалить этот лунар?')) return;
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            await fetch(`/api/v1/me/predictions/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${token}`}
+            });
+            loadHistory();
+        }
+
+        // ===== ОСНОВНАЯ ФУНКЦИЯ =====
         async function askLunar() {
             const planetNames = {
                 Sun: 'Солнце', Moon: 'Луна', Mercury: 'Меркурий',
@@ -480,6 +532,7 @@ async function deletePrediction(id) {
 
             const resultBlock = document.getElementById('result');
             document.querySelector('.card').style.display = 'none';
+            document.getElementById('historyBlock').style.display = 'none';
             resultBlock.style.display = 'block';
             resultBlock.innerHTML = '<div class="loading">Звёзды складывают узор...</div>';
 
@@ -605,6 +658,11 @@ async function deletePrediction(id) {
                         <a href="/" class="back-btn">← В главное меню</a>
                     </div>
                 `;
+
+                // Автосохранение прогноза
+                savePrediction(data.interpretation, year, month);
+                loadHistory();
+
             } catch (e) {
                 resultBlock.innerHTML = `
                     <div style="background: rgba(28, 28, 28, 0.8); border: 1px solid #444; border-radius: 14px; padding: 20px;">
@@ -615,6 +673,11 @@ async function deletePrediction(id) {
                 `;
             }
         }
+
+        // При загрузке страницы — подгружаем историю
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+        });
     </script>
 </body>
 </html>
