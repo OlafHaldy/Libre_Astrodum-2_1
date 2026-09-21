@@ -183,13 +183,36 @@ HTML_PAGE = r"""<!DOCTYPE html>
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 8px rgba(192,192,192,0.8));
         }
         .header-right {
-            text-align: center;
-            background: rgba(28, 28, 28, 0.8);
-            border: 1px solid #444;
-            border-radius: 14px;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
+        text-align: center;
+        background: rgba(28, 28, 28, 0.8);
+        border: 1px solid #444;
+        border-radius: 14px;
+        padding: 20px;
+        backdrop-filter: blur(5px);
+        position: relative;
+    }
+
+.profile-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: 'Cormorant Infant', serif;
+    font-size: 11px;
+    text-decoration: none;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    transition: all 0.3s;
+}
+
+.profile-btn:hover {
+    opacity: 1;
+    background: rgba(212, 175, 55, 0.15);
+}
         .moon-phase {
             font-size: 2.5em;
             text-align: center;
@@ -361,16 +384,16 @@ HTML_PAGE = r"""<!DOCTYPE html>
             <div class="header-left">
                 <a href="/daily">
                     <img src="/static/zodiac/zodiac_circle.png" alt="Прогноз на день">
-                    
                 </a>
             </div>
             <div class="header-center">
                 <div class="app-title">
-    <h1>Liber Astrodum</h1>
-    <div class="app-subtitle">В поисках небесного кода</div>
-</div>
+                    <h1>Liber Astrodum</h1>
+                    <div class="app-subtitle">В поисках небесного кода</div>
+                </div>
             </div>
             <div class="header-right">
+                <a href="/profile" class="profile-btn">🔑 Личный кабинет</a>
                 <div class="side-widget-title">🌙 Лунный календарь</div>
                 <div id="moonWidget">Загрузка...</div>
             </div>
